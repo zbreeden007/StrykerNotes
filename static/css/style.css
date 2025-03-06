@@ -1,0 +1,104 @@
+/* General Styles */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer {
+    margin-top: auto;
+}
+
+/* Card Styles */
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Quick Note Styles */
+.quick-note-container {
+    border-left: 4px solid #17a2b8;
+    padding-left: 15px;
+}
+
+/* Todo List Styles */
+.todo-item {
+    transition: background-color 0.3s ease;
+}
+
+.todo-item.completed {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.todo-item:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.priority-high {
+    border-left: 4px solid #dc3545;
+}
+
+.priority-medium {
+    border-left: 4px solid #ffc107;
+}
+
+.priority-low {
+    border-left: 4px solid #17a2b8;
+}
+
+/* Team Member Card Styles */
+.member-card {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.member-card .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+/* Link Styles */
+.link-card {
+    transition: transform 0.3s ease;
+}
+
+.link-card:hover {
+    transform: translateY(-5px);
+}
+
+.link-icon {
+    font-size: 2rem;
+    color: #6c757d;
+}
+
+/* Settings Page Styles */
+.color-swatch {
+    width: 30px;
+    height: 30px;
+    display: inline-block;
+    margin-right: 5px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.color-swatch.selected {
+    box-shadow: 0 0 0 2px #007bff;
+}
+
+/* Responsive Tweaks */
+@media (max-width: 768px) {
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .card-header .btn {
+        margin-top: 10px;
+    }
+}

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}To-Do Lists - Productivity Tool{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>To-Do Lists</h1>
+    <a href="{{ url_for('todos.new_list') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> New List
+    </a>
+</div>
+
+<div class="row">
+    {% if lists %}
+        {% for todo_list in lists %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ todo_list.name }}</h5>
+                    <div>
+                        <span class="badge bg-success">
+                            {{ todo_list.todos|selectattr('completed', 'equalto', true)|list|length }}/{{ todo_list.todos|length }} Completed
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if todo_list.todos %}
+                    <ul class="list-group">
+                        {% for todo in todo_list.todos %}
+                        <li class="list-group-item todo-item{% if todo.completed %} completed{% endif %} priority-{% if todo.priority == 2 %}high{% elif todo.priority == 1 %}medium{% else %}low{% endif %}">
+                            <div class="form-check d-flex justify-content-between align-items-center">
+                                <div>
+                                    <input class="form-check-input todo-checkbox" type="checkbox" 
+                                           {% if todo.completed %}checked{% endif %}
+                                           onclick="toggleTodoComplete({{ todo.id }})" 
+                                           id="todo-check-{{ todo.id }}">
+                                    <label class="form-check-label" for="todo-check-{{ todo.id }}">
+                                        {{ todo.content }}
+                                    </label>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    {% if todo.due_date %}
+                                    <small class="text-muted me-3">Due: {{ todo.due_date.strftime('%m/%d/%Y') }}</small>
+                                    {% endif %}
+                                    <form action="{{ url_for('todos.delete_todo', todo_id=todo.id) }}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted">No tasks in this list yet.</p>
+                    {% endif %}
+                    
+                    <div class="mt-3">
+                        <a href="{{ url_for('todos.view_list', list_id=todo_list.id) }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye"></i> View List
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            <p>You don't have any to-do lists yet. Create your first list to get started.</p>
+            <a href="{{ url_for('todos.new_list') }}" class="btn btn-primary mt-2">
+                Create To-Do List
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

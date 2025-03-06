@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if is_new %}New Note{% else %}{{ note.title }}{% endif %} - Productivity Tool{% endblock %}
+
+{% block extra_head %}
+<!-- Use SimpleMDE instead of TinyMCE -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{% if is_new %}New Note{% else %}Edit Note{% endif %}</h1>
+    
+    {% if not is_new %}
+    <div>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteNoteModal">
+            <i class="fas fa-trash"></i> Delete
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" id="noteForm">
+            {{ form.csrf_token }}
+            
+            <div class="mb-3">
+                {{ form.title.label(class="form-label") }}
+                {{ form.title(class="form-control", required=true, autofocus=true) }}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.content.label(class="form-label") }}
+                {{ form.content(class="form-control", rows=10, id="editor") }}
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="form-check">
+                        {{ form.is_quick_note(class="form-check-input") }}
+                        {{ form.is_quick_note.label(class="form-check-label") }}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check">
+                        {{ form.is_permanent(class="form-check-input") }}
+                        {{ form.is_permanent.label(class="form-check-label") }}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        {{ form.category.label(class="form-label") }}
+                        {{ form.category(class="form-control") }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('notes.all_notes') }}" class="btn btn-secondary">Cancel</a>
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if not is_new %}
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteNoteModal" tabindex="-1" aria-labelledby="deleteNoteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteNoteModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the note "{{ note.title }}"? This cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('notes.delete_note', note_id=note.id) }}" method="post">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize SimpleMDE
+    var simplemde = new SimpleMDE({ 
+        element: document.getElementById("editor"),
+        spellChecker: false,
+        autosave: {
+            enabled: true,
+            uniqueId: "noteEditor{% if not is_new %}_{{ note.id }}{% endif %}",
+            delay: 1000,
+        }
+    });
+    
+    // Initialize page based on URL parameters
+    $(document).ready(function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        if (urlParams.has('quick')) {
+            $('#is_quick_note').prop('checked', true);
+        }
+        
+        if (urlParams.has('permanent')) {
+            $('#is_permanent').prop('checked', true);
+        }
+    });
+    
+    // Manual save function for AJAX saving
+    function saveNote() {
+        {% if not is_new %}
+        const formData = {
+            id: {{ note.id }},
+            title: $('#title').val(),
+            content: simplemde.value()
+        };
+        
+        $.ajax({
+            url: "{{ url_for('notes.save_note_ajax') }}",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(formData),
+            success: function(response) {
+                console.log("Saved successfully");
+                // Could show a small notification here
+            },
+            error: function(error) {
+                console.error("Error saving:", error);
+            }
+        });
+        {% endif %}
+    }
+</script>
+{% endblock %}

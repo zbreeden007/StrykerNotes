@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}All Notes - Productivity Tool{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>All Notes</h1>
+    <a href="{{ url_for('notes.new_note') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> New Note
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search notes...">
+            </div>
+            <div class="col-md-3">
+                <select id="categoryFilter" class="form-select">
+                    <option value="">All Categories</option>
+                    {% set categories = notes|map(attribute='category')|unique|reject('none')|list %}
+                    {% for category in categories %}
+                    <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select id="typeFilter" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="quick">Quick Notes</option>
+                    <option value="permanent">Permanent Notes</option>
+                    <option value="regular">Regular Notes</option>
+                </select>
+            </div>
+        </div>
+        
+        {% if notes %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Type</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="notesTableBody">
+                    {% for note in notes %}
+                    <tr class="note-row"
+                        data-title="{{ note.title|lower }}"
+                        data-category="{{ note.category|lower if note.category else '' }}"
+                        data-type="{% if note.is_quick_note %}quick{% elif note.is_permanent %}permanent{% else %}regular{% endif %}">
+                        <td>
+                            <a href="{{ url_for('notes.view_note', note_id=note.id) }}">{{ note.title }}</a>
+                        </td>
+                        <td>{{ note.category }}</td>
+                        <td>
+                            {% if note.is_quick_note %}
+                            <span class="badge bg-info text-dark">Quick</span>
+                            {% endif %}
+                            {% if note.is_permanent %}
+                            <span class="badge bg-warning text-dark">Permanent</span>
+                            {% endif %}
+                            {% if not note.is_quick_note and not note.is_permanent %}
+                            <span class="badge bg-secondary">Regular</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ note.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <a href="{{ url_for('notes.edit_note', note_id=note.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                    onclick="confirmDelete({{ note.id }}, '{{ note.title }}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            No notes found. Create your first note to get started.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteNoteModal" tabindex="-1" aria-labelledby="deleteNoteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteNoteModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="deleteModalBody">
+                Are you sure you want to delete this note?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteNoteForm" action="" method="post">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmDelete(noteId, noteTitle) {
+        $('#deleteModalBody').text(`Are you sure you want to delete the note "${noteTitle}"? This cannot be undone.`);
+        $('#deleteNoteForm').attr('action', `{{ url_for('notes.delete_note', note_id=0) }}`.replace('0', noteId));
+        $('#deleteNoteModal').modal('show');
+    }
+    
+    $(document).ready(function() {
+        // Search functionality
+        $('#searchInput').on('keyup', filterNotes);
+        $('#categoryFilter').on('change', filterNotes);
+        $('#typeFilter').on('change', filterNotes);
+        
+        function filterNotes() {
+            const searchText = $('#searchInput').val().toLowerCase();
+            const categoryFilter = $('#categoryFilter').val().toLowerCase();
+            const typeFilter = $('#typeFilter').val().toLowerCase();
+            
+            $('.note-row').each(function() {
+                const title = $(this).data('title');
+                const category = $(this).data('category');
+                const type = $(this).data('type');
+                
+                const matchesSearch = title.includes(searchText);
+                const matchesCategory = !categoryFilter || category === categoryFilter;
+                const matchesType = !typeFilter || type === typeFilter;
+                
+                if (matchesSearch && matchesCategory && matchesType) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
