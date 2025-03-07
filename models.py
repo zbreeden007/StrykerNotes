@@ -37,7 +37,6 @@ class TodoList(db.Model):
     def __repr__(self):
         return f'<TodoList {self.name}>'
 
-# In models.py
 class TeamMember(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -68,6 +67,9 @@ class MemberTask(db.Model):
         return f'<MemberTask {self.content}>'
 
 class MemberProject(db.Model):
+    __tablename__ = 'member_project'
+    __table_args__ = {'extend_existing': True}  # Add this to fix the duplicate table error
+    
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
@@ -78,6 +80,9 @@ class MemberProject(db.Model):
         return f'<MemberProject {self.name}>'
 
 class MemberNote(db.Model):
+    __tablename__ = 'member_note'
+    __table_args__ = {'extend_existing': True}  # Add this to fix the duplicate table error
+    
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=True)
@@ -88,6 +93,9 @@ class MemberNote(db.Model):
         return f'<MemberNote {self.title}>'
 
 class MemberDevelopment(db.Model):
+    __tablename__ = 'member_development'
+    __table_args__ = {'extend_existing': True}  # Add this to fix the duplicate table error
+    
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
@@ -118,34 +126,3 @@ class UserPreference(db.Model):
     
     def __repr__(self):
         return f'<UserPreference {self.id}>'
-
-class MemberProject(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    member_id = db.Column(db.Integer, db.ForeignKey('team_member.id'), nullable=False)
-    
-    def __repr__(self):
-        return f'<MemberProject {self.name}>'
-
-class MemberNote(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    content = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    member_id = db.Column(db.Integer, db.ForeignKey('team_member.id'), nullable=False)
-    
-    def __repr__(self):
-        return f'<MemberNote {self.title}>'
-
-class MemberDevelopment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    date = db.Column(db.DateTime, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    member_id = db.Column(db.Integer, db.ForeignKey('team_member.id'), nullable=False)
-    
-    def __repr__(self):
-        return f'<MemberDevelopment {self.title}>'
