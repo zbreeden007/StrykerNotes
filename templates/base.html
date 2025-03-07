@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Productivity Tool{% endblock %}</title>
+    <title>{% block title %}Stryker Notes{% endblock %}</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome for icons -->
@@ -71,7 +71,7 @@
     <nav class="navbar navbar-expand-lg {% if preferences and preferences.theme == 'dark' %}navbar-dark bg-dark{% else %}navbar-light bg-light{% endif %} mb-4">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <i class="fas fa-tasks"></i> Productivity Tool
+                <i class="fas fa-tasks"></i> Stryker Notes
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -141,7 +141,7 @@
 
     <footer class="footer bg-light py-3 mt-auto">
         <div class="container text-center">
-            <span class="text-muted">Productivity Tool - Personal Use Only</span>
+            <span class="text-muted">Stryker Notes - Personal Use Only</span>
         </div>
     </footer>
 
