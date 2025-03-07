@@ -5,6 +5,7 @@ import markdown
 from werkzeug.utils import secure_filename
 from models import db, Note, Todo, TodoList, TeamMember, MemberTask, Link, UserPreference, MemberProject, MemberNote, MemberDevelopment
 from forms import NoteForm, TodoForm, TodoListForm, TeamMemberForm, MemberTaskForm, LinkForm, UserPreferenceForm, MemberProjectForm, MemberNoteForm, MemberDevelopmentForm
+from PIL import Image
 
 # Create blueprints for different sections of the app
 main = Blueprint('main', __name__)
@@ -34,8 +35,25 @@ def save_profile_picture(form_picture):
     picture_path = os.path.join('static', 'uploads', 'profile_pictures', unique_filename)
     # Ensure directory exists
     os.makedirs(os.path.dirname(picture_path), exist_ok=True)
-    # Save the file
+    
+    # Save the original file first
     form_picture.save(picture_path)
+    
+    try:
+        # Open the image
+        image = Image.open(picture_path)
+        
+        # Define a max size for profile pictures
+        max_size = (400, 400)
+        
+        # Resize if larger than max size while preserving aspect ratio
+        image.thumbnail(max_size)
+        
+        # Save the resized image (overwriting the original)
+        image.save(picture_path)
+    except Exception as e:
+        # Log the error but continue with the original image
+        print(f"Error processing image: {e}")
     
     return picture_path
 

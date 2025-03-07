@@ -19,29 +19,35 @@
     <div class="col-md-4 mb-4">
         <div class="card">
             <div class="card-header">
-                <h5>Details</h5>
+                <h5>Profile</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body text-center">
                 {% if member.profile_picture %}
-                <div class="mb-4 text-center">
+                <div class="mb-4">
                     <img src="{{ url_for('static', filename=member.profile_picture.replace('static/', '')) }}" 
-                         alt="{{ member.name }}" class="img-fluid rounded" style="max-height: 200px;">
+                         alt="{{ member.name }}" class="profile-picture profile-picture-lg">
+                </div>
+                {% else %}
+                <div class="mb-4">
+                    <div class="profile-initial profile-initial-lg mx-auto">
+                        <span>{{ member.name[:1] }}</span>
+                    </div>
                 </div>
                 {% endif %}
                 
                 {% if member.role %}
-                <p><strong>Role:</strong> {{ member.role }}</p>
+                <h5>{{ member.role }}</h5>
                 {% endif %}
                 
-                <p><strong>Added:</strong> {{ member.created_at.strftime('%Y-%m-%d') }}</p>
+                <p class="text-muted">Member since {{ member.created_at.strftime('%Y-%m-%d') }}</p>
                 
-                <div class="mt-3">
-                    <h6>Notes</h6>
-                    <div class="p-3 bg-light rounded">
+                <div class="mt-4">
+                    <h6 class="text-start">About</h6>
+                    <div class="p-3 bg-light rounded text-start">
                         {% if member.notes %}
-                        {{ member.notes|safe }}
+                        {{ member.html_notes|safe }}
                         {% else %}
-                        <p class="text-muted">No notes added yet.</p>
+                        <p class="text-muted">No information added yet.</p>
                         {% endif %}
                     </div>
                 </div>

@@ -91,6 +91,66 @@ body {
     box-shadow: 0 0 0 2px #007bff;
 }
 
+/* Profile picture styles */
+.profile-picture {
+    object-fit: cover;
+    border: 3px solid var(--accent-color, #007bff);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.profile-picture:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.profile-picture-lg {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+}
+
+.profile-picture-md {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+}
+
+.profile-picture-sm {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+}
+
+.profile-initial {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: bold;
+    color: white;
+    background-color: var(--accent-color, #007bff);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-initial-lg {
+    width: 200px;
+    height: 200px;
+    font-size: 5rem;
+}
+
+.profile-initial-md {
+    width: 100px;
+    height: 100px;
+    font-size: 2.5rem;
+}
+
+.profile-initial-sm {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+}
+
 /* Responsive Tweaks */
 @media (max-width: 768px) {
     .card-header {

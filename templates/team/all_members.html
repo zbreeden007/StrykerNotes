@@ -20,11 +20,10 @@
                 <div class="member-select" data-member-id="{{ member.id }}">
                     {% if member.profile_picture %}
                     <img src="{{ url_for('static', filename=member.profile_picture.replace('static/', '')) }}" 
-                         alt="{{ member.name }}" class="rounded-circle mb-2" style="width: 80px; height: 80px; object-fit: cover;">
+                         alt="{{ member.name }}" class="profile-picture profile-picture-md mb-2">
                     {% else %}
-                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto mb-2" 
-                         style="width: 80px; height: 80px;">
-                        <span style="font-size: 2rem;">{{ member.name[:1] }}</span>
+                    <div class="profile-initial profile-initial-md mx-auto mb-2">
+                        <span>{{ member.name[:1] }}</span>
                     </div>
                     {% endif %}
                     <h5>{{ member.name }}</h5>
