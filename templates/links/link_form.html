@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if is_new %}Add Link{% else %}Edit Link{% endif %} - Stryker Notes{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{% if is_new %}Add Link{% else %}Edit Link{% endif %}</h1>
+    
+    {% if not is_new %}
+    <div>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteLinkModal">
+            <i class="fas fa-trash"></i> Delete
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {{ form.csrf_token }}
+            
+            <div class="mb-3">
+                {{ form.title.label(class="form-label") }}
+                {{ form.title(class="form-control", required=true, autofocus=true) }}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.url.label(class="form-label") }}
+                {{ form.url(class="form-control", required=true, placeholder="https://...") }}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.category.label(class="form-label") }}
+                {{ form.category(class="form-control") }}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.description.label(class="form-label") }}
+                {{ form.description(class="form-control", rows=4) }}
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('links.all_links') }}" class="btn btn-secondary">Cancel</a>
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if not is_new %}
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteLinkModal" tabindex="-1" aria-labelledby="deleteLinkModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteLinkModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the link "{{ link.title }}"? This cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('links.delete_link', link_id=link.id) }}" method="post">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
