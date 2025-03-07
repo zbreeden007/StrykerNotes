@@ -240,7 +240,7 @@ def all_members():
                            project_form=project_form,
                            task_form=task_form,
                            note_form=note_form, 
-                           development_form=development_form))
+                           development_form=development_form)
 
 @team.route('/new', methods=['GET', 'POST'])
 def new_member():
