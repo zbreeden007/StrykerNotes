@@ -49,6 +49,9 @@ class TeamMember(db.Model):
     
     # Relationships
     tasks = db.relationship('MemberTask', backref='member', lazy=True, cascade="all, delete-orphan")
+    projects = db.relationship('MemberProject', backref='member', lazy=True, cascade="all, delete-orphan")
+    member_notes = db.relationship('MemberNote', backref='member', lazy=True, cascade="all, delete-orphan")
+    developments = db.relationship('MemberDevelopment', backref='member', lazy=True, cascade="all, delete-orphan")
     
     def __repr__(self):
         return f'<TeamMember {self.name}>'
@@ -63,6 +66,37 @@ class MemberTask(db.Model):
     
     def __repr__(self):
         return f'<MemberTask {self.content}>'
+
+class MemberProject(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    member_id = db.Column(db.Integer, db.ForeignKey('team_member.id'), nullable=False)
+    
+    def __repr__(self):
+        return f'<MemberProject {self.name}>'
+
+class MemberNote(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    member_id = db.Column(db.Integer, db.ForeignKey('team_member.id'), nullable=False)
+    
+    def __repr__(self):
+        return f'<MemberNote {self.title}>'
+
+class MemberDevelopment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    date = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    member_id = db.Column(db.Integer, db.ForeignKey('team_member.id'), nullable=False)
+    
+    def __repr__(self):
+        return f'<MemberDevelopment {self.title}>'
 
 class Link(db.Model):
     id = db.Column(db.Integer, primary_key=True)

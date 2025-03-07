@@ -102,3 +102,46 @@ body {
         margin-top: 10px;
     }
 }
+
+/* Team Member Styles */
+.team-member-card {
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+
+.team-member-card:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.team-member-card.selected {
+    border-color: var(--accent-color, #007bff);
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Card height consistency */
+.member-content .card {
+    min-height: 300px;
+}
+
+.member-content .card-body {
+    overflow-y: auto;
+    max-height: 250px;
+}
+
+/* Card header colors */
+.card-header.bg-primary {
+    background-color: var(--accent-color, #007bff) !important;
+}
+
+/* Section card transitions */
+.member-content .card {
+    transition: transform 0.2s ease;
+}
+
+.member-content .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}

@@ -59,3 +59,19 @@ class UserPreferenceForm(FlaskForm):
     ])
     accent_color = StringField('Accent Color')
     submit = SubmitField('Save Preferences')
+
+class MemberProjectForm(FlaskForm):
+    name = StringField('Project Name', validators=[DataRequired(), Length(max=100)])
+    description = TextAreaField('Description')
+    submit = SubmitField('Save Project')
+
+class MemberNoteForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired(), Length(max=100)])
+    content = TextAreaField('Content')
+    submit = SubmitField('Save Note')
+
+class MemberDevelopmentForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired(), Length(max=100)])
+    description = TextAreaField('Description')
+    date = DateTimeField('Date', format='%Y-%m-%dT%H:%M', validators=[Optional()])
+    submit = SubmitField('Save Development')

@@ -3,8 +3,8 @@ from datetime import datetime
 import os
 import markdown
 from werkzeug.utils import secure_filename
-from models import db, Note, Todo, TodoList, TeamMember, MemberTask, Link, UserPreference
-from forms import NoteForm, TodoForm, TodoListForm, TeamMemberForm, MemberTaskForm, LinkForm, UserPreferenceForm
+from models import db, Note, Todo, TodoList, TeamMember, MemberTask, Link, UserPreference, MemberProject, MemberNote, MemberDevelopment
+from forms import NoteForm, TodoForm, TodoListForm, TeamMemberForm, MemberTaskForm, LinkForm, UserPreferenceForm, MemberProjectForm, MemberNoteForm, MemberDevelopmentForm
 
 # Create blueprints for different sections of the app
 main = Blueprint('main', __name__)
@@ -230,7 +230,17 @@ def delete_list(list_id):
 @team.route('/')
 def all_members():
     members = TeamMember.query.all()
-    return render_template('team/all_members.html', members=members)
+    project_form = MemberProjectForm()
+    task_form = MemberTaskForm()
+    note_form = MemberNoteForm()
+    development_form = MemberDevelopmentForm()
+    
+    return render_template('team/all_members.html', 
+                           members=members, 
+                           project_form=project_form,
+                           task_form=task_form,
+                           note_form=note_form, 
+                           development_form=development_form))
 
 @team.route('/new', methods=['GET', 'POST'])
 def new_member():
@@ -321,6 +331,88 @@ def delete_member(member_id):
     db.session.delete(member)
     db.session.commit()
     flash('Team member deleted successfully!', 'success')
+    return redirect(url_for('team.all_members'))
+
+# Project routes
+@team.route('/<int:member_id>/add_project', methods=['POST'])
+def add_member_project(member_id):
+    member = TeamMember.query.get_or_404(member_id)
+    form = MemberProjectForm()
+    
+    if form.validate_on_submit():
+        project = MemberProject(
+            name=form.name.data,
+            description=form.description.data,
+            member_id=member.id
+        )
+        db.session.add(project)
+        db.session.commit()
+        flash('Project added successfully!', 'success')
+    
+    return redirect(url_for('team.all_members'))
+
+@team.route('/project/<int:project_id>/delete', methods=['POST'])
+def delete_member_project(project_id):
+    project = MemberProject.query.get_or_404(project_id)
+    member_id = project.member_id
+    db.session.delete(project)
+    db.session.commit()
+    flash('Project deleted successfully!', 'success')
+    return redirect(url_for('team.all_members'))
+
+# Note routes
+@team.route('/<int:member_id>/add_note', methods=['POST'])
+def add_member_note(member_id):
+    member = TeamMember.query.get_or_404(member_id)
+    form = MemberNoteForm()
+    
+    if form.validate_on_submit():
+        note = MemberNote(
+            title=form.title.data,
+            content=form.content.data,
+            member_id=member.id
+        )
+        db.session.add(note)
+        db.session.commit()
+        flash('Note added successfully!', 'success')
+    
+    return redirect(url_for('team.all_members'))
+
+@team.route('/note/<int:note_id>/delete', methods=['POST'])
+def delete_member_note(note_id):
+    note = MemberNote.query.get_or_404(note_id)
+    member_id = note.member_id
+    db.session.delete(note)
+    db.session.commit()
+    flash('Note deleted successfully!', 'success')
+    return redirect(url_for('team.all_members'))
+
+# Development routes
+@team.route('/<int:member_id>/add_development', methods=['POST'])
+def add_member_development(member_id):
+    member = TeamMember.query.get_or_404(member_id)
+    form = MemberDevelopmentForm()
+    
+    if form.validate_on_submit():
+        development = MemberDevelopment(
+            title=form.title.data,
+            description=form.description.data,
+            date=form.date.data,
+            member_id=member.id
+        )
+        db.session.add(development)
+        db.session.commit()
+        flash('Development added successfully!', 'success')
+    
+    return redirect(url_for('team.all_members'))
+
+@team.route('/development/<int:development_id>/delete', methods=['POST'])
+def delete_member_development(development_id):
+    development = MemberDevelopment.query.get_or_404(development_id)
+    member_id = development.member_id
+    db.session.delete(development)
+    db.session.commit()
+    flash('Development deleted successfully!', 'success')
     return redirect(url_for('team.all_members'))
 
 # Links routes
