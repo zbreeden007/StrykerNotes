@@ -56,17 +56,18 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Quick Notes</h5>
-                <a href="{{ url_for('notes.new_note') }}?quick=true" class="btn btn-sm btn-primary">
-                    <i class="fas fa-plus"></i> Add
+                <a href="{{ url_for('notes.quick_notes') }}" class="btn btn-sm btn-outline-primary me-2">
+                    <i class="fas fa-list"></i> View All
                 </a>
             </div>
             <div class="card-body">
                 <div class="quick-note-container mb-3">
                     <form id="quickNoteForm" class="mb-2">
                         <div class="mb-3">
-                            <textarea id="quickNoteContent" class="form-control" rows="3" placeholder="Type a quick note..."></textarea>
+                            <label for="quickNoteContent" class="form-label">Add a quick note:</label>
+                            <textarea id="quickNoteContent" class="form-control" rows="3" placeholder="Type your note here..."></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                        <button type="submit" class="btn btn-primary btn-sm">Save Note</button>
                     </form>
                 </div>
                 
@@ -75,10 +76,9 @@
                     {% for note in recent_notes %}
                     <a href="{{ url_for('notes.view_note', note_id=note.id) }}" class="list-group-item list-group-item-action">
                         <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1">{{ note.title }}</h6>
-                            <small>{{ note.updated_at.strftime('%m/%d/%Y') }}</small>
+                            <small class="text-muted">{{ note.updated_at.strftime('%m/%d/%Y %H:%M') }}</small>
                         </div>
-                        <p class="mb-1 text-truncate">{{ note.content }}</p>
+                        <p class="mb-1">{{ note.content|truncate(100) }}</p>
                     </a>
                     {% else %}
                     <div class="list-group-item">No notes yet.</div>
@@ -109,7 +109,7 @@
                         </h2>
                         <div id="collapse{{ note.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading{{ note.id }}" data-bs-parent="#permanentNotesAccordion">
                             <div class="accordion-body">
-                                {{ note.content|safe }}
+                                {{ note.html_content|safe }}
                                 <div class="mt-2">
                                     <a href="{{ url_for('notes.edit_note', note_id=note.id) }}" class="btn btn-sm btn-outline-primary">
                                         <i class="fas fa-edit"></i> Edit
@@ -242,7 +242,6 @@
                 type: "POST",
                 contentType: "application/json",
                 data: JSON.stringify({
-                    title: "Quick Note - " + new Date().toLocaleString(),
                     content: content,
                     is_quick_note: true
                 }),
