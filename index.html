@@ -51,33 +51,40 @@
 {% endif %}
 
 <div class="row">
-    <!-- Left Column: To-Do List Section -->
+    <!-- Left Column: Enhanced To-Do List Section -->
     <div class="col-md-6">
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">To-Do List</h5>
-                <a href="{{ url_for('todos.all_todos') }}" class="btn btn-sm btn-primary">
-                    <i class="fas fa-list"></i> View All
-                </a>
+                <div>
+                    <span class="badge bg-success">
+                        {{ todos|selectattr('completed', 'equalto', true)|list|length }}/{{ todos|length }} Completed
+                    </span>
+                </div>
             </div>
             <div class="card-body">
                 <!-- To-Do Form directly on dashboard -->
                 <form action="{{ url_for('todos.add_todo') }}" method="post" class="mb-3">
                     {{ todo_form.csrf_token }}
                     <div class="row">
-                        <div class="col-md-6 mb-2">
+                        <div class="col-md-9 mb-2">
                             {{ todo_form.content(class="form-control", required=true, placeholder="New task...") }}
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            {{ todo_form.priority(class="form-select") }}
                         </div>
                         <div class="col-md-3 mb-2">
                             {{ todo_form.submit(class="btn btn-primary w-100") }}
                         </div>
-                        <div class="col-12">
-                            <div class="d-flex align-items-center">
-                                <i class="far fa-calendar-alt me-2"></i>
-                                {{ todo_form.due_date(class="form-control form-control-sm", type="datetime-local") }}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="far fa-calendar-alt"></i></span>
+                                {{ todo_form.due_date(class="form-control", type="datetime-local", placeholder="Due date (optional)") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-flag"></i></span>
+                                {{ todo_form.priority(class="form-select") }}
                             </div>
                         </div>
                     </div>
@@ -92,6 +99,11 @@
                             <button type="button" class="btn btn-outline-secondary filter-todo" data-filter="active">Active</button>
                             <button type="button" class="btn btn-outline-secondary filter-todo" data-filter="completed">Completed</button>
                         </div>
+                        <form id="clearCompletedForm" action="{{ url_for('todos.clear_completed') }}" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-trash me-1"></i>Clear Completed
+                            </button>
+                        </form>
                     </div>
                     
                     <ul class="list-group" id="dashboard-todo-list">
@@ -105,36 +117,36 @@
                                            {% if todo.completed %}checked{% endif %}
                                            onclick="toggleTodoComplete({{ todo.id }})" 
                                            id="todo-check-{{ todo.id }}">
-                                    <label class="form-check-label" for="todo-check-{{ todo.id }}">
+                                    <label class="form-check-label {% if todo.completed %}text-muted{% endif %}" for="todo-check-{{ todo.id }}">
                                         {{ todo.content }}
                                     </label>
-                                </div>
-                                <div class="d-flex align-items-center">
+                                    
                                     {% if todo.due_date %}
-                                    <small class="text-muted me-2">
+                                    <small class="text-muted ms-2">
+                                        <i class="far fa-calendar-alt"></i> 
                                         {{ todo.due_date.strftime('%m/%d/%Y') }}
+                                        
+                                        {% if not todo.completed and todo.due_date < now %}
+                                        <span class="badge bg-danger ms-1">Overdue</span>
+                                        {% endif %}
                                     </small>
                                     {% endif %}
                                     
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                            <i class="fas fa-ellipsis-v"></i>
+                                    {% if todo.priority > 0 %}
+                                    <span class="badge {% if todo.priority == 2 %}bg-danger{% else %}bg-warning text-dark{% endif %} ms-1">
+                                        {% if todo.priority == 2 %}High{% else %}Medium{% endif %}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-bs-toggle="modal" data-bs-target="#editTodoModal{{ todo.id }}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <form action="{{ url_for('todos.delete_todo', todo_id=todo.id) }}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
                                         </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editTodoModal{{ todo.id }}">
-                                                    <i class="fas fa-edit me-1"></i> Edit
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <form action="{{ url_for('todos.delete_todo', todo_id=todo.id) }}" method="post">
-                                                    <button type="submit" class="dropdown-item text-danger">
-                                                        <i class="fas fa-trash me-1"></i> Delete
-                                                    </button>
-                                                </form>
-                                            </li>
-                                        </ul>
-                                    </div>
+                                    </form>
                                 </div>
                             </div>
                         </li>
@@ -307,6 +319,44 @@
                 });
             }
         });
+        
+        // Update label styling when task is completed
+        $('.todo-checkbox').change(function() {
+            const isChecked = $(this).prop('checked');
+            if (isChecked) {
+                $(this).siblings('label').addClass('text-muted');
+            } else {
+                $(this).siblings('label').removeClass('text-muted');
+            }
+        });
     });
+    
+    // AJAX function for toggling task completion status
+    function toggleTodoComplete(todoId) {
+        $.ajax({
+            url: `/todos/todo/${todoId}/toggle`,
+            type: 'POST',
+            success: function(response) {
+                if (response.status === 'success') {
+                    const todoItem = $(`#todo-${todoId}`);
+                    const label = todoItem.find('label.form-check-label');
+                    
+                    if (response.completed) {
+                        todoItem.addClass('completed');
+                        todoItem.data('completed', true);
+                        label.addClass('text-muted');
+                    } else {
+                        todoItem.removeClass('completed');
+                        todoItem.data('completed', false);
+                        label.removeClass('text-muted');
+                    }
+                }
+            },
+            error: function(error) {
+                console.error('Error toggling todo item:', error);
+                alert('Failed to update task status. Please try again.');
+            }
+        });
+    }
 </script>
 {% endblock %}

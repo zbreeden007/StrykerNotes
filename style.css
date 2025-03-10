@@ -28,6 +28,8 @@ body {
 /* Todo List Styles */
 .todo-item {
     transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
 }
 
 .todo-item.completed {
@@ -49,6 +51,30 @@ body {
 
 .priority-low {
     border-left: 4px solid #17a2b8;
+}
+
+/* Enhanced Todo Styles */
+.todo-list {
+    margin-bottom: 20px;
+}
+
+#dashboard-todo-list {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.form-check-label {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.todo-checkbox {
+    cursor: pointer;
+    margin-right: 8px;
+}
+
+.todo-item .badge {
+    font-size: 0.7rem;
 }
 
 /* Team Member Card Styles */

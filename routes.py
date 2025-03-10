@@ -79,10 +79,7 @@ def index():
     recent_notes = Note.query.order_by(Note.updated_at.desc()).limit(5).all()
     permanent_notes = Note.query.filter_by(is_permanent=True).all()
     
-    # Get or create the default to-do list
-    default_todolist = ensure_default_todolist()
-    
-    # Get all todos (now simplified)
+    # Get all todos
     todos = Todo.query.order_by(Todo.priority.desc(), Todo.due_date.asc()).all()
     
     # Initialize the todo form for direct editing on dashboard
@@ -95,13 +92,17 @@ def index():
     for note in recent_notes + permanent_notes:
         note.html_content = convert_markdown_to_html(note.content)
     
+    # Pass current time for due date comparison
+    now = datetime.utcnow()
+    
     return render_template('index.html', 
                           recent_notes=recent_notes,
                           permanent_notes=permanent_notes,
                           todos=todos,
                           todo_form=todo_form,
                           team_members=team_members,
-                          favorite_links=favorite_links)
+                          favorite_links=favorite_links,
+                          now=now)
 
 # Notes routes
 @notes.route('/')
@@ -197,14 +198,7 @@ def save_note_ajax():
         'updated_at': note.updated_at.strftime('%Y-%m-%d %H:%M:%S')
     })
 
-# Todo routes - Simplified for a single list
-@todos.route('/')
-def all_todos():
-    todos_list = Todo.query.order_by(Todo.priority.desc(), Todo.due_date.asc()).all()
-    todo_form = TodoForm()
-    now = datetime.utcnow()  # Pass current time for due date comparison
-    return render_template('todos/todos.html', todos=todos_list, form=todo_form, now=now)
-
+# Todo routes - Simplified for dashboard-only management
 @todos.route('/add', methods=['POST'])
 def add_todo():
     form = TodoForm()
@@ -219,10 +213,6 @@ def add_todo():
         db.session.commit()
         flash('Task added successfully!', 'success')
     
-    # Check where the request came from
-    referer = request.headers.get('Referer', '')
-    if 'todos' in referer:
-        return redirect(url_for('todos.all_todos'))
     return redirect(url_for('main.index'))
 
 @todos.route('/todo/<int:todo_id>/toggle', methods=['POST'])
@@ -237,11 +227,7 @@ def delete_todo(todo_id):
     todo = Todo.query.get_or_404(todo_id)
     db.session.delete(todo)
     db.session.commit()
-    
-    # Check where the request came from
-    referer = request.headers.get('Referer', '')
-    if 'todos' in referer:
-        return redirect(url_for('todos.all_todos'))
+    flash('Task deleted successfully!', 'success')
     return redirect(url_for('main.index'))
 
 @todos.route('/todo/<int:todo_id>/edit', methods=['POST'])
@@ -259,14 +245,21 @@ def edit_todo(todo_id):
             todo.due_date = datetime.strptime(due_date, '%Y-%m-%dT%H:%M')
         except ValueError:
             pass  # Keep the current value if parsing fails
+    else:
+        # If empty string is passed, clear the due date
+        todo.due_date = None
     
     db.session.commit()
     flash('Task updated successfully!', 'success')
-    
-    # Check where the request came from
-    referer = request.headers.get('Referer', '')
-    if 'todos' in referer:
-        return redirect(url_for('todos.all_todos'))
+    return redirect(url_for('main.index'))
+
+@todos.route('/clear-completed', methods=['POST'])
+def clear_completed():
+    completed_todos = Todo.query.filter_by(completed=True).all()
+    for todo in completed_todos:
+        db.session.delete(todo)
+    db.session.commit()
+    flash('Completed tasks have been cleared.', 'success')
     return redirect(url_for('main.index'))
 
 # Team member routes
