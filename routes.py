@@ -79,7 +79,7 @@ def index():
     permanent_notes = Note.query.filter_by(is_permanent=True).all()
     
     # Get all todos
-    todos = Todo.query.order_by(Todo.priority.desc(), Todo.due_date.asc()).all()
+    todos = Todo.query.order_by(Todo.order.asc(), Todo.priority.desc(), Todo.due_date.asc()).all()
     
     # Initialize the todo form for direct editing on dashboard
     todo_form = TodoForm()
@@ -109,10 +109,14 @@ def add_todo():
     form = TodoForm()
     
     if form.validate_on_submit():
+        # Get the highest order value to add new todos at the end
+        highest_order = db.session.query(db.func.max(Todo.order)).scalar() or -1
+        
         todo = Todo(
             content=form.content.data,
             due_date=form.due_date.data,
-            priority=form.priority.data
+            priority=form.priority.data,
+            order=highest_order + 1  # Set order to be after all existing todos
         )
         db.session.add(todo)
         db.session.commit()
@@ -166,6 +170,19 @@ def clear_completed():
     db.session.commit()
     flash('Completed tasks have been cleared.', 'success')
     return redirect(url_for('main.index'))
+
+@main.route('/todo/reorder', methods=['POST'])
+def reorder_todos():
+    data = request.json
+    todo_ids = data.get('todoIds', [])
+    
+    # Update the order of todos in the database
+    for i, todo_id in enumerate(todo_ids):
+        todo = Todo.query.get_or_404(int(todo_id))
+        todo.order = i
+    
+    db.session.commit()
+    return jsonify({'status': 'success'})
 
 # Notes routes
 @notes.route('/')

@@ -23,6 +23,7 @@ class Todo(db.Model):
     completed = db.Column(db.Boolean, default=False)
     due_date = db.Column(db.DateTime, nullable=True)
     priority = db.Column(db.Integer, default=0)  # 0 = low, 1 = medium, 2 = high
+    order = db.Column(db.Integer, default=0)  # New field for drag and drop ordering
     
     def __repr__(self):
         return f'<Todo {self.content}>'
