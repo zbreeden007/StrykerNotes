@@ -6,7 +6,6 @@ from wtforms.validators import DataRequired, Length, Optional
 class NoteForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired(), Length(max=100)])
     content = TextAreaField('Content')
-    is_quick_note = BooleanField('Quick Note')
     is_permanent = BooleanField('Keep Permanently')
     category = StringField('Category', validators=[Length(max=50)])
     submit = SubmitField('Save Note')
@@ -40,7 +39,7 @@ class LinkForm(FlaskForm):
     url = StringField('URL', validators=[DataRequired(), Length(max=500)])
     description = TextAreaField('Description')
     category = StringField('Category', validators=[Length(max=50)])
-    is_favorite = BooleanField('Add to Favorites')  # New field for favorite links
+    is_favorite = BooleanField('Add to Favorites')
     submit = SubmitField('Save Link')
 
 class UserPreferenceForm(FlaskForm):

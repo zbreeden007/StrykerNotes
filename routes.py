@@ -25,22 +25,6 @@ def inject_preferences():
         db.session.commit()
     return dict(preferences=preferences)
 
-# Helper function to generate a title from content
-def generate_title_from_content(content, max_length=50):
-    # Get the first line, or first few characters
-    if '\n' in content:
-        first_line = content.split('\n')[0].strip()
-    else:
-        first_line = content.strip()
-    
-    # Truncate if needed and add ellipsis
-    if len(first_line) > max_length:
-        return first_line[:max_length] + '...'
-    elif not first_line:  # If empty or just whitespace
-        return "Quick Note"
-    else:
-        return first_line
-
 # Function to save profile pictures
 def save_profile_picture(form_picture):
     # Generate a secure filename
@@ -108,28 +92,15 @@ def all_notes():
         note.html_content = convert_markdown_to_html(note.content)
     return render_template('notes/all_notes.html', notes=notes_list)
 
-@notes.route('/quick')
-def quick_notes():
-    quick_notes = Note.query.filter_by(is_quick_note=True).order_by(Note.updated_at.desc()).all()
-    for note in quick_notes:
-        note.html_content = convert_markdown_to_html(note.content)
-    return render_template('notes/quick_notes.html', notes=quick_notes)
-
 @notes.route('/new', methods=['GET', 'POST'])
 def new_note():
     form = NoteForm()
-    is_quick = request.args.get('quick', 'false').lower() == 'true'
+    is_permanent = request.args.get('permanent', 'false').lower() == 'true'
     
     if form.validate_on_submit():
-        # If it's a quick note and no title is provided, generate one from content
-        title = form.title.data
-        if is_quick and not title:
-            title = generate_title_from_content(form.content.data)
-            
         note = Note(
-            title=title,
+            title=form.title.data,
             content=form.content.data,
-            is_quick_note=form.is_quick_note.data,
             is_permanent=form.is_permanent.data,
             category=form.category.data
         )
@@ -138,35 +109,27 @@ def new_note():
         flash('Note created successfully!', 'success')
         return redirect(url_for('notes.view_note', note_id=note.id))
     
-    # Pre-select quick note checkbox if query param is set
-    if is_quick:
-        form.is_quick_note.data = True
+    # Pre-select permanent note checkbox if query param is set
+    if is_permanent:
+        form.is_permanent.data = True
     
-    return render_template('notes/note.html', form=form, is_new=True, is_quick=is_quick)
+    return render_template('notes/note.html', form=form, is_new=True)
 
 @notes.route('/<int:note_id>', methods=['GET'])
 def view_note(note_id):
     note = Note.query.get_or_404(note_id)
     form = NoteForm(obj=note)
     html_content = convert_markdown_to_html(note.content)
-    is_quick = note.is_quick_note
-    return render_template('notes/note.html', note=note, form=form, is_new=False, html_content=html_content, is_quick=is_quick)
+    return render_template('notes/note.html', note=note, form=form, is_new=False, html_content=html_content)
 
 @notes.route('/<int:note_id>/edit', methods=['GET', 'POST'])
 def edit_note(note_id):
     note = Note.query.get_or_404(note_id)
     form = NoteForm(obj=note)
-    is_quick = note.is_quick_note
     
     if form.validate_on_submit():
-        # If it's a quick note and title is empty, generate one
-        title = form.title.data
-        if is_quick and not title:
-            title = generate_title_from_content(form.content.data)
-            
-        note.title = title
+        note.title = form.title.data
         note.content = form.content.data
-        note.is_quick_note = form.is_quick_note.data
         note.is_permanent = form.is_permanent.data
         note.category = form.category.data
         note.updated_at = datetime.utcnow()
@@ -175,7 +138,7 @@ def edit_note(note_id):
         return redirect(url_for('notes.view_note', note_id=note.id))
     
     html_content = convert_markdown_to_html(note.content)
-    return render_template('notes/note.html', note=note, form=form, is_new=False, html_content=html_content, is_quick=is_quick)
+    return render_template('notes/note.html', note=note, form=form, is_new=False, html_content=html_content)
 
 @notes.route('/<int:note_id>/delete', methods=['POST'])
 def delete_note(note_id):
@@ -189,13 +152,8 @@ def delete_note(note_id):
 def save_note_ajax():
     data = request.json
     note_id = data.get('id')
-    content = data.get('content', '')
-    is_quick_note = data.get('is_quick_note', False)
-    
-    # Generate title for quick notes if not provided
     title = data.get('title')
-    if is_quick_note and not title:
-        title = generate_title_from_content(content)
+    content = data.get('content', '')
     
     if note_id:
         # Update existing note
@@ -208,7 +166,6 @@ def save_note_ajax():
         note = Note(
             title=title or 'Untitled',
             content=content,
-            is_quick_note=is_quick_note,
             is_permanent=data.get('is_permanent', False),
             category=data.get('category', None)
         )

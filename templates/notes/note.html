@@ -10,7 +10,7 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>{% if is_new %}New {% if is_quick %}Quick {% endif %}Note{% else %}Edit Note{% endif %}</h1>
+    <h1>{% if is_new %}New Note{% else %}Edit Note{% endif %}</h1>
     
     {% if not is_new %}
     <div>
@@ -26,37 +26,24 @@
         <form method="post" id="noteForm">
             {{ form.csrf_token }}
             
-            {% if not is_quick %}
             <div class="mb-3">
                 {{ form.title.label(class="form-label") }}
                 {{ form.title(class="form-control", required=true, autofocus=true) }}
             </div>
-            {% else %}
-                <!-- Hidden title field for quick notes -->
-                {{ form.title(type="hidden") }}
-            {% endif %}
             
             <div class="mb-3">
-                {% if is_quick %}
                 {{ form.content.label(class="form-label") }}
-                {% endif %}
-                {{ form.content(class="form-control", rows=10, id="editor", autofocus=is_quick) }}
+                {{ form.content(class="form-control", rows=10, id="editor") }}
             </div>
             
             <div class="row mb-3">
-                <div class="col-md-4">
-                    <div class="form-check">
-                        {{ form.is_quick_note(class="form-check-input", onchange="toggleQuickNoteMode(this.checked)") }}
-                        {{ form.is_quick_note.label(class="form-check-label") }}
-                    </div>
-                </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="form-check">
                         {{ form.is_permanent(class="form-check-input") }}
                         {{ form.is_permanent.label(class="form-check-label") }}
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="mb-3">
                         {{ form.category.label(class="form-label") }}
                         {{ form.category(class="form-control") }}
@@ -98,18 +85,6 @@
 
 {% block extra_js %}
 <script>
-    // Function to toggle title field visibility based on quick note status
-    function toggleQuickNoteMode(isQuickNote) {
-        const titleField = document.getElementById('title');
-        const titleGroup = titleField.closest('.mb-3');
-        
-        if (isQuickNote) {
-            titleGroup.style.display = 'none';
-        } else {
-            titleGroup.style.display = 'block';
-        }
-    }
-    
     // Initialize SimpleMDE
     var simplemde = new SimpleMDE({ 
         element: document.getElementById("editor"),
@@ -121,39 +96,22 @@
         }
     });
     
-    // Initialize page based on URL parameters and form state
+    // Initialize page based on URL parameters
     $(document).ready(function() {
-        // Handle quick note mode toggle
-        const isQuickNote = $('#is_quick_note').prop('checked');
-        toggleQuickNoteMode(isQuickNote);
-        
-        // Set initial state based on URL parameters
         const urlParams = new URLSearchParams(window.location.search);
-        
-        if (urlParams.has('quick')) {
-            $('#is_quick_note').prop('checked', true);
-            toggleQuickNoteMode(true);
-        }
         
         if (urlParams.has('permanent')) {
             $('#is_permanent').prop('checked', true);
         }
-        
-        // Listen for changes in the quick note checkbox
-        $('#is_quick_note').on('change', function() {
-            toggleQuickNoteMode(this.checked);
-        });
     });
     
     // Manual save function for AJAX saving
     function saveNote() {
         {% if not is_new %}
-        const isQuickNote = $('#is_quick_note').prop('checked');
         const formData = {
             id: {{ note.id }},
             title: $('#title').val(),
-            content: simplemde.value(),
-            is_quick_note: isQuickNote
+            content: simplemde.value()
         };
         
         $.ajax({

@@ -13,10 +13,10 @@
 <div class="card">
     <div class="card-body">
         <div class="row mb-3">
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <input type="text" id="searchInput" class="form-control" placeholder="Search notes...">
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <select id="categoryFilter" class="form-select">
                     <option value="">All Categories</option>
                     {% set categories = notes|map(attribute='category')|unique|reject('none')|list %}
@@ -25,10 +25,9 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <select id="typeFilter" class="form-select">
-                    <option value="">All Types</option>
-                    <option value="quick">Quick Notes</option>
+                    <option value="">All Notes</option>
                     <option value="permanent">Permanent Notes</option>
                     <option value="regular">Regular Notes</option>
                 </select>
@@ -51,19 +50,15 @@
                     <tr class="note-row"
                         data-title="{{ note.title|lower }}"
                         data-category="{{ note.category|lower if note.category else '' }}"
-                        data-type="{% if note.is_quick_note %}quick{% elif note.is_permanent %}permanent{% else %}regular{% endif %}">
+                        data-type="{% if note.is_permanent %}permanent{% else %}regular{% endif %}">
                         <td>
                             <a href="{{ url_for('notes.view_note', note_id=note.id) }}">{{ note.title }}</a>
                         </td>
                         <td>{{ note.category }}</td>
                         <td>
-                            {% if note.is_quick_note %}
-                            <span class="badge bg-info text-dark">Quick</span>
-                            {% endif %}
                             {% if note.is_permanent %}
                             <span class="badge bg-warning text-dark">Permanent</span>
-                            {% endif %}
-                            {% if not note.is_quick_note and not note.is_permanent %}
+                            {% else %}
                             <span class="badge bg-secondary">Regular</span>
                             {% endif %}
                         </td>
