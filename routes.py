@@ -221,4 +221,345 @@ def save_note_ajax():
         'updated_at': note.updated_at.strftime('%Y-%m-%d %H:%M:%S')
     })
 
-# The rest of the routes.py file remains the same...
+# Todo routes
+@todos.route('/')
+def all_lists():
+    lists = TodoList.query.all()
+    return render_template('todos/todos.html', lists=lists)
+
+@todos.route('/list/new', methods=['GET', 'POST'])
+def new_list():
+    form = TodoListForm()
+    if form.validate_on_submit():
+        todo_list = TodoList(name=form.name.data)
+        db.session.add(todo_list)
+        db.session.commit()
+        flash('Todo list created successfully!', 'success')
+        return redirect(url_for('todos.view_list', list_id=todo_list.id))
+    
+    return render_template('todos/new_list.html', form=form)
+
+@todos.route('/list/<int:list_id>', methods=['GET'])
+def view_list(list_id):
+    todo_list = TodoList.query.get_or_404(list_id)
+    todo_form = TodoForm()
+    now = datetime.utcnow()  # Pass current time for due date comparison
+    return render_template('todos/view_list.html', todo_list=todo_list, form=todo_form, now=now)
+
+@todos.route('/list/<int:list_id>/add', methods=['POST'])
+def add_todo(list_id):
+    todo_list = TodoList.query.get_or_404(list_id)
+    form = TodoForm()
+    
+    if form.validate_on_submit():
+        todo = Todo(
+            content=form.content.data,
+            due_date=form.due_date.data,
+            priority=form.priority.data,
+            list_id=todo_list.id
+        )
+        db.session.add(todo)
+        db.session.commit()
+        flash('Task added successfully!', 'success')
+    
+    return redirect(url_for('todos.view_list', list_id=list_id))
+
+@todos.route('/todo/<int:todo_id>/toggle', methods=['POST'])
+def toggle_todo(todo_id):
+    todo = Todo.query.get_or_404(todo_id)
+    todo.completed = not todo.completed
+    db.session.commit()
+    return jsonify({'status': 'success', 'completed': todo.completed})
+
+@todos.route('/todo/<int:todo_id>/delete', methods=['POST'])
+def delete_todo(todo_id):
+    todo = Todo.query.get_or_404(todo_id)
+    list_id = todo.list_id
+    db.session.delete(todo)
+    db.session.commit()
+    return redirect(url_for('todos.view_list', list_id=list_id))
+
+@todos.route('/list/<int:list_id>/delete', methods=['POST'])
+def delete_list(list_id):
+    todo_list = TodoList.query.get_or_404(list_id)
+    db.session.delete(todo_list)
+    db.session.commit()
+    flash('Todo list deleted successfully!', 'success')
+    return redirect(url_for('todos.all_lists'))
+
+# Team member routes
+@team.route('/')
+def all_members():
+    members = TeamMember.query.all()
+    project_form = MemberProjectForm()
+    task_form = MemberTaskForm()
+    note_form = MemberNoteForm()
+    development_form = MemberDevelopmentForm()
+    
+    return render_template('team/all_members.html', 
+                           members=members, 
+                           project_form=project_form,
+                           task_form=task_form,
+                           note_form=note_form, 
+                           development_form=development_form)
+
+@team.route('/new', methods=['GET', 'POST'])
+def new_member():
+    form = TeamMemberForm()
+    if form.validate_on_submit():
+        profile_pic = None
+        if form.profile_picture.data:
+            profile_pic = save_profile_picture(form.profile_picture.data)
+            
+        member = TeamMember(
+            name=form.name.data,
+            role=form.role.data,
+            notes=form.notes.data,
+            profile_picture=profile_pic
+        )
+        db.session.add(member)
+        db.session.commit()
+        flash('Team member added successfully!', 'success')
+        return redirect(url_for('team.view_member', member_id=member.id))
+    
+    return render_template('team/member_form.html', form=form, is_new=True)
+
+@team.route('/<int:member_id>', methods=['GET'])
+def view_member(member_id):
+    member = TeamMember.query.get_or_404(member_id)
+    task_form = MemberTaskForm()
+    
+    # Convert markdown to HTML for member notes
+    member.html_notes = convert_markdown_to_html(member.notes)
+    
+    return render_template('team/member.html', member=member, form=task_form)
+
+@team.route('/<int:member_id>/edit', methods=['GET', 'POST'])
+def edit_member(member_id):
+    member = TeamMember.query.get_or_404(member_id)
+    form = TeamMemberForm(obj=member)
+    
+    if form.validate_on_submit():
+        member.name = form.name.data
+        member.role = form.role.data
+        member.notes = form.notes.data
+        
+        if form.profile_picture.data:
+            member.profile_picture = save_profile_picture(form.profile_picture.data)
+            
+        member.updated_at = datetime.utcnow()
+        db.session.commit()
+        flash('Team member updated successfully!', 'success')
+        return redirect(url_for('team.view_member', member_id=member.id))
+    
+    return render_template('team/member_form.html', form=form, member=member, is_new=False)
+
+@team.route('/<int:member_id>/add_task', methods=['POST'])
+def add_member_task(member_id):
+    member = TeamMember.query.get_or_404(member_id)
+    form = MemberTaskForm()
+    
+    if form.validate_on_submit():
+        task = MemberTask(
+            content=form.content.data,
+            due_date=form.due_date.data,
+            member_id=member.id
+        )
+        db.session.add(task)
+        db.session.commit()
+        flash('Task added successfully!', 'success')
+    
+    return redirect(url_for('team.view_member', member_id=member_id))
+
+@team.route('/task/<int:task_id>/toggle', methods=['POST'])
+def toggle_member_task(task_id):
+    task = MemberTask.query.get_or_404(task_id)
+    task.completed = not task.completed
+    db.session.commit()
+    return jsonify({'status': 'success', 'completed': task.completed})
+
+@team.route('/task/<int:task_id>/delete', methods=['POST'])
+def delete_member_task(task_id):
+    task = MemberTask.query.get_or_404(task_id)
+    member_id = task.member_id
+    db.session.delete(task)
+    db.session.commit()
+    return redirect(url_for('team.view_member', member_id=member_id))
+
+@team.route('/<int:member_id>/delete', methods=['POST'])
+def delete_member(member_id):
+    member = TeamMember.query.get_or_404(member_id)
+    db.session.delete(member)
+    db.session.commit()
+    flash('Team member deleted successfully!', 'success')
+    return redirect(url_for('team.all_members'))
+
+# Project routes
+@team.route('/<int:member_id>/add_project', methods=['POST'])
+def add_member_project(member_id):
+    member = TeamMember.query.get_or_404(member_id)
+    form = MemberProjectForm()
+    
+    if form.validate_on_submit():
+        project = MemberProject(
+            name=form.name.data,
+            description=form.description.data,
+            member_id=member.id
+        )
+        db.session.add(project)
+        db.session.commit()
+        flash('Project added successfully!', 'success')
+    
+    return redirect(url_for('team.all_members'))
+
+@team.route('/project/<int:project_id>/delete', methods=['POST'])
+def delete_member_project(project_id):
+    project = MemberProject.query.get_or_404(project_id)
+    member_id = project.member_id
+    db.session.delete(project)
+    db.session.commit()
+    flash('Project deleted successfully!', 'success')
+    return redirect(url_for('team.all_members'))
+
+# Note routes
+@team.route('/<int:member_id>/add_note', methods=['POST'])
+def add_member_note(member_id):
+    member = TeamMember.query.get_or_404(member_id)
+    form = MemberNoteForm()
+    
+    if form.validate_on_submit():
+        note = MemberNote(
+            title=form.title.data,
+            content=form.content.data,
+            member_id=member.id
+        )
+        db.session.add(note)
+        db.session.commit()
+        flash('Note added successfully!', 'success')
+    
+    return redirect(url_for('team.all_members'))
+
+@team.route('/note/<int:note_id>/delete', methods=['POST'])
+def delete_member_note(note_id):
+    note = MemberNote.query.get_or_404(note_id)
+    member_id = note.member_id
+    db.session.delete(note)
+    db.session.commit()
+    flash('Note deleted successfully!', 'success')
+    return redirect(url_for('team.all_members'))
+
+# Development routes
+@team.route('/<int:member_id>/add_development', methods=['POST'])
+def add_member_development(member_id):
+    member = TeamMember.query.get_or_404(member_id)
+    form = MemberDevelopmentForm()
+    
+    if form.validate_on_submit():
+        development = MemberDevelopment(
+            title=form.title.data,
+            description=form.description.data,
+            date=form.date.data,
+            member_id=member.id
+        )
+        db.session.add(development)
+        db.session.commit()
+        flash('Development added successfully!', 'success')
+    
+    return redirect(url_for('team.all_members'))
+
+@team.route('/development/<int:development_id>/delete', methods=['POST'])
+def delete_member_development(development_id):
+    development = MemberDevelopment.query.get_or_404(development_id)
+    member_id = development.member_id
+    db.session.delete(development)
+    db.session.commit()
+    flash('Development deleted successfully!', 'success')
+    return redirect(url_for('team.all_members'))
+
+# Links routes
+@links.route('/')
+def all_links():
+    links_list = Link.query.order_by(Link.title).all()
+    return render_template('links/all_links.html', links=links_list)
+
+@links.route('/new', methods=['GET', 'POST'])
+def new_link():
+    form = LinkForm()
+    if form.validate_on_submit():
+        link = Link(
+            title=form.title.data,
+            url=form.url.data,
+            description=form.description.data,
+            category=form.category.data,
+            is_favorite=form.is_favorite.data
+        )
+        db.session.add(link)
+        db.session.commit()
+        flash('Link added successfully!', 'success')
+        return redirect(url_for('links.all_links'))
+    
+    return render_template('links/link_form.html', form=form, is_new=True)
+
+@links.route('/<int:link_id>/edit', methods=['GET', 'POST'])
+def edit_link(link_id):
+    link = Link.query.get_or_404(link_id)
+    form = LinkForm(obj=link)
+    
+    if form.validate_on_submit():
+        link.title = form.title.data
+        link.url = form.url.data
+        link.description = form.description.data
+        link.category = form.category.data
+        link.is_favorite = form.is_favorite.data
+        db.session.commit()
+        flash('Link updated successfully!', 'success')
+        return redirect(url_for('links.all_links'))
+    
+    return render_template('links/link_form.html', form=form, link=link, is_new=False)
+
+@links.route('/<int:link_id>/delete', methods=['POST'])
+def delete_link(link_id):
+    link = Link.query.get_or_404(link_id)
+    db.session.delete(link)
+    db.session.commit()
+    flash('Link deleted successfully!', 'success')
+    return redirect(url_for('links.all_links'))
+
+# New route for toggling favorite status
+@links.route('/<int:link_id>/toggle_favorite', methods=['POST'])
+def toggle_favorite(link_id):
+    link = Link.query.get_or_404(link_id)
+    link.is_favorite = not link.is_favorite
+    db.session.commit()
+    
+    # Check if we should return to the dashboard or links page
+    referer = request.headers.get('Referer')
+    if referer and 'links' in referer:
+        return redirect(url_for('links.all_links'))
+    return redirect(url_for('main.index'))
+
+# Settings routes
+@settings.route('/', methods=['GET', 'POST'])
+def preferences():
+    preferences = UserPreference.query.first()
+    form = UserPreferenceForm(obj=preferences)
+    
+    if form.validate_on_submit():
+        preferences.theme = form.theme.data
+        preferences.font_family = form.font_family.data
+        preferences.font_size = form.font_size.data
+        preferences.accent_color = form.accent_color.data
+        db.session.commit()
+        flash('Preferences updated successfully!', 'success')
+        return redirect(url_for('main.index'))
+    
+    return render_template('settings/preferences.html', form=form)
+
+# Register all blueprints
+def register_blueprints(app):
+    app.register_blueprint(main)
+    app.register_blueprint(notes)
+    app.register_blueprint(todos)
+    app.register_blueprint(team)
+    app.register_blueprint(links)
+    app.register_blueprint(settings)
