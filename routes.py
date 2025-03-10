@@ -103,6 +103,70 @@ def index():
                           favorite_links=favorite_links,
                           now=now)
 
+# Todo routes - Dashboard-only management
+@main.route('/todo/add', methods=['POST'])
+def add_todo():
+    form = TodoForm()
+    
+    if form.validate_on_submit():
+        todo = Todo(
+            content=form.content.data,
+            due_date=form.due_date.data,
+            priority=form.priority.data
+        )
+        db.session.add(todo)
+        db.session.commit()
+        flash('Task added successfully!', 'success')
+    
+    return redirect(url_for('main.index'))
+
+@main.route('/todo/<int:todo_id>/toggle', methods=['POST'])
+def toggle_todo(todo_id):
+    todo = Todo.query.get_or_404(todo_id)
+    todo.completed = not todo.completed
+    db.session.commit()
+    return jsonify({'status': 'success', 'completed': todo.completed})
+
+@main.route('/todo/<int:todo_id>/delete', methods=['POST'])
+def delete_todo(todo_id):
+    todo = Todo.query.get_or_404(todo_id)
+    db.session.delete(todo)
+    db.session.commit()
+    flash('Task deleted successfully!', 'success')
+    return redirect(url_for('main.index'))
+
+@main.route('/todo/<int:todo_id>/edit', methods=['POST'])
+def edit_todo(todo_id):
+    todo = Todo.query.get_or_404(todo_id)
+    
+    # Update the todo with the form data
+    todo.content = request.form.get('content', todo.content)
+    todo.priority = int(request.form.get('priority', todo.priority))
+    
+    # Handle due date - might be empty string
+    due_date = request.form.get('due_date', '')
+    if due_date:
+        try:
+            todo.due_date = datetime.strptime(due_date, '%Y-%m-%dT%H:%M')
+        except ValueError:
+            pass  # Keep the current value if parsing fails
+    else:
+        # If empty string is passed, clear the due date
+        todo.due_date = None
+    
+    db.session.commit()
+    flash('Task updated successfully!', 'success')
+    return redirect(url_for('main.index'))
+
+@main.route('/todo/clear-completed', methods=['POST'])
+def clear_completed():
+    completed_todos = Todo.query.filter_by(completed=True).all()
+    for todo in completed_todos:
+        db.session.delete(todo)
+    db.session.commit()
+    flash('Completed tasks have been cleared.', 'success')
+    return redirect(url_for('main.index'))
+
 # Notes routes
 @notes.route('/')
 def all_notes():
@@ -196,70 +260,6 @@ def save_note_ajax():
         'title': note.title,
         'updated_at': note.updated_at.strftime('%Y-%m-%d %H:%M:%S')
     })
-
-# Todo routes - Dashboard-only management
-@main.route('/todo/add', methods=['POST'])
-def add_todo():
-    form = TodoForm()
-    
-    if form.validate_on_submit():
-        todo = Todo(
-            content=form.content.data,
-            due_date=form.due_date.data,
-            priority=form.priority.data
-        )
-        db.session.add(todo)
-        db.session.commit()
-        flash('Task added successfully!', 'success')
-    
-    return redirect(url_for('main.index'))
-
-@main.route('/todo/<int:todo_id>/toggle', methods=['POST'])
-def toggle_todo(todo_id):
-    todo = Todo.query.get_or_404(todo_id)
-    todo.completed = not todo.completed
-    db.session.commit()
-    return jsonify({'status': 'success', 'completed': todo.completed})
-
-@main.route('/todo/<int:todo_id>/delete', methods=['POST'])
-def delete_todo(todo_id):
-    todo = Todo.query.get_or_404(todo_id)
-    db.session.delete(todo)
-    db.session.commit()
-    flash('Task deleted successfully!', 'success')
-    return redirect(url_for('main.index'))
-
-@main.route('/todo/<int:todo_id>/edit', methods=['POST'])
-def edit_todo(todo_id):
-    todo = Todo.query.get_or_404(todo_id)
-    
-    # Update the todo with the form data
-    todo.content = request.form.get('content', todo.content)
-    todo.priority = int(request.form.get('priority', todo.priority))
-    
-    # Handle due date - might be empty string
-    due_date = request.form.get('due_date', '')
-    if due_date:
-        try:
-            todo.due_date = datetime.strptime(due_date, '%Y-%m-%dT%H:%M')
-        except ValueError:
-            pass  # Keep the current value if parsing fails
-    else:
-        # If empty string is passed, clear the due date
-        todo.due_date = None
-    
-    db.session.commit()
-    flash('Task updated successfully!', 'success')
-    return redirect(url_for('main.index'))
-
-@main.route('/todo/clear-completed', methods=['POST'])
-def clear_completed():
-    completed_todos = Todo.query.filter_by(completed=True).all()
-    for todo in completed_todos:
-        db.session.delete(todo)
-    db.session.commit()
-    flash('Completed tasks have been cleared.', 'success')
-    return redirect(url_for('main.index'))
 
 # Team member routes
 @team.route('/')
