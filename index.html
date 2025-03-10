@@ -64,7 +64,7 @@
             </div>
             <div class="card-body">
                 <!-- To-Do Form directly on dashboard -->
-                <form action="{{ url_for('todos.add_todo') }}" method="post" class="mb-3">
+                <form action="{{ url_for('main.add_todo') }}" method="post" class="mb-3">
                     {{ todo_form.csrf_token }}
                     <div class="row">
                         <div class="col-md-9 mb-2">
@@ -99,7 +99,7 @@
                             <button type="button" class="btn btn-outline-secondary filter-todo" data-filter="active">Active</button>
                             <button type="button" class="btn btn-outline-secondary filter-todo" data-filter="completed">Completed</button>
                         </div>
-                        <form id="clearCompletedForm" action="{{ url_for('todos.clear_completed') }}" method="post" class="d-inline">
+                        <form id="clearCompletedForm" action="{{ url_for('main.clear_completed') }}" method="post" class="d-inline">
                             <button type="submit" class="btn btn-sm btn-outline-secondary">
                                 <i class="fas fa-trash me-1"></i>Clear Completed
                             </button>
@@ -142,7 +142,7 @@
                                     <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-bs-toggle="modal" data-bs-target="#editTodoModal{{ todo.id }}">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <form action="{{ url_for('todos.delete_todo', todo_id=todo.id) }}" method="post" class="d-inline">
+                                    <form action="{{ url_for('main.delete_todo', todo_id=todo.id) }}" method="post" class="d-inline">
                                         <button type="submit" class="btn btn-sm btn-outline-danger">
                                             <i class="fas fa-trash"></i>
                                         </button>
@@ -159,7 +159,7 @@
                                         <h5 class="modal-title">Edit Task</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
-                                    <form action="{{ url_for('todos.edit_todo', todo_id=todo.id) }}" method="post">
+                                    <form action="{{ url_for('main.edit_todo', todo_id=todo.id) }}" method="post">
                                         <div class="modal-body">
                                             <div class="mb-3">
                                                 <label class="form-label">Task</label>
@@ -334,7 +334,7 @@
     // AJAX function for toggling task completion status
     function toggleTodoComplete(todoId) {
         $.ajax({
-            url: `/todos/todo/${todoId}/toggle`,
+            url: `/todo/${todoId}/toggle`,
             type: 'POST',
             success: function(response) {
                 if (response.status === 'success') {

@@ -10,7 +10,6 @@ from PIL import Image
 # Create blueprints for different sections of the app
 main = Blueprint('main', __name__)
 notes = Blueprint('notes', __name__, url_prefix='/notes')
-todos = Blueprint('todos', __name__, url_prefix='/todos')
 team = Blueprint('team', __name__, url_prefix='/team')
 links = Blueprint('links', __name__, url_prefix='/links')
 settings = Blueprint('settings', __name__, url_prefix='/settings')
@@ -198,8 +197,8 @@ def save_note_ajax():
         'updated_at': note.updated_at.strftime('%Y-%m-%d %H:%M:%S')
     })
 
-# Todo routes - Simplified for dashboard-only management
-@todos.route('/add', methods=['POST'])
+# Todo routes - Dashboard-only management
+@main.route('/todo/add', methods=['POST'])
 def add_todo():
     form = TodoForm()
     
@@ -215,14 +214,14 @@ def add_todo():
     
     return redirect(url_for('main.index'))
 
-@todos.route('/todo/<int:todo_id>/toggle', methods=['POST'])
+@main.route('/todo/<int:todo_id>/toggle', methods=['POST'])
 def toggle_todo(todo_id):
     todo = Todo.query.get_or_404(todo_id)
     todo.completed = not todo.completed
     db.session.commit()
     return jsonify({'status': 'success', 'completed': todo.completed})
 
-@todos.route('/todo/<int:todo_id>/delete', methods=['POST'])
+@main.route('/todo/<int:todo_id>/delete', methods=['POST'])
 def delete_todo(todo_id):
     todo = Todo.query.get_or_404(todo_id)
     db.session.delete(todo)
@@ -230,7 +229,7 @@ def delete_todo(todo_id):
     flash('Task deleted successfully!', 'success')
     return redirect(url_for('main.index'))
 
-@todos.route('/todo/<int:todo_id>/edit', methods=['POST'])
+@main.route('/todo/<int:todo_id>/edit', methods=['POST'])
 def edit_todo(todo_id):
     todo = Todo.query.get_or_404(todo_id)
     
@@ -253,7 +252,7 @@ def edit_todo(todo_id):
     flash('Task updated successfully!', 'success')
     return redirect(url_for('main.index'))
 
-@todos.route('/clear-completed', methods=['POST'])
+@main.route('/todo/clear-completed', methods=['POST'])
 def clear_completed():
     completed_todos = Todo.query.filter_by(completed=True).all()
     for todo in completed_todos:
@@ -534,7 +533,6 @@ def preferences():
 def register_blueprints(app):
     app.register_blueprint(main)
     app.register_blueprint(notes)
-    app.register_blueprint(todos)
     app.register_blueprint(team)
     app.register_blueprint(links)
     app.register_blueprint(settings)
