@@ -37,7 +37,7 @@ def generate_title_from_content(content, max_length=50):
     if len(first_line) > max_length:
         return first_line[:max_length] + '...'
     elif not first_line:  # If empty or just whitespace
-        return f"Quick Note - {datetime.utcnow().strftime('%m/%d/%Y %H:%M')}"
+        return "Quick Note"
     else:
         return first_line
 

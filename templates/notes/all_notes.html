@@ -13,10 +13,10 @@
 <div class="card">
     <div class="card-body">
         <div class="row mb-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <input type="text" id="searchInput" class="form-control" placeholder="Search notes...">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <select id="categoryFilter" class="form-select">
                     <option value="">All Categories</option>
                     {% set categories = notes|map(attribute='category')|unique|reject('none')|list %}
@@ -25,7 +25,7 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <select id="typeFilter" class="form-select">
                     <option value="">All Types</option>
                     <option value="quick">Quick Notes</option>
@@ -43,7 +43,6 @@
                         <th>Title</th>
                         <th>Category</th>
                         <th>Type</th>
-                        <th>Last Updated</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -68,7 +67,6 @@
                             <span class="badge bg-secondary">Regular</span>
                             {% endif %}
                         </td>
-                        <td>{{ note.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
                         <td>
                             <a href="{{ url_for('notes.edit_note', note_id=note.id) }}" class="btn btn-sm btn-outline-primary">
                                 <i class="fas fa-edit"></i>

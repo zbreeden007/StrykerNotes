@@ -75,9 +75,6 @@
                 <div class="list-group">
                     {% for note in recent_notes %}
                     <a href="{{ url_for('notes.view_note', note_id=note.id) }}" class="list-group-item list-group-item-action">
-                        <div class="d-flex w-100 justify-content-between">
-                            <small class="text-muted">{{ note.updated_at.strftime('%m/%d/%Y %H:%M') }}</small>
-                        </div>
                         <p class="mb-1">{{ note.content|truncate(100) }}</p>
                     </a>
                     {% else %}
