@@ -40,6 +40,7 @@ class LinkForm(FlaskForm):
     url = StringField('URL', validators=[DataRequired(), Length(max=500)])
     description = TextAreaField('Description')
     category = StringField('Category', validators=[Length(max=50)])
+    is_favorite = BooleanField('Add to Favorites')  # New field for favorite links
     submit = SubmitField('Save Link')
 
 class UserPreferenceForm(FlaskForm):

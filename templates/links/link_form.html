@@ -40,6 +40,14 @@
                 {{ form.description(class="form-control", rows=4) }}
             </div>
             
+            <div class="mb-3">
+                <div class="form-check">
+                    {{ form.is_favorite(class="form-check-input") }}
+                    {{ form.is_favorite.label(class="form-check-label") }}
+                </div>
+                <small class="text-muted">Favorite links appear on the dashboard for quick access</small>
+            </div>
+            
             <div class="d-flex justify-content-between">
                 <a href="{{ url_for('links.all_links') }}" class="btn btn-secondary">Cancel</a>
                 {{ form.submit(class="btn btn-primary") }}

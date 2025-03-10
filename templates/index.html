@@ -5,6 +5,51 @@
 {% block content %}
 <h1 class="mb-4">Dashboard</h1>
 
+<!-- Favorite Links Row -->
+{% if favorite_links %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-star me-2"></i>Favorite Links</h5>
+                <a href="{{ url_for('links.all_links') }}" class="btn btn-sm btn-dark">
+                    <i class="fas fa-link"></i> All Links
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row row-cols-2 row-cols-md-4 g-3">
+                    {% for link in favorite_links %}
+                    <div class="col">
+                        <div class="card h-100 border-warning">
+                            <div class="card-body d-flex flex-column">
+                                <h6 class="card-title">{{ link.title }}</h6>
+                                {% if link.category %}
+                                <span class="badge bg-secondary mb-2">{{ link.category }}</span>
+                                {% endif %}
+                                
+                                <div class="mt-auto d-flex">
+                                    <a href="{{ link.url }}" target="_blank" class="btn btn-sm btn-warning w-100 external-link">
+                                        <i class="fas fa-external-link-alt me-1"></i> Visit
+                                    </a>
+                                </div>
+                                <div class="mt-1">
+                                    <form action="{{ url_for('links.toggle_favorite', link_id=link.id) }}" method="post">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary w-100">
+                                            <i class="fas fa-star-half-alt me-1"></i> Remove
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="row">
     <!-- Quick Notes Section -->
     <div class="col-md-6 mb-4">
@@ -161,6 +206,25 @@
         </div>
     </div>
 </div>
+
+<!-- No Favorites Call to Action -->
+{% if not favorite_links %}
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-light border">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <i class="fas fa-star fa-2x text-warning"></i>
+                </div>
+                <div>
+                    <h5 class="mb-1">Add Favorite Links</h5>
+                    <p class="mb-0">Mark links as favorites to display them here for quick access. <a href="{{ url_for('links.all_links') }}">View your links</a> or <a href="{{ url_for('links.new_link') }}">add a new one</a>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}

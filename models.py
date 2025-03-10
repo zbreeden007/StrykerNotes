@@ -113,6 +113,7 @@ class Link(db.Model):
     description = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     category = db.Column(db.String(50), nullable=True)
+    is_favorite = db.Column(db.Boolean, default=False)  # New column for favorite links
     
     def __repr__(self):
         return f'<Link {self.title}>'

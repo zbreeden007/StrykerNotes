@@ -13,16 +13,23 @@
 <div class="card">
     <div class="card-body">
         <div class="row mb-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <input type="text" id="searchInput" class="form-control" placeholder="Search links...">
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <select id="categoryFilter" class="form-select">
                     <option value="">All Categories</option>
                     {% set categories = links|map(attribute='category')|unique|reject('none')|list %}
                     {% for category in categories %}
                     <option value="{{ category }}">{{ category }}</option>
                     {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select id="favoriteFilter" class="form-select">
+                    <option value="">All Links</option>
+                    <option value="favorite">Favorites Only</option>
+                    <option value="regular">Non-Favorites Only</option>
                 </select>
             </div>
         </div>
@@ -32,10 +39,18 @@
             {% for link in links %}
             <div class="col link-item" 
                  data-title="{{ link.title|lower }}" 
-                 data-category="{{ link.category|lower if link.category else '' }}">
-                <div class="card h-100 link-card">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ link.title }}</h5>
+                 data-category="{{ link.category|lower if link.category else '' }}"
+                 data-favorite="{{ 'true' if link.is_favorite else 'false' }}">
+                <div class="card h-100 link-card {{ 'border-warning' if link.is_favorite }}">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="card-title">{{ link.title }}</h5>
+                            {% if link.is_favorite %}
+                            <span class="badge bg-warning text-dark">
+                                <i class="fas fa-star"></i> Favorite
+                            </span>
+                            {% endif %}
+                        </div>
                         
                         {% if link.category %}
                         <span class="badge bg-secondary mb-2">{{ link.category }}</span>
@@ -45,13 +60,18 @@
                         <p class="card-text">{{ link.description }}</p>
                         {% endif %}
                         
-                        <div class="mt-auto">
-                            <a href="{{ link.url }}" target="_blank" class="btn btn-outline-primary btn-sm external-link">
+                        <div class="mt-auto d-flex">
+                            <a href="{{ link.url }}" target="_blank" class="btn btn-outline-primary btn-sm me-1 flex-grow-1 external-link">
                                 <i class="fas fa-external-link-alt"></i> Visit
                             </a>
-                            <a href="{{ url_for('links.edit_link', link_id=link.id) }}" class="btn btn-outline-secondary btn-sm">
-                                <i class="fas fa-edit"></i> Edit
+                            <a href="{{ url_for('links.edit_link', link_id=link.id) }}" class="btn btn-outline-secondary btn-sm me-1">
+                                <i class="fas fa-edit"></i>
                             </a>
+                            <form action="{{ url_for('links.toggle_favorite', link_id=link.id) }}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-outline-{{ 'warning' if link.is_favorite else 'light' }} btn-sm" title="{{ 'Remove from favorites' if link.is_favorite else 'Add to favorites' }}">
+                                    <i class="fas fa-star"></i>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -73,19 +93,25 @@
         // Search functionality
         $('#searchInput').on('keyup', filterLinks);
         $('#categoryFilter').on('change', filterLinks);
+        $('#favoriteFilter').on('change', filterLinks);
         
         function filterLinks() {
             const searchText = $('#searchInput').val().toLowerCase();
             const categoryFilter = $('#categoryFilter').val().toLowerCase();
+            const favoriteFilter = $('#favoriteFilter').val();
             
             $('.link-item').each(function() {
                 const title = $(this).data('title');
                 const category = $(this).data('category');
+                const isFavorite = $(this).data('favorite');
                 
                 const matchesSearch = title.includes(searchText);
                 const matchesCategory = !categoryFilter || category === categoryFilter;
+                const matchesFavorite = !favoriteFilter || 
+                                        (favoriteFilter === 'favorite' && isFavorite === true) ||
+                                        (favoriteFilter === 'regular' && isFavorite === false);
                 
-                if (matchesSearch && matchesCategory) {
+                if (matchesSearch && matchesCategory && matchesFavorite) {
                     $(this).show();
                 } else {
                     $(this).hide();

@@ -71,6 +71,7 @@ def index():
     permanent_notes = Note.query.filter_by(is_permanent=True).all()
     todo_lists = TodoList.query.all()
     team_members = TeamMember.query.all()
+    favorite_links = Link.query.filter_by(is_favorite=True).all()  # Add favorite links
     
     # Convert markdown to HTML for all notes
     for note in recent_notes + permanent_notes:
@@ -80,7 +81,8 @@ def index():
                           recent_notes=recent_notes,
                           permanent_notes=permanent_notes,
                           todo_lists=todo_lists,
-                          team_members=team_members)
+                          team_members=team_members,
+                          favorite_links=favorite_links)  # Pass favorite links to template
 
 # Notes routes
 @notes.route('/')
@@ -447,7 +449,8 @@ def new_link():
             title=form.title.data,
             url=form.url.data,
             description=form.description.data,
-            category=form.category.data
+            category=form.category.data,
+            is_favorite=form.is_favorite.data  # Include favorite status
         )
         db.session.add(link)
         db.session.commit()
@@ -466,6 +469,7 @@ def edit_link(link_id):
         link.url = form.url.data
         link.description = form.description.data
         link.category = form.category.data
+        link.is_favorite = form.is_favorite.data  # Update favorite status
         db.session.commit()
         flash('Link updated successfully!', 'success')
         return redirect(url_for('links.all_links'))
@@ -479,6 +483,19 @@ def delete_link(link_id):
     db.session.commit()
     flash('Link deleted successfully!', 'success')
     return redirect(url_for('links.all_links'))
+
+# New route for toggling favorite status
+@links.route('/<int:link_id>/toggle_favorite', methods=['POST'])
+def toggle_favorite(link_id):
+    link = Link.query.get_or_404(link_id)
+    link.is_favorite = not link.is_favorite
+    db.session.commit()
+    
+    # Check if we should return to the dashboard or links page
+    referer = request.headers.get('Referer')
+    if referer and 'links' in referer:
+        return redirect(url_for('links.all_links'))
+    return redirect(url_for('main.index'))
 
 # Settings routes
 @settings.route('/', methods=['GET', 'POST'])
