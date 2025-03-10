@@ -90,14 +90,8 @@
                             <li><a class="dropdown-item" href="{{ url_for('notes.new_note') }}">New Note</a></li>
                         </ul>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="todosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            To-Do Lists
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="todosDropdown">
-                            <li><a class="dropdown-item" href="{{ url_for('todos.all_lists') }}">All Lists</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('todos.new_list') }}">New List</a></li>
-                        </ul>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('todos.all_todos') }}">To-Do List</a>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="teamDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">

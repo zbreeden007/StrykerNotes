@@ -23,16 +23,15 @@ class Todo(db.Model):
     completed = db.Column(db.Boolean, default=False)
     due_date = db.Column(db.DateTime, nullable=True)
     priority = db.Column(db.Integer, default=0)  # 0 = low, 1 = medium, 2 = high
-    list_id = db.Column(db.Integer, db.ForeignKey('todo_list.id'), nullable=False)
     
     def __repr__(self):
         return f'<Todo {self.content}>'
 
+# Keeping this for backward compatibility but won't use multiple lists anymore
 class TodoList(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    todos = db.relationship('Todo', backref='list', lazy=True, cascade="all, delete-orphan")
     
     def __repr__(self):
         return f'<TodoList {self.name}>'

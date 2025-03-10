@@ -19,18 +19,28 @@ def initialize_database():
         print(f"\nCreated {len(tables)} tables:")
         for table in tables:
             print(f"- {table}")
+        
+        # Ensure default todo list exists
+        default_list = TodoList.query.filter_by(name="My Tasks").first()
+        if not default_list:
+            print("Creating default Todo list...")
+            default_list = TodoList(name="My Tasks")
+            db.session.add(default_list)
+            db.session.commit()
+            print("Default Todo list created.")
 
 if __name__ == "__main__":
     db_path = os.path.join(os.getcwd(), 'productivity.db')
     print(f"Initializing database at: {db_path}")
     initialize_database()
     
-    # Verify the Link table structure after initialization
-    print("\nVerifying Link table structure:")
+    # Verify the table structures after initialization
+    print("\nVerifying database structure:")
     app = create_app()
     with app.app_context():
         engine = db.engine
         inspector = db.inspect(engine)
-        columns = inspector.get_columns('link')
-        for column in columns:
+        todo_columns = inspector.get_columns('todo')
+        print("Todo table columns:")
+        for column in todo_columns:
             print(f"- {column['name']} ({column['type']})")

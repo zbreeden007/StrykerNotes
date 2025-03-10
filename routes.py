@@ -4,7 +4,7 @@ import os
 import markdown
 from werkzeug.utils import secure_filename
 from models import db, Note, Todo, TodoList, TeamMember, MemberTask, Link, UserPreference, MemberProject, MemberNote, MemberDevelopment
-from forms import NoteForm, TodoForm, TodoListForm, TeamMemberForm, MemberTaskForm, LinkForm, UserPreferenceForm, MemberProjectForm, MemberNoteForm, MemberDevelopmentForm
+from forms import NoteForm, TodoForm, TeamMemberForm, MemberTaskForm, LinkForm, UserPreferenceForm, MemberProjectForm, MemberNoteForm, MemberDevelopmentForm
 from PIL import Image
 
 # Create blueprints for different sections of the app
@@ -24,6 +24,15 @@ def inject_preferences():
         db.session.add(preferences)
         db.session.commit()
     return dict(preferences=preferences)
+
+# Ensure a default to-do list exists
+def ensure_default_todolist():
+    default_list = TodoList.query.filter_by(name="My Tasks").first()
+    if not default_list:
+        default_list = TodoList(name="My Tasks")
+        db.session.add(default_list)
+        db.session.commit()
+    return default_list
 
 # Function to save profile pictures
 def save_profile_picture(form_picture):
@@ -69,7 +78,16 @@ def index():
     # Get latest notes, todos, and team members for dashboard
     recent_notes = Note.query.order_by(Note.updated_at.desc()).limit(5).all()
     permanent_notes = Note.query.filter_by(is_permanent=True).all()
-    todo_lists = TodoList.query.all()
+    
+    # Get or create the default to-do list
+    default_todolist = ensure_default_todolist()
+    
+    # Get all todos (now simplified)
+    todos = Todo.query.order_by(Todo.priority.desc(), Todo.due_date.asc()).all()
+    
+    # Initialize the todo form for direct editing on dashboard
+    todo_form = TodoForm()
+    
     team_members = TeamMember.query.all()
     favorite_links = Link.query.filter_by(is_favorite=True).all()
     
@@ -80,7 +98,8 @@ def index():
     return render_template('index.html', 
                           recent_notes=recent_notes,
                           permanent_notes=permanent_notes,
-                          todo_lists=todo_lists,
+                          todos=todos,
+                          todo_form=todo_form,
                           team_members=team_members,
                           favorite_links=favorite_links)
 
@@ -178,48 +197,33 @@ def save_note_ajax():
         'updated_at': note.updated_at.strftime('%Y-%m-%d %H:%M:%S')
     })
 
-# Todo routes
+# Todo routes - Simplified for a single list
 @todos.route('/')
-def all_lists():
-    lists = TodoList.query.all()
-    return render_template('todos/todos.html', lists=lists)
-
-@todos.route('/list/new', methods=['GET', 'POST'])
-def new_list():
-    form = TodoListForm()
-    if form.validate_on_submit():
-        todo_list = TodoList(name=form.name.data)
-        db.session.add(todo_list)
-        db.session.commit()
-        flash('Todo list created successfully!', 'success')
-        return redirect(url_for('todos.view_list', list_id=todo_list.id))
-    
-    return render_template('todos/new_list.html', form=form)
-
-@todos.route('/list/<int:list_id>', methods=['GET'])
-def view_list(list_id):
-    todo_list = TodoList.query.get_or_404(list_id)
+def all_todos():
+    todos_list = Todo.query.order_by(Todo.priority.desc(), Todo.due_date.asc()).all()
     todo_form = TodoForm()
     now = datetime.utcnow()  # Pass current time for due date comparison
-    return render_template('todos/view_list.html', todo_list=todo_list, form=todo_form, now=now)
+    return render_template('todos/todos.html', todos=todos_list, form=todo_form, now=now)
 
-@todos.route('/list/<int:list_id>/add', methods=['POST'])
-def add_todo(list_id):
-    todo_list = TodoList.query.get_or_404(list_id)
+@todos.route('/add', methods=['POST'])
+def add_todo():
     form = TodoForm()
     
     if form.validate_on_submit():
         todo = Todo(
             content=form.content.data,
             due_date=form.due_date.data,
-            priority=form.priority.data,
-            list_id=todo_list.id
+            priority=form.priority.data
         )
         db.session.add(todo)
         db.session.commit()
         flash('Task added successfully!', 'success')
     
-    return redirect(url_for('todos.view_list', list_id=list_id))
+    # Check where the request came from
+    referer = request.headers.get('Referer', '')
+    if 'todos' in referer:
+        return redirect(url_for('todos.all_todos'))
+    return redirect(url_for('main.index'))
 
 @todos.route('/todo/<int:todo_id>/toggle', methods=['POST'])
 def toggle_todo(todo_id):
@@ -231,18 +235,39 @@ def toggle_todo(todo_id):
 @todos.route('/todo/<int:todo_id>/delete', methods=['POST'])
 def delete_todo(todo_id):
     todo = Todo.query.get_or_404(todo_id)
-    list_id = todo.list_id
     db.session.delete(todo)
     db.session.commit()
-    return redirect(url_for('todos.view_list', list_id=list_id))
+    
+    # Check where the request came from
+    referer = request.headers.get('Referer', '')
+    if 'todos' in referer:
+        return redirect(url_for('todos.all_todos'))
+    return redirect(url_for('main.index'))
 
-@todos.route('/list/<int:list_id>/delete', methods=['POST'])
-def delete_list(list_id):
-    todo_list = TodoList.query.get_or_404(list_id)
-    db.session.delete(todo_list)
+@todos.route('/todo/<int:todo_id>/edit', methods=['POST'])
+def edit_todo(todo_id):
+    todo = Todo.query.get_or_404(todo_id)
+    
+    # Update the todo with the form data
+    todo.content = request.form.get('content', todo.content)
+    todo.priority = int(request.form.get('priority', todo.priority))
+    
+    # Handle due date - might be empty string
+    due_date = request.form.get('due_date', '')
+    if due_date:
+        try:
+            todo.due_date = datetime.strptime(due_date, '%Y-%m-%dT%H:%M')
+        except ValueError:
+            pass  # Keep the current value if parsing fails
+    
     db.session.commit()
-    flash('Todo list deleted successfully!', 'success')
-    return redirect(url_for('todos.all_lists'))
+    flash('Task updated successfully!', 'success')
+    
+    # Check where the request came from
+    referer = request.headers.get('Referer', '')
+    if 'todos' in referer:
+        return redirect(url_for('todos.all_todos'))
+    return redirect(url_for('main.index'))
 
 # Team member routes
 @team.route('/')

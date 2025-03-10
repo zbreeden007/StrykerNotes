@@ -16,10 +16,6 @@ class TodoForm(FlaskForm):
     priority = SelectField('Priority', choices=[(0, 'Low'), (1, 'Medium'), (2, 'High')], coerce=int)
     submit = SubmitField('Add Task')
 
-class TodoListForm(FlaskForm):
-    name = StringField('List Name', validators=[DataRequired(), Length(max=100)])
-    submit = SubmitField('Create List')
-
 class TeamMemberForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired(), Length(max=100)])
     role = StringField('Role', validators=[Length(max=100)])
