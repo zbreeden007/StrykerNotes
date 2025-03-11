@@ -13,7 +13,7 @@ notes = Blueprint('notes', __name__, url_prefix='/notes')
 team = Blueprint('team', __name__, url_prefix='/team')
 links = Blueprint('links', __name__, url_prefix='/links')
 settings = Blueprint('settings', __name__, url_prefix='/settings')
-todos = Blueprint('todos', __name__, url_prefix='/todos')  # Add this to redirect all to-do list pages
+todos = Blueprint('todos', __name__, url_prefix='/todos')  # Keep for redirects
 
 # Add context processor to make preferences available in all templates
 @main.app_context_processor
@@ -99,7 +99,7 @@ def index():
                           favorite_links=favorite_links,
                           now=now)
 
-# Todo routes - Dashboard-only management
+# Todo routes - Now only on dashboard
 @main.route('/todo/add', methods=['POST'])
 def add_todo():
     form = TodoForm()
@@ -193,11 +193,9 @@ def reorder_todos():
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 # Redirect all to-do list pages to the dashboard
-@todos.route('/')
-@todos.route('/lists')
-@todos.route('/all_lists')
+@todos.route('/', defaults={'path': ''})
 @todos.route('/<path:path>')
-def redirect_to_dashboard(*args, **kwargs):
+def redirect_to_dashboard(path):
     """Redirect all to-do list pages to the dashboard"""
     return redirect(url_for('main.index'))
 
@@ -570,4 +568,4 @@ def register_blueprints(app):
     app.register_blueprint(team)
     app.register_blueprint(links)
     app.register_blueprint(settings)
-    app.register_blueprint(todos)  # Add this to register the to-do redirects
+    app.register_blueprint(todos)  # Keep this to handle redirects

@@ -8,10 +8,10 @@ $(function () {
     $('[data-toggle="popover"]').popover();
 });
 
-// Handle todo item completion toggle
+// Handle todo item completion toggle - Updated for dashboard only
 function toggleTodoComplete(todoId) {
     $.ajax({
-        url: `/todos/todo/${todoId}/toggle`,
+        url: `/todo/${todoId}/toggle`,
         type: 'POST',
         success: function(response) {
             if (response.status === 'success') {
@@ -19,17 +19,35 @@ function toggleTodoComplete(todoId) {
                 if (response.completed) {
                     todoItem.addClass('completed');
                     todoItem.find('.todo-checkbox').prop('checked', true);
+                    todoItem.find('label.form-check-label').addClass('text-muted');
+                    todoItem.data('completed', true);
                 } else {
                     todoItem.removeClass('completed');
                     todoItem.find('.todo-checkbox').prop('checked', false);
+                    todoItem.find('label.form-check-label').removeClass('text-muted');
+                    todoItem.data('completed', false);
                 }
+                
+                // Update the completed count in the badge
+                updateTodoCountBadge();
             }
         },
         error: function(error) {
             console.error('Error toggling todo item:', error);
-            alert('Failed to update todo status. Please try again.');
+            alert('Failed to update task status. Please try again.');
         }
     });
+}
+
+// Function to update todo count badge
+function updateTodoCountBadge() {
+    const totalTodos = $('#dashboard-todo-list li').length;
+    const completedTodos = $('#dashboard-todo-list li.completed').length;
+    const $badge = $('.card-header .badge.bg-success');
+    
+    if ($badge.length) {
+        $badge.text(`${completedTodos}/${totalTodos} Completed`);
+    }
 }
 
 // Handle team member task completion toggle
