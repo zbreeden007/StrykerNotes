@@ -13,6 +13,7 @@ notes = Blueprint('notes', __name__, url_prefix='/notes')
 team = Blueprint('team', __name__, url_prefix='/team')
 links = Blueprint('links', __name__, url_prefix='/links')
 settings = Blueprint('settings', __name__, url_prefix='/settings')
+todos = Blueprint('todos', __name__, url_prefix='/todos')  # Add this to redirect all to-do list pages
 
 # Add context processor to make preferences available in all templates
 @main.app_context_processor
@@ -23,15 +24,6 @@ def inject_preferences():
         db.session.add(preferences)
         db.session.commit()
     return dict(preferences=preferences)
-
-# Ensure a default to-do list exists
-def ensure_default_todolist():
-    default_list = TodoList.query.filter_by(name="My Tasks").first()
-    if not default_list:
-        default_list = TodoList(name="My Tasks")
-        db.session.add(default_list)
-        db.session.commit()
-    return default_list
 
 # Function to save profile pictures
 def save_profile_picture(form_picture):
@@ -78,8 +70,12 @@ def index():
     recent_notes = Note.query.order_by(Note.updated_at.desc()).limit(5).all()
     permanent_notes = Note.query.filter_by(is_permanent=True).all()
     
-    # Get all todos
-    todos = Todo.query.order_by(Todo.order.asc(), Todo.priority.desc(), Todo.due_date.asc()).all()
+    # Get all todos with ordering
+    try:
+        todos = Todo.query.order_by(Todo.order.asc(), Todo.priority.desc(), Todo.due_date.asc()).all()
+    except:
+        # Fallback in case order column doesn't exist yet
+        todos = Todo.query.order_by(Todo.priority.desc(), Todo.due_date.asc()).all()
     
     # Initialize the todo form for direct editing on dashboard
     todo_form = TodoForm()
@@ -110,14 +106,23 @@ def add_todo():
     
     if form.validate_on_submit():
         # Get the highest order value to add new todos at the end
-        highest_order = db.session.query(db.func.max(Todo.order)).scalar() or -1
-        
-        todo = Todo(
-            content=form.content.data,
-            due_date=form.due_date.data,
-            priority=form.priority.data,
-            order=highest_order + 1  # Set order to be after all existing todos
-        )
+        try:
+            highest_order = db.session.query(db.func.max(Todo.order)).scalar() or -1
+            
+            todo = Todo(
+                content=form.content.data,
+                due_date=form.due_date.data,
+                priority=form.priority.data,
+                order=highest_order + 1  # Set order to be after all existing todos
+            )
+        except:
+            # Fallback in case order column doesn't exist yet
+            todo = Todo(
+                content=form.content.data,
+                due_date=form.due_date.data,
+                priority=form.priority.data
+            )
+            
         db.session.add(todo)
         db.session.commit()
         flash('Task added successfully!', 'success')
@@ -176,13 +181,25 @@ def reorder_todos():
     data = request.json
     todo_ids = data.get('todoIds', [])
     
-    # Update the order of todos in the database
-    for i, todo_id in enumerate(todo_ids):
-        todo = Todo.query.get_or_404(int(todo_id))
-        todo.order = i
-    
-    db.session.commit()
-    return jsonify({'status': 'success'})
+    try:
+        # Update the order of todos in the database
+        for i, todo_id in enumerate(todo_ids):
+            todo = Todo.query.get_or_404(int(todo_id))
+            todo.order = i
+        
+        db.session.commit()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+# Redirect all to-do list pages to the dashboard
+@todos.route('/')
+@todos.route('/lists')
+@todos.route('/all_lists')
+@todos.route('/<path:path>')
+def redirect_to_dashboard(*args, **kwargs):
+    """Redirect all to-do list pages to the dashboard"""
+    return redirect(url_for('main.index'))
 
 # Notes routes
 @notes.route('/')
@@ -553,3 +570,4 @@ def register_blueprints(app):
     app.register_blueprint(team)
     app.register_blueprint(links)
     app.register_blueprint(settings)
+    app.register_blueprint(todos)  # Add this to register the to-do redirects

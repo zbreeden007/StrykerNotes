@@ -2,6 +2,11 @@
 
 {% block title %}Dashboard - Stryker Notes{% endblock %}
 
+{% block extra_head %}
+<!-- SortableJS for drag-and-drop functionality -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+{% endblock %}
+
 {% block content %}
 <h1 class="mb-4">Dashboard</h1>
 
@@ -293,7 +298,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
     $(document).ready(function() {
         // Todo filtering
