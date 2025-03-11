@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
 from datetime import datetime
 import os
 import markdown
@@ -196,7 +196,19 @@ def reorder_todos():
 @todos.route('/', defaults={'path': ''})
 @todos.route('/<path:path>')
 def redirect_to_dashboard(path):
-    """Redirect all to-do list pages to the dashboard"""
+    """Force redirect all to-do list pages to the dashboard"""
+    return redirect(url_for('main.index'))
+
+# Block all todo-specific routes with 404 fallback
+@todos.route('/new', methods=['GET', 'POST'])
+@todos.route('/all', methods=['GET'])
+@todos.route('/<int:list_id>', methods=['GET', 'POST'])
+@todos.route('/<int:list_id>/edit', methods=['GET', 'POST'])
+@todos.route('/<int:list_id>/delete', methods=['POST'])
+@todos.route('/add_todo', methods=['POST'])
+@todos.route('/edit_todo/<int:todo_id>', methods=['POST'])
+@todos.route('/delete_todo/<int:todo_id>', methods=['POST'])
+def block_todo_routes():
     return redirect(url_for('main.index'))
 
 # Notes routes
