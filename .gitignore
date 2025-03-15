@@ -45,3 +45,9 @@ logs/
 # Local environment variables
 .env
 .flaskenv
+
+# Database files
+instance/
+*.db
+*.sqlite
+*.sqlite3
