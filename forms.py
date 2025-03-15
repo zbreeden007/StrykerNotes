@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, TextAreaField, BooleanField, DateTimeField, SelectField, SubmitField, IntegerField
+from wtforms import StringField, TextAreaField, BooleanField, SelectField, SubmitField, IntegerField
 from wtforms.validators import DataRequired, Length, Optional
 
 class NoteForm(FlaskForm):
@@ -12,7 +12,6 @@ class NoteForm(FlaskForm):
 
 class TodoForm(FlaskForm):
     content = StringField('Task', validators=[DataRequired(), Length(max=200)])
-    due_date = DateTimeField('Due Date', format='%Y-%m-%dT%H:%M', validators=[Optional()])
     priority = SelectField('Priority', choices=[(0, 'Low'), (1, 'Medium'), (2, 'High')], coerce=int)
     submit = SubmitField('Add Task')
 
@@ -27,7 +26,6 @@ class TeamMemberForm(FlaskForm):
 
 class MemberTaskForm(FlaskForm):
     content = StringField('Task', validators=[DataRequired(), Length(max=200)])
-    due_date = DateTimeField('Due Date', format='%Y-%m-%dT%H:%M', validators=[Optional()])
     submit = SubmitField('Add Task')
 
 class LinkForm(FlaskForm):
@@ -69,5 +67,4 @@ class MemberNoteForm(FlaskForm):
 class MemberDevelopmentForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired(), Length(max=100)])
     description = TextAreaField('Description')
-    date = DateTimeField('Date', format='%Y-%m-%dT%H:%M', validators=[Optional()])
     submit = SubmitField('Save Development')

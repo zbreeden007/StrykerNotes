@@ -72,10 +72,10 @@ def index():
     
     # Get all todos with ordering
     try:
-        todos = Todo.query.order_by(Todo.order.asc(), Todo.priority.desc(), Todo.due_date.asc()).all()
+        todos = Todo.query.order_by(Todo.order.asc(), Todo.priority.desc()).all()
     except:
         # Fallback in case order column doesn't exist yet
-        todos = Todo.query.order_by(Todo.priority.desc(), Todo.due_date.asc()).all()
+        todos = Todo.query.order_by(Todo.priority.desc()).all()
     
     # Initialize the todo form for direct editing on dashboard
     todo_form = TodoForm()
@@ -111,7 +111,6 @@ def add_todo():
             
             todo = Todo(
                 content=form.content.data,
-                due_date=form.due_date.data,
                 priority=form.priority.data,
                 order=highest_order + 1  # Set order to be after all existing todos
             )
@@ -119,7 +118,6 @@ def add_todo():
             # Fallback in case order column doesn't exist yet
             todo = Todo(
                 content=form.content.data,
-                due_date=form.due_date.data,
                 priority=form.priority.data
             )
             
@@ -151,17 +149,6 @@ def edit_todo(todo_id):
     # Update the todo with the form data
     todo.content = request.form.get('content', todo.content)
     todo.priority = int(request.form.get('priority', todo.priority))
-    
-    # Handle due date - might be empty string
-    due_date = request.form.get('due_date', '')
-    if due_date:
-        try:
-            todo.due_date = datetime.strptime(due_date, '%Y-%m-%dT%H:%M')
-        except ValueError:
-            pass  # Keep the current value if parsing fails
-    else:
-        # If empty string is passed, clear the due date
-        todo.due_date = None
     
     db.session.commit()
     flash('Task updated successfully!', 'success')
@@ -217,37 +204,43 @@ def all_notes():
     notes_list = Note.query.order_by(Note.updated_at.desc()).all()
     for note in notes_list:
         note.html_content = convert_markdown_to_html(note.content)
-    return render_template('notes/all_notes.html', notes=notes_list)
+    return render_template('all_notes.html', notes=notes_list)
 
 @notes.route('/new', methods=['GET', 'POST'])
 def new_note():
     form = NoteForm()
     is_permanent = request.args.get('permanent', 'false').lower() == 'true'
+    is_quick_note = request.args.get('quick', 'false').lower() == 'true'
     
     if form.validate_on_submit():
         note = Note(
-            title=form.title.data,
+            title=form.title.data or 'Untitled',
             content=form.content.data,
             is_permanent=form.is_permanent.data,
-            category=form.category.data
+            category=form.category.data,
+            is_quick_note=is_quick_note
         )
         db.session.add(note)
         db.session.commit()
         flash('Note created successfully!', 'success')
+        
+        # Redirect based on the type of note
+        if is_quick_note:
+            return redirect(url_for('notes.quick_notes'))
         return redirect(url_for('notes.view_note', note_id=note.id))
     
     # Pre-select permanent note checkbox if query param is set
     if is_permanent:
         form.is_permanent.data = True
     
-    return render_template('notes/note.html', form=form, is_new=True)
+    return render_template('note.html', form=form, is_new=True)
 
 @notes.route('/<int:note_id>', methods=['GET'])
 def view_note(note_id):
     note = Note.query.get_or_404(note_id)
     form = NoteForm(obj=note)
     html_content = convert_markdown_to_html(note.content)
-    return render_template('notes/note.html', note=note, form=form, is_new=False, html_content=html_content)
+    return render_template('note.html', note=note, form=form, is_new=False, html_content=html_content)
 
 @notes.route('/<int:note_id>/edit', methods=['GET', 'POST'])
 def edit_note(note_id):
@@ -265,7 +258,7 @@ def edit_note(note_id):
         return redirect(url_for('notes.view_note', note_id=note.id))
     
     html_content = convert_markdown_to_html(note.content)
-    return render_template('notes/note.html', note=note, form=form, is_new=False, html_content=html_content)
+    return render_template('note.html', note=note, form=form, is_new=False, html_content=html_content)
 
 @notes.route('/<int:note_id>/delete', methods=['POST'])
 def delete_note(note_id):
@@ -275,12 +268,20 @@ def delete_note(note_id):
     flash('Note deleted successfully!', 'success')
     return redirect(url_for('notes.all_notes'))
 
+@notes.route('/quick', methods=['GET'])
+def quick_notes():
+    notes_list = Note.query.filter_by(is_quick_note=True).order_by(Note.updated_at.desc()).all()
+    for note in notes_list:
+        note.html_content = convert_markdown_to_html(note.content)
+    return render_template('quick_notes.html', notes=notes_list)
+
 @notes.route('/save', methods=['POST'])
 def save_note_ajax():
     data = request.json
     note_id = data.get('id')
     title = data.get('title')
     content = data.get('content', '')
+    is_quick_note = data.get('is_quick_note', False)
     
     if note_id:
         # Update existing note
@@ -294,7 +295,8 @@ def save_note_ajax():
             title=title or 'Untitled',
             content=content,
             is_permanent=data.get('is_permanent', False),
-            category=data.get('category', None)
+            category=data.get('category', None),
+            is_quick_note=is_quick_note
         )
         db.session.add(note)
     
@@ -314,7 +316,7 @@ def all_members():
     note_form = MemberNoteForm()
     development_form = MemberDevelopmentForm()
     
-    return render_template('team/all_members.html', 
+    return render_template('all_members.html', 
                            members=members, 
                            project_form=project_form,
                            task_form=task_form,
@@ -340,7 +342,7 @@ def new_member():
         flash('Team member added successfully!', 'success')
         return redirect(url_for('team.view_member', member_id=member.id))
     
-    return render_template('team/member_form.html', form=form, is_new=True)
+    return render_template('member_form.html', form=form, is_new=True)
 
 @team.route('/<int:member_id>', methods=['GET'])
 def view_member(member_id):
@@ -350,7 +352,7 @@ def view_member(member_id):
     # Convert markdown to HTML for member notes
     member.html_notes = convert_markdown_to_html(member.notes)
     
-    return render_template('team/member.html', member=member, form=task_form)
+    return render_template('member.html', member=member, form=task_form)
 
 @team.route('/<int:member_id>/edit', methods=['GET', 'POST'])
 def edit_member(member_id):
@@ -370,39 +372,7 @@ def edit_member(member_id):
         flash('Team member updated successfully!', 'success')
         return redirect(url_for('team.view_member', member_id=member.id))
     
-    return render_template('team/member_form.html', form=form, member=member, is_new=False)
-
-@team.route('/<int:member_id>/add_task', methods=['POST'])
-def add_member_task(member_id):
-    member = TeamMember.query.get_or_404(member_id)
-    form = MemberTaskForm()
-    
-    if form.validate_on_submit():
-        task = MemberTask(
-            content=form.content.data,
-            due_date=form.due_date.data,
-            member_id=member.id
-        )
-        db.session.add(task)
-        db.session.commit()
-        flash('Task added successfully!', 'success')
-    
-    return redirect(url_for('team.view_member', member_id=member_id))
-
-@team.route('/task/<int:task_id>/toggle', methods=['POST'])
-def toggle_member_task(task_id):
-    task = MemberTask.query.get_or_404(task_id)
-    task.completed = not task.completed
-    db.session.commit()
-    return jsonify({'status': 'success', 'completed': task.completed})
-
-@team.route('/task/<int:task_id>/delete', methods=['POST'])
-def delete_member_task(task_id):
-    task = MemberTask.query.get_or_404(task_id)
-    member_id = task.member_id
-    db.session.delete(task)
-    db.session.commit()
-    return redirect(url_for('team.view_member', member_id=member_id))
+    return render_template('member_form.html', form=form, member=member, is_new=False)
 
 @team.route('/<int:member_id>/delete', methods=['POST'])
 def delete_member(member_id):
@@ -412,93 +382,11 @@ def delete_member(member_id):
     flash('Team member deleted successfully!', 'success')
     return redirect(url_for('team.all_members'))
 
-# Project routes
-@team.route('/<int:member_id>/add_project', methods=['POST'])
-def add_member_project(member_id):
-    member = TeamMember.query.get_or_404(member_id)
-    form = MemberProjectForm()
-    
-    if form.validate_on_submit():
-        project = MemberProject(
-            name=form.name.data,
-            description=form.description.data,
-            member_id=member.id
-        )
-        db.session.add(project)
-        db.session.commit()
-        flash('Project added successfully!', 'success')
-    
-    return redirect(url_for('team.all_members'))
-
-@team.route('/project/<int:project_id>/delete', methods=['POST'])
-def delete_member_project(project_id):
-    project = MemberProject.query.get_or_404(project_id)
-    member_id = project.member_id
-    db.session.delete(project)
-    db.session.commit()
-    flash('Project deleted successfully!', 'success')
-    return redirect(url_for('team.all_members'))
-
-# Note routes
-@team.route('/<int:member_id>/add_note', methods=['POST'])
-def add_member_note(member_id):
-    member = TeamMember.query.get_or_404(member_id)
-    form = MemberNoteForm()
-    
-    if form.validate_on_submit():
-        note = MemberNote(
-            title=form.title.data,
-            content=form.content.data,
-            member_id=member.id
-        )
-        db.session.add(note)
-        db.session.commit()
-        flash('Note added successfully!', 'success')
-    
-    return redirect(url_for('team.all_members'))
-
-@team.route('/note/<int:note_id>/delete', methods=['POST'])
-def delete_member_note(note_id):
-    note = MemberNote.query.get_or_404(note_id)
-    member_id = note.member_id
-    db.session.delete(note)
-    db.session.commit()
-    flash('Note deleted successfully!', 'success')
-    return redirect(url_for('team.all_members'))
-
-# Development routes
-@team.route('/<int:member_id>/add_development', methods=['POST'])
-def add_member_development(member_id):
-    member = TeamMember.query.get_or_404(member_id)
-    form = MemberDevelopmentForm()
-    
-    if form.validate_on_submit():
-        development = MemberDevelopment(
-            title=form.title.data,
-            description=form.description.data,
-            date=form.date.data,
-            member_id=member.id
-        )
-        db.session.add(development)
-        db.session.commit()
-        flash('Development added successfully!', 'success')
-    
-    return redirect(url_for('team.all_members'))
-
-@team.route('/development/<int:development_id>/delete', methods=['POST'])
-def delete_member_development(development_id):
-    development = MemberDevelopment.query.get_or_404(development_id)
-    member_id = development.member_id
-    db.session.delete(development)
-    db.session.commit()
-    flash('Development deleted successfully!', 'success')
-    return redirect(url_for('team.all_members'))
-
 # Links routes
 @links.route('/')
 def all_links():
     links_list = Link.query.order_by(Link.title).all()
-    return render_template('links/all_links.html', links=links_list)
+    return render_template('all_links.html', links=links_list)
 
 @links.route('/new', methods=['GET', 'POST'])
 def new_link():
@@ -516,7 +404,7 @@ def new_link():
         flash('Link added successfully!', 'success')
         return redirect(url_for('links.all_links'))
     
-    return render_template('links/link_form.html', form=form, is_new=True)
+    return render_template('link_form.html', form=form, is_new=True)
 
 @links.route('/<int:link_id>/edit', methods=['GET', 'POST'])
 def edit_link(link_id):
@@ -533,7 +421,7 @@ def edit_link(link_id):
         flash('Link updated successfully!', 'success')
         return redirect(url_for('links.all_links'))
     
-    return render_template('links/link_form.html', form=form, link=link, is_new=False)
+    return render_template('link_form.html', form=form, link=link, is_new=False)
 
 @links.route('/<int:link_id>/delete', methods=['POST'])
 def delete_link(link_id):
@@ -543,7 +431,6 @@ def delete_link(link_id):
     flash('Link deleted successfully!', 'success')
     return redirect(url_for('links.all_links'))
 
-# New route for toggling favorite status
 @links.route('/<int:link_id>/toggle_favorite', methods=['POST'])
 def toggle_favorite(link_id):
     link = Link.query.get_or_404(link_id)
@@ -563,6 +450,10 @@ def preferences():
     form = UserPreferenceForm(obj=preferences)
     
     if form.validate_on_submit():
+        if not preferences:
+            preferences = UserPreference()
+            db.session.add(preferences)
+        
         preferences.theme = form.theme.data
         preferences.font_family = form.font_family.data
         preferences.font_size = form.font_size.data
