@@ -31,10 +31,15 @@ def save_profile_picture(form_picture):
     filename = secure_filename(form_picture.filename)
     # Create a unique filename to avoid overwriting
     unique_filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{filename}"
-    # Set the path
-    picture_path = os.path.join('static', 'uploads', 'profile_pictures', unique_filename)
+    
+    # Get the absolute path to the upload folder
+    uploads_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads', 'profile_pictures')
+    
     # Ensure directory exists
-    os.makedirs(os.path.dirname(picture_path), exist_ok=True)
+    os.makedirs(uploads_dir, exist_ok=True)
+    
+    # Set the full path to the file
+    picture_path = os.path.join(uploads_dir, unique_filename)
     
     # Save the original file first
     form_picture.save(picture_path)
@@ -55,7 +60,8 @@ def save_profile_picture(form_picture):
         # Log the error but continue with the original image
         print(f"Error processing image: {e}")
     
-    return picture_path
+    # Return the relative path for storage in the database
+    return os.path.join('static', 'uploads', 'profile_pictures', unique_filename)
 
 # Helper function to convert Markdown to HTML
 def convert_markdown_to_html(markdown_text):
