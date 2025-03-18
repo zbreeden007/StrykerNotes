@@ -28,6 +28,30 @@ class MemberTaskForm(FlaskForm):
     content = StringField('Task', validators=[DataRequired(), Length(max=200)])
     submit = SubmitField('Add Task')
 
+class ProjectForm(FlaskForm):
+    name = StringField('Project Name', validators=[DataRequired()])
+    description = TextAreaField('Description')
+    submit = SubmitField('Save Project')
+
+class TaskForm(FlaskForm):
+    content = StringField('Task Content', validators=[DataRequired()])
+    completed = BooleanField('Completed')
+    submit = SubmitField('Save Task')
+
+class DevelopmentForm(FlaskForm):
+    title = StringField('Development Title', validators=[DataRequired()])
+    description = TextAreaField('Description')
+    date = DateField('Date', format='%Y-%m-%d')
+    submit = SubmitField('Save Development')
+
+class MoveItemForm(FlaskForm):
+    item_type = SelectField('Move to', choices=[
+        ('project', 'Project'),
+        ('task', 'Task'),
+        ('development', 'Development')
+    ])
+    submit = SubmitField('Move Item')
+
 class LinkForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired(), Length(max=100)])
     url = StringField('URL', validators=[DataRequired(), Length(max=500)])

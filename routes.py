@@ -550,91 +550,166 @@ def simple_view_member(member_id):
     member = TeamMember.query.get_or_404(member_id)
     return f"<h1>Member: {member.name}</h1><p>Role: {member.role or 'Not specified'}</p>"
 
-@team.route('/minimal')
-def minimal_team_view():
-    """A minimal team view page with projects, notes, and developments"""
-    members = TeamMember.query.all()
-    
-    # Create the form instances needed for the modals
-    project_form = MemberProjectForm()
-    note_form = MemberNoteForm()
-    development_form = MemberDevelopmentForm()
-    
-    # Convert markdown to HTML for member notes if needed
-    for member in members:
-        if member.notes:
-            member.html_notes = convert_markdown_to_html(member.notes)
-    
-    return render_template('minimal_all_members.html', 
-                          members=members,
-                          project_form=project_form,
-                          note_form=note_form,
-                          development_form=development_form)
+# Add New Entries
+@team.route('/member/<int:member_id>/add_project', methods=['POST'])
+def add_project(member_id):
+    form = ProjectForm()
+    if form.validate_on_submit():
+        project = MemberProject(
+            name=form.name.data,
+            description=form.description.data,
+            member_id=member_id
+        )
+        db.session.add(project)
+        db.session.commit()
+        flash('Project added successfully!', 'success')
+    return redirect(url_for('team.view_member', member_id=member_id))
 
-@team.route('/simple')
-def simple_team_view():
-    """A simplified team members page that avoids complex features"""
-    members = TeamMember.query.all()
-    return render_template('simple_team.html', members=members)
+@team.route('/member/<int:member_id>/add_task', methods=['POST'])
+def add_task(member_id):
+    form = TaskForm()
+    if form.validate_on_submit():
+        task = MemberTask(
+            content=form.content.data,
+            completed=form.completed.data,
+            member_id=member_id
+        )
+        db.session.add(task)
+        db.session.commit()
+        flash('Task added successfully!', 'success')
+    return redirect(url_for('team.view_member', member_id=member_id))
 
-@team.route('/rawdebug')
-def raw_debug_view():
-    """A raw debugging route that bypasses context processors"""
-    from flask import current_app, make_response
-    
-    try:
-        members = TeamMember.query.all()
-        
-        # Build HTML response directly
-        html = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Raw Debug Info</title>
-            <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-            </style>
-        </head>
-        <body>
-            <h1>Raw Debug Information</h1>
-            <p><strong>Members found:</strong> {}</p>
-            <ul>
-        """.format(len(members))
-        
-        # Add member information
-        for member in members:
-            html += "<li><strong>{}</strong> - {}</li>".format(
-                member.name, 
-                member.role or "No role"
-            )
-        
-        html += """
-            </ul>
-            <p><a href="/">Back to Dashboard</a></p>
-        </body>
-        </html>
-        """
-        
-        # Create a direct response that bypasses context processors
-        response = make_response(html)
-        return response
-        
-    except Exception as e:
-        error_html = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Error</title>
-        </head>
-        <body>
-            <h1>Error in raw debug view</h1>
-            <p style="color: red; font-weight: bold;">{}</p>
-            <p><a href="/">Back to Dashboard</a></p>
-        </body>
-        </html>
-        """.format(str(e))
-        
-        return error_html
+@team.route('/member/<int:member_id>/add_development', methods=['POST'])
+def add_development(member_id):
+    form = DevelopmentForm()
+    if form.validate_on_submit():
+        development = MemberDevelopment(
+            title=form.title.data,
+            description=form.description.data,
+            date=form.date.data,
+            member_id=member_id
+        )
+        db.session.add(development)
+        db.session.commit()
+        flash('Development added successfully!', 'success')
+    return redirect(url_for('team.view_member', member_id=member_id))
+
+# Edit Entries
+@team.route('/project/<int:project_id>/edit', methods=['POST'])
+def edit_project(project_id):
+    project = MemberProject.query.get_or_404(project_id)
+    form = ProjectForm(obj=project)
+    if form.validate_on_submit():
+        project.name = form.name.data
+        project.description = form.description.data
+        db.session.commit()
+        flash('Project updated successfully!', 'success')
+    return redirect(url_for('team.view_member', member_id=project.member_id))
+
+@team.route('/task/<int:task_id>/edit', methods=['POST'])
+def edit_task(task_id):
+    task = MemberTask.query.get_or_404(task_id)
+    form = TaskForm(obj=task)
+    if form.validate_on_submit():
+        task.content = form.content.data
+        task.completed = form.completed.data
+        db.session.commit()
+        flash('Task updated successfully!', 'success')
+    return redirect(url_for('team.view_member', member_id=task.member_id))
+
+@team.route('/development/<int:development_id>/edit', methods=['POST'])
+def edit_development(development_id):
+    development = MemberDevelopment.query.get_or_404(development_id)
+    form = DevelopmentForm(obj=development)
+    if form.validate_on_submit():
+        development.title = form.title.data
+        development.description = form.description.data
+        development.date = form.date.data
+        db.session.commit()
+        flash('Development updated successfully!', 'success')
+    return redirect(url_for('team.view_member', member_id=development.member_id))
+
+# Move Items
+@team.route('/move_item/<string:item_type>/<int:item_id>', methods=['POST'])
+def move_item(item_type, item_id):
+    form = MoveItemForm()
+    if form.validate_on_submit():
+        if item_type == 'project':
+            item = MemberProject.query.get_or_404(item_id)
+        elif item_type == 'task':
+            item = MemberTask.query.get_or_404(item_id)
+        elif item_type == 'development':
+            item = MemberDevelopment.query.get_or_404(item_id)
+        else:
+            flash('Invalid item type.', 'danger')
+            return redirect(url_for('team.all_members'))
+
+        new_type = form.item_type.data
+        if new_type == 'project':
+            new_item = MemberProject(name=item.name, description=item.description, member_id=item.member_id)
+        elif new_type == 'task':
+            new_item = MemberTask(content=item.content, completed=False, member_id=item.member_id)
+        elif new_type == 'development':
+            new_item = MemberDevelopment(title=item.title, description=item.description, date=item.date, member_id=item.member_id)
+
+        db.session.add(new_item)
+        db.session.delete(item)
+        db.session.commit()
+        flash(f'Item successfully moved to {new_type.capitalize()}!', 'success')
+    return redirect(url_for('team.view_member', member_id=item.member_id))
+
+# Delete Entries
+@team.route('/project/<int:project_id>/delete', methods=['POST'])
+def delete_project(project_id):
+    project = MemberProject.query.get_or_404(project_id)
+    member_id = project.member_id
+    db.session.delete(project)
+    db.session.commit()
+    flash('Project deleted successfully!', 'success')
+    return redirect(url_for('team.view_member', member_id=member_id))
+
+@team.route('/reorder_items/<string:item_type>', methods=['POST'])
+def reorder_items(item_type):
+    data = request.json.get('order')
+    if item_type == 'project':
+        items = MemberProject.query.filter(MemberProject.id.in_(data)).all()
+    elif item_type == 'task':
+        items = MemberTask.query.filter(MemberTask.id.in_(data)).all()
+    elif item_type == 'development':
+        items = MemberDevelopment.query.filter(MemberDevelopment.id.in_(data)).all()
+    else:
+        return jsonify({'status': 'error', 'message': 'Invalid item type'}), 400
+
+    # Reordering logic
+    for index, item_id in enumerate(data):
+        item = next((item for item in items if item.id == int(item_id)), None)
+        if item:
+            item.order = index
+
+    db.session.commit()
+    return jsonify({'status': 'success'})
+
+@team.route('/update_item/<string:item_type>/<int:item_id>', methods=['POST'])
+def update_item(item_type, item_id):
+    data = request.json
+    if item_type == 'project':
+        item = MemberProject.query.get_or_404(item_id)
+        item.name = data.get('name')
+        item.description = data.get('description')
+    elif item_type == 'task':
+        item = MemberTask.query.get_or_404(item_id)
+        item.content = data.get('content')
+        item.completed = data.get('completed')
+    elif item_type == 'development':
+        item = MemberDevelopment.query.get_or_404(item_id)
+        item.title = data.get('title')
+        item.description = data.get('description')
+
+    db.session.commit()
+    return jsonify({'status': 'success'})
+
+
+
 
 # Links routes
 @links.route('/')

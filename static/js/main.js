@@ -155,3 +155,59 @@ $(document).ready(function() {
         window.open(url, '_blank');
     });
 });
+
+function setupDragAndDrop(itemType) {
+    const container = document.getElementById(`${itemType}-list`);
+    if (!container) return;
+
+    new Sortable(container, {
+        animation: 150,
+        onEnd: function (evt) {
+            const itemOrder = Array.from(container.children).map(item => item.dataset.itemId);
+
+            fetch(`/reorder_items/${itemType}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ order: itemOrder })
+            }).then(response => response.json())
+              .then(data => console.log(data))
+              .catch(error => console.error('Error reordering:', error));
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    setupDragAndDrop('project');
+    setupDragAndDrop('task');
+    setupDragAndDrop('development');
+});
+
+function enableInlineEditing(itemType) {
+    document.querySelectorAll(`.${itemType}-edit`).forEach(item => {
+        item.addEventListener('click', function () {
+            const itemId = this.dataset.itemId;
+            const contentField = document.getElementById(`${itemType}-content-${itemId}`);
+
+            contentField.contentEditable = 'true';
+            contentField.focus();
+
+            contentField.addEventListener('blur', function () {
+                const updatedContent = contentField.innerText;
+
+                fetch(`/update_item/${itemType}/${itemId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: updatedContent })
+                }).then(response => response.json())
+                  .then(data => console.log(data))
+                  .catch(error => console.error('Error updating:', error));
+            });
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    enableInlineEditing('project');
+    enableInlineEditing('task');
+    enableInlineEditing('development');
+});
