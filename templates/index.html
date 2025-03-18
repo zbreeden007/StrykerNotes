@@ -83,22 +83,9 @@
                     </form>
                 </div>
                 
-                <!-- To-Do List Items -->
+                <!-- To-Do List Items (filter buttons and "Clear Completed" removed) -->
                 {% if todos %}
                 <div class="todo-list">
-                    <div class="d-flex justify-content-between mb-2">
-                        <div class="btn-group btn-group-sm" role="group">
-                            <button type="button" class="btn btn-outline-secondary active filter-todo" data-filter="all">All</button>
-                            <button type="button" class="btn btn-outline-secondary filter-todo" data-filter="active">Active</button>
-                            <button type="button" class="btn btn-outline-secondary filter-todo" data-filter="completed">Completed</button>
-                        </div>
-                        <form id="clearCompletedForm" action="{{ url_for('main.clear_completed') }}" method="post" class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-trash me-1"></i>Clear Completed
-                            </button>
-                        </form>
-                    </div>
-                    
                     <ul class="list-group" id="dashboard-todo-list">
                         {% for todo in todos %}
                         <li class="list-group-item todo-item{% if todo.completed %} completed{% endif %} priority-{% if todo.priority == 2 %}high{% elif todo.priority == 1 %}medium{% else %}low{% endif %}"
