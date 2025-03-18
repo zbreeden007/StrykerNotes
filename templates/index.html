@@ -41,11 +41,6 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #49789F; color: white;">
                 <h5 class="mb-0">To-Do List</h5>
-                <div>
-                    <span class="badge bg-success">
-                        {{ todos|selectattr('completed', 'equalto', true)|list|length }}/{{ todos|length }} Completed
-                    </span>
-                </div>
             </div>
             <div class="card-body">
                 <!-- To-Do Form directly on dashboard -->
