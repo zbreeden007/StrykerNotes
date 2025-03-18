@@ -54,9 +54,9 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #49789F; color: white;">
                 <h5 class="mb-0">To-Do List</h5>
-                <!-- Moved "Add Task" button into the header -->
+                <!-- Updated "Add Task" button text -->
                 <a href="#" id="toggleAddTask" class="btn btn-link btn-sm" style="color: white; text-decoration: none;">
-                    Add Task
+                    + Add Task
                 </a>
             </div>
             <div class="card-body">
@@ -171,7 +171,7 @@
                     </ul>
                 </div>
                 {% else %}
-                <p class="text-muted">No tasks added yet. Add your first task by clicking "Add Task" above.</p>
+                <p class="text-muted">No tasks added yet. Add your first task by clicking "+ Add Task" above.</p>
                 {% endif %}
             </div>
         </div>
@@ -183,8 +183,9 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #709795; color: white;">
                 <h5 class="mb-0">Permanent Notes</h5>
+                <!-- Updated "+ Add" text to "+ Add Note" -->
                 <a href="{{ url_for('notes.new_note') }}?permanent=true" class="btn btn-link btn-sm" style="color: white; text-decoration: none;">
-                    <i class="fas fa-plus"></i> Add
+                    + Add Note
                 </a>
             </div>
             <div class="card-body">
