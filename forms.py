@@ -2,6 +2,8 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, TextAreaField, BooleanField, SelectField, SubmitField, IntegerField
 from wtforms.validators import DataRequired, Length, Optional
+from wtforms.fields import DateField
+
 
 class NoteForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired(), Length(max=100)])
