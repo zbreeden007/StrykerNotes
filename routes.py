@@ -528,6 +528,126 @@ def minimal_team_view():
                           project_form=project_form,
                           note_form=note_form,
                           development_form=development_form)
+@team.route('/debug')
+def debug_team_view():
+    """A debugging route to identify template errors"""
+    try:
+        members = TeamMember.query.all()
+        member_info = []
+        
+        # Gather basic info about members
+        for member in members:
+            member_data = {
+                'id': member.id,
+                'name': member.name,
+                'role': member.role,
+                'has_profile_picture': bool(member.profile_picture),
+                'projects_count': len(member.projects) if hasattr(member, 'projects') else 'N/A',
+                'notes_count': len(member.member_notes) if hasattr(member, 'member_notes') else 'N/A',
+                'developments_count': len(member.developments) if hasattr(member, 'developments') else 'N/A'
+            }
+            member_info.append(member_data)
+        
+        # Return direct HTML without using templates
+        html = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Team Debug Info</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                table { border-collapse: collapse; width: 100%; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; }
+                tr:nth-child(even) { background-color: #f9f9f9; }
+            </style>
+        </head>
+        <body>
+            <h1>Team Debug Information</h1>
+            <p>Total members: {}</p>
+            
+            <h2>Member Details</h2>
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Has Profile Picture</th>
+                    <th>Projects</th>
+                    <th>Notes</th>
+                    <th>Developments</th>
+                </tr>
+        """.format(len(members))
+        
+        for info in member_info:
+            html += """
+                <tr>
+                    <td>{}</td>
+                    <td>{}</td>
+                    <td>{}</td>
+                    <td>{}</td>
+                    <td>{}</td>
+                    <td>{}</td>
+                    <td>{}</td>
+                </tr>
+            """.format(
+                info['id'],
+                info['name'],
+                info['role'] or 'None',
+                info['has_profile_picture'],
+                info['projects_count'],
+                info['notes_count'],
+                info['developments_count']
+            )
+            
+        html += """
+            </table>
+            
+            <h2>Forms Information</h2>
+            <p>Testing form creation for debugging:</p>
+            <ul>
+        """
+        
+        # Test form creation
+        try:
+            project_form = MemberProjectForm()
+            html += "<li>MemberProjectForm created successfully</li>"
+        except Exception as e:
+            html += "<li>Error creating MemberProjectForm: {}</li>".format(str(e))
+            
+        try:
+            note_form = MemberNoteForm()
+            html += "<li>MemberNoteForm created successfully</li>"
+        except Exception as e:
+            html += "<li>Error creating MemberNoteForm: {}</li>".format(str(e))
+            
+        try:
+            development_form = MemberDevelopmentForm()
+            html += "<li>MemberDevelopmentForm created successfully</li>"
+        except Exception as e:
+            html += "<li>Error creating MemberDevelopmentForm: {}</li>".format(str(e))
+            
+        html += """
+            </ul>
+            
+            <p><a href="/">Back to Dashboard</a></p>
+        </body>
+        </html>
+        """
+        
+        return html
+    except Exception as e:
+        # Show any errors that occur
+        return f"""
+        <html>
+        <head><title>Error</title></head>
+        <body>
+            <h1>Error in debug view</h1>
+            <p style="color: red; font-weight: bold;">{str(e)}</p>
+            <p><a href="/">Back to Dashboard</a></p>
+        </body>
+        </html>
+        """
 
 # Links routes
 @links.route('/')
