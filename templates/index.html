@@ -83,39 +83,29 @@
                     </form>
                 </div>
                 
-                <!-- To-Do List Items (filter buttons and "Clear Completed" removed) -->
+                <!-- To-Do List Items -->
                 {% if todos %}
                 <div class="todo-list">
                     <ul class="list-group" id="dashboard-todo-list">
                         {% for todo in todos %}
-                        <li class="list-group-item todo-item{% if todo.completed %} completed{% endif %} priority-{% if todo.priority == 2 %}high{% elif todo.priority == 1 %}medium{% else %}low{% endif %}"
-                            id="todo-{{ todo.id }}"
-                            data-completed="{{ 'true' if todo.completed else 'false' }}">
+                        <!-- Removed priority classes and "completed" references; also removed checkbox -->
+                        <li class="list-group-item" id="todo-{{ todo.id }}">
                             <div class="d-flex justify-content-between align-items-center">
+                                <!-- Left side: handle icon + task text -->
                                 <div>
                                     <i class="fas fa-grip-vertical handle me-2 text-muted"></i>
-                                    <input class="form-check-input todo-checkbox" type="checkbox" 
-                                           {% if todo.completed %}checked{% endif %}
-                                           onclick="toggleTodoComplete({{ todo.id }})" 
-                                           id="todo-check-{{ todo.id }}">
-                                    <label class="form-check-label {% if todo.completed %}text-muted{% endif %}" for="todo-check-{{ todo.id }}">
-                                        {{ todo.content }}
-                                    </label>
-                                    
-                                    {% if todo.priority > 0 %}
-                                    <span class="badge {% if todo.priority == 2 %}bg-danger{% elif todo.priority == 1 %}bg-warning text-dark{% endif %} ms-1">
-                                        {% if todo.priority == 2 %}High{% else %}Medium{% endif %}
-                                    </span>
-                                    {% else %}
-                                    <span class="badge bg-secondary ms-1">Low</span>
-                                    {% endif %}
+                                    {{ todo.content }}
                                 </div>
+                                <!-- Right side: Edit and Delete buttons, no borders, #989B9A background -->
                                 <div class="d-flex align-items-center">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-bs-toggle="modal" data-bs-target="#editTodoModal{{ todo.id }}">
+                                    <button type="button" class="btn btn-sm me-1"
+                                            data-bs-toggle="modal" data-bs-target="#editTodoModal{{ todo.id }}"
+                                            style="background-color: #989B9A; border: none; color: #fff;">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <form action="{{ url_for('main.delete_todo', todo_id=todo.id) }}" method="post" class="d-inline">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <button type="submit" class="btn btn-sm"
+                                                style="background-color: #989B9A; border: none; color: #fff;">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
