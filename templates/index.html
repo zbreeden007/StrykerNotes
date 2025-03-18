@@ -88,7 +88,7 @@
                 <div class="todo-list">
                     <ul class="list-group" id="dashboard-todo-list">
                         {% for todo in todos %}
-                        <!-- Removed priority classes and "completed" references; also removed checkbox -->
+                        <!-- Removed checkbox, priority text, and 'completed' references -->
                         <li class="list-group-item" id="todo-{{ todo.id }}">
                             <div class="d-flex justify-content-between align-items-center">
                                 <!-- Left side: handle icon + task text -->
@@ -96,16 +96,16 @@
                                     <i class="fas fa-grip-vertical handle me-2 text-muted"></i>
                                     {{ todo.content }}
                                 </div>
-                                <!-- Right side: Edit and Delete buttons, no borders, #989B9A background -->
+                                <!-- Right side: Edit and Delete icons with transparent background and grey color -->
                                 <div class="d-flex align-items-center">
                                     <button type="button" class="btn btn-sm me-1"
                                             data-bs-toggle="modal" data-bs-target="#editTodoModal{{ todo.id }}"
-                                            style="background-color: #989B9A; border: none; color: #fff;">
+                                            style="background-color: transparent; border: none; color: #989B9A;">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <form action="{{ url_for('main.delete_todo', todo_id=todo.id) }}" method="post" class="d-inline">
                                         <button type="submit" class="btn btn-sm"
-                                                style="background-color: #989B9A; border: none; color: #fff;">
+                                                style="background-color: transparent; border: none; color: #989B9A;">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
