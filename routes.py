@@ -471,7 +471,7 @@ def add_member_project(member_id):
         db.session.commit()
         flash('Project added successfully!', 'success')
     
-    return redirect(url_for('team.all_members'))
+    return redirect(url_for('team.view_member', member_id=member.id))
 
 @team.route('/project/<int:project_id>/delete', methods=['POST'])
 def delete_member_project(project_id):
@@ -480,7 +480,8 @@ def delete_member_project(project_id):
     db.session.delete(project)
     db.session.commit()
     flash('Project deleted successfully!', 'success')
-    return redirect(url_for('team.all_members'))
+    return redirect(url_for('team.view_member', member_id=member_id))
+
 
 # Member Note Routes
 @team.route('/member/<int:member_id>/add_note', methods=['POST'])

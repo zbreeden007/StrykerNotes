@@ -11,7 +11,6 @@
 </div>
 
 {% if members %}
-<!-- Team members row (horizontal) -->
 <div class="card mb-4">
     <div class="card-body">
         <div class="d-flex flex-wrap">
@@ -52,116 +51,32 @@
                 </button>
             </div>
         </div>
-        
-        <div class="row">
-            <!-- Basic profile information -->
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <h5>Profile</h5>
-                    </div>
-                    <div class="card-body">
-                        {% if member.notes %}
-                        <div class="p-3 bg-light rounded">
-                            {{ member.notes }}
-                        </div>
-                        {% else %}
-                        <p class="text-muted">No additional information available.</p>
-                        {% endif %}
-                    </div>
-                </div>
+
+        <!-- Projects Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Projects</h5>
             </div>
-            
-            <!-- Tasks Section -->
-            <div class="col-md-8 mb-4">
-                <div class="card h-100">
-                    <div class="card-header bg-success text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Tasks</h5>
-                            <button type="button" class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addTaskModal{{ member.id }}">
-                                <i class="fas fa-plus"></i>
+            <div class="card-body">
+                {% if member.projects %}
+                <ul class="list-group">
+                    {% for project in member.projects %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6>{{ project.name }}</h6>
+                            <p>{{ project.description }}</p>
+                        </div>
+                        <form action="{{ url_for('team.delete_member_project', project_id=project.id) }}" method="post">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash"></i>
                             </button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        {% if member.tasks %}
-                        <div class="list-group list-group-flush">
-                            {% for task in member.tasks %}
-                            <div class="list-group-item px-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="form-check">
-                                        <!-- Using form submission instead of JavaScript -->
-                                        <form action="{{ url_for('team.toggle_member_task', task_id=task.id) }}" method="post" class="d-inline">
-                                            <input class="form-check-input" type="checkbox" 
-                                                   {% if task.completed %}checked{% endif %}
-                                                   onChange="this.form.submit()"
-                                                   id="task-check-{{ task.id }}">
-                                            <label class="form-check-label {% if task.completed %}text-muted{% endif %}" for="task-check-{{ task.id }}">
-                                                {{ task.content }}
-                                            </label>
-                                        </form>
-                                    </div>
-                                    <form action="{{ url_for('team.delete_member_task', task_id=task.id) }}" method="post">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% else %}
-                        <p class="text-muted">No tasks assigned yet.</p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Add Task Modal -->
-    <div class="modal fade" id="addTaskModal{{ member.id }}" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Task for {{ member.name }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="{{ url_for('team.add_member_task', member_id=member.id) }}" method="post">
-                    <div class="modal-body">
-                        {{ task_form.csrf_token }}
-                        <div class="mb-3">
-                            {{ task_form.content.label(class="form-label") }}
-                            {{ task_form.content(class="form-control", required=true) }}
-                        </div>
-                        <!-- Removed due_date references -->
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        {{ task_form.submit(class="btn btn-primary") }}
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Delete Member Modal -->
-    <div class="modal fade" id="deleteMemberModal{{ member.id }}" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirm Deletion</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    Are you sure you want to delete {{ member.name }} and all associated data? This cannot be undone.
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <form action="{{ url_for('team.delete_member', member_id=member.id) }}" method="post">
-                        <button type="submit" class="btn btn-danger">Delete</button>
-                    </form>
-                </div>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">No projects assigned yet.</p>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -176,30 +91,4 @@
     </a>
 </div>
 {% endif %}
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    $(document).ready(function() {
-        // Handle member selection
-        $('.member-select').click(function() {
-            const memberId = $(this).data('member-id');
-            
-            // Hide all member content
-            $('.member-content').hide();
-            
-            // Show selected member content
-            $(`#member-content-${memberId}`).show();
-            
-            // Highlight selected member
-            $('.team-member-card').removeClass('selected');
-            $(this).closest('.team-member-card').addClass('selected');
-        });
-        
-        // Show first member by default if there are members
-        if ($('.member-select').length > 0) {
-            $('.member-select').first().click();
-        }
-    });
-</script>
 {% endblock %}
