@@ -11,7 +11,6 @@
 </div>
 
 {% if members %}
-<!-- Team member icons -->
 <div class="card mb-4">
     <div class="card-body">
         <div class="d-flex flex-wrap">
@@ -19,7 +18,7 @@
             <div class="team-member-card mx-2 mb-3 text-center" style="min-width: 120px; max-width: 150px;">
                 <div class="member-select" data-member-id="{{ member.id }}">
                     {% if member.profile_picture %}
-                    <img src="{{ url_for('static', filename=member.profile_picture.replace('static/', '')) }}"
+                    <img src="{{ url_for('static', filename=member.profile_picture.replace('static/', '')) }}" 
                          alt="{{ member.name }}" class="profile-picture profile-picture-md mb-2">
                     {% else %}
                     <div class="profile-initial profile-initial-md mx-auto mb-2">
@@ -37,20 +36,17 @@
     </div>
 </div>
 
-<!-- Member details (hidden by default) -->
+<!-- Member details sections -->
 <div class="member-details">
     {% for member in members %}
     <div class="member-content" id="member-content-{{ member.id }}" style="display: none;">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h3>{{ member.name }}'s Information</h3>
             <div>
-                <a href="{{ url_for('team.edit_member', member_id=member.id) }}"
-                   class="btn btn-sm btn-outline-secondary me-2">
+                <a href="{{ url_for('team.edit_member', member_id=member.id) }}" class="btn btn-sm btn-outline-secondary me-2">
                     <i class="fas fa-edit"></i> Edit Profile
                 </a>
-                <button type="button" class="btn btn-sm btn-outline-danger"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteMemberModal{{ member.id }}">
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteMemberModal{{ member.id }}">
                     <i class="fas fa-trash"></i> Delete
                 </button>
             </div>
@@ -60,11 +56,9 @@
             <!-- Projects Section -->
             <div class="col-md-4 mb-4">
                 <div class="card h-100">
-                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <div class="card-header project-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Projects</h5>
-                        <button class="btn btn-sm btn-light"
-                                data-bs-toggle="modal"
-                                data-bs-target="#addProjectModal{{ member.id }}">
+                        <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addProjectModal{{ member.id }}">
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
@@ -85,11 +79,9 @@
             <!-- Tasks Section -->
             <div class="col-md-4 mb-4">
                 <div class="card h-100">
-                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <div class="card-header task-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Tasks</h5>
-                        <button class="btn btn-sm btn-light"
-                                data-bs-toggle="modal"
-                                data-bs-target="#addTaskModal{{ member.id }}">
+                        <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addTaskModal{{ member.id }}">
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
@@ -110,18 +102,16 @@
             <!-- Development Section -->
             <div class="col-md-4 mb-4">
                 <div class="card h-100">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <div class="card-header development-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Development</h5>
-                        <button class="btn btn-sm btn-light"
-                                data-bs-toggle="modal"
-                                data-bs-target="#addDevelopmentModal{{ member.id }}">
+                        <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addDevelopmentModal{{ member.id }}">
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
                     <div class="card-body">
-                        {% if member.developments %}
+                        {% if member.development %}
                         <ul class="list-group">
-                            {% for dev in member.developments %}
+                            {% for dev in member.development %}
                             <li class="list-group-item">{{ dev.title }}</li>
                             {% endfor %}
                         </ul>
@@ -140,16 +130,12 @@
                     <form action="{{ url_for('team.add_project', member_id=member.id) }}" method="post">
                         <div class="modal-header">
                             <h5 class="modal-title">Add Project</h5>
-                            <button type="button" class="btn-close"
-                                    data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             {{ project_form.csrf_token }}
-                            {{ project_form.name.label }} 
-                            {{ project_form.name(class="form-control", required=true) }}
-                            {{ project_form.description.label }} 
-                            {{ project_form.description(class="form-control", rows=3) }}
+                            {{ project_form.name.label }} {{ project_form.name(class="form-control", required=true) }}
+                            {{ project_form.description.label }} {{ project_form.description(class="form-control", rows=3) }}
                         </div>
                         <div class="modal-footer">
                             {{ project_form.submit(class="btn btn-primary") }}
@@ -159,21 +145,18 @@
             </div>
         </div>
 
-        <!-- Add Task Modal -->
+        <!-- Repeat Modal for Task and Development -->
         <div class="modal fade" id="addTaskModal{{ member.id }}" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <form action="{{ url_for('team.add_task', member_id=member.id) }}" method="post">
                         <div class="modal-header">
                             <h5 class="modal-title">Add Task</h5>
-                            <button type="button" class="btn-close"
-                                    data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             {{ task_form.csrf_token }}
-                            {{ task_form.content.label }} 
-                            {{ task_form.content(class="form-control", required=true) }}
+                            {{ task_form.content.label }} {{ task_form.content(class="form-control", required=true) }}
                         </div>
                         <div class="modal-footer">
                             {{ task_form.submit(class="btn btn-primary") }}
@@ -183,23 +166,18 @@
             </div>
         </div>
 
-        <!-- Add Development Modal -->
         <div class="modal fade" id="addDevelopmentModal{{ member.id }}" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <form action="{{ url_for('team.add_development', member_id=member.id) }}" method="post">
                         <div class="modal-header">
                             <h5 class="modal-title">Add Development</h5>
-                            <button type="button" class="btn-close"
-                                    data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             {{ development_form.csrf_token }}
-                            {{ development_form.title.label }} 
-                            {{ development_form.title(class="form-control", required=true) }}
-                            {{ development_form.description.label }} 
-                            {{ development_form.description(class="form-control", rows=3) }}
+                            {{ development_form.title.label }} {{ development_form.title(class="form-control", required=true) }}
+                            {{ development_form.description.label }} {{ development_form.description(class="form-control", rows=3) }}
                         </div>
                         <div class="modal-footer">
                             {{ development_form.submit(class="btn btn-primary") }}
@@ -208,34 +186,28 @@
                 </div>
             </div>
         </div>
-    </div>
+
+        <!-- Delete Member Modal -->
+        <div class="modal fade" id="deleteMemberModal{{ member.id }}" tabindex="-1" aria-labelledby="deleteMemberModalLabel{{ member.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteMemberModalLabel{{ member.id }}">Confirm Deletion</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete {{ member.name }} and all associated data? This cannot be undone.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form action="{{ url_for('team.delete_member', member_id=member.id) }}" method="post">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     {% endfor %}
 </div>
 {% endif %}
-{% endblock %}
-
-{% block extra_js %}
-<script>
-  // When a user clicks a team member's icon, hide all others and show only that member's content.
-  document.addEventListener('DOMContentLoaded', function() {
-    const memberSelects = document.querySelectorAll('.member-select');
-    const allMemberContents = document.querySelectorAll('.member-content');
-
-    memberSelects.forEach(select => {
-      select.addEventListener('click', function() {
-        // Hide all member-content sections
-        allMemberContents.forEach(content => {
-          content.style.display = 'none';
-        });
-
-        // Show the clicked member's details
-        const memberId = this.dataset.memberId;
-        const target = document.getElementById('member-content-' + memberId);
-        if (target) {
-          target.style.display = 'block';
-        }
-      });
-    });
-  });
-</script>
 {% endblock %}
