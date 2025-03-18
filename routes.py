@@ -23,47 +23,46 @@ def inject_preferences():
     try:
         preferences = UserPreference.query.first()
         if not preferences:
-    # Create a default preferences object using Stryker’s brand values
-    preferences = UserPreference(
-        theme='light',  # White background, light theme as dominant
-        font_family='Cambria, serif',  # Use Cambria for body copy
-        font_size='16px',  # A slightly larger default for readability
-        accent_color='#BF8A36'  # Stryker gold accent
-    )
-    db.session.add(preferences)
-    try:
-        db.session.commit()
-    except Exception as e:
-        print(f"Error saving preferences: {e}")
-        db.session.rollback()
-        
+            # Create a default preferences object using Stryker’s brand values
+            preferences = UserPreference(
+                theme='light',  # White background, light theme as dominant
+                font_family='Cambria, serif',  # Use Cambria for body copy
+                font_size='16px',  # A slightly larger default for readability
+                accent_color='#BF8A36'  # Stryker gold accent
+            )
+            db.session.add(preferences)
+            try:
+                db.session.commit()
+            except Exception as e:
+                print(f"Error saving preferences: {e}")
+                db.session.rollback()
+
         # Ensure all required attributes exist
         if not hasattr(preferences, 'font_family') or not preferences.font_family:
-            preferences.font_family = 'Arial, sans-serif'
+            preferences.font_family = 'Cambria, serif'
         if not hasattr(preferences, 'font_size') or not preferences.font_size:
-            preferences.font_size = '14px'
+            preferences.font_size = '16px'
         if not hasattr(preferences, 'theme') or not preferences.theme:
             preferences.theme = 'light'
         if not hasattr(preferences, 'accent_color') or not preferences.accent_color:
-            preferences.accent_color = '#007bff'
+            preferences.accent_color = '#BF8A36'
             
         return dict(preferences=preferences)
     except Exception as e:
         print(f"Error in context processor: {e}")
         # Return default preferences if anything goes wrong
-        default_preferences = {
-            'theme': 'light',
-            'font_family': 'Arial, sans-serif',
-            'font_size': '14px',
-            'accent_color': '#007bff'
-        }
-        # Create a simple object that behaves like a UserPreference
         class DefaultPreferences:
             def __init__(self, **kwargs):
                 for key, value in kwargs.items():
                     setattr(self, key, value)
-        
+        default_preferences = {
+            'theme': 'light',
+            'font_family': 'Cambria, serif',
+            'font_size': '16px',
+            'accent_color': '#BF8A36'
+        }
         return dict(preferences=DefaultPreferences(**default_preferences))
+
 
 # Function to save profile pictures
 def save_profile_picture(form_picture):
