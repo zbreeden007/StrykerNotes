@@ -5,9 +5,8 @@ import markdown
 from werkzeug.utils import secure_filename
 from models import db, Note, Todo, TodoList, TeamMember, MemberTask, Link, UserPreference, MemberProject, MemberNote, MemberDevelopment
 from forms import NoteForm, TodoForm, TeamMemberForm, MemberTaskForm, LinkForm, UserPreferenceForm, MemberProjectForm, MemberNoteForm, MemberDevelopmentForm
-from PIL import Image
 from forms import ProjectForm, TaskForm, DevelopmentForm
-
+from PIL import Image
 
 # Create blueprints for different sections of the app
 main = Blueprint('main', __name__)
@@ -364,7 +363,6 @@ def all_members():
         development_form=development_form
     )
 
-
 @team.route('/new', methods=['GET', 'POST'])
 def new_member():
     form = TeamMemberForm()
@@ -389,12 +387,18 @@ def new_member():
 @team.route('/<int:member_id>', methods=['GET'])
 def view_member(member_id):
     member = TeamMember.query.get_or_404(member_id)
+    # Instantiate the forms for the member detail modals
+    project_form = MemberProjectForm()
     task_form = MemberTaskForm()
+    development_form = MemberDevelopmentForm()
     
     # Convert markdown to HTML for member notes
     member.html_notes = convert_markdown_to_html(member.notes)
     
-    return render_template('member.html', member=member, form=task_form)
+    return render_template('member.html', member=member,
+                           project_form=project_form,
+                           task_form=task_form,
+                           development_form=development_form)
 
 @team.route('/<int:member_id>/edit', methods=['GET', 'POST'])
 def edit_member(member_id):
@@ -420,7 +424,6 @@ def edit_member(member_id):
         return redirect(url_for('team.view_member', member_id=member.id))
 
     return render_template('member_form.html', form=form, member=member, is_new=False)
-
 
 @team.route('/<int:member_id>/delete', methods=['POST'])
 def delete_member(member_id):
@@ -494,7 +497,6 @@ def delete_member_project(project_id):
     db.session.commit()
     flash('Project deleted successfully!', 'success')
     return redirect(url_for('team.view_member', member_id=member_id))
-
 
 # Member Note Routes
 @team.route('/member/<int:member_id>/add_note', methods=['POST'])
@@ -714,9 +716,6 @@ def update_item(item_type, item_id):
 
     db.session.commit()
     return jsonify({'status': 'success'})
-
-
-
 
 # Links routes
 @links.route('/')
