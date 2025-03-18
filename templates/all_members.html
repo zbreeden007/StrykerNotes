@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Team Members - Productivity Tool{% endblock %}
+{% block title %}Team Members - Stryker Notes{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -54,47 +54,26 @@
         </div>
         
         <div class="row">
-            <!-- Projects Section -->
-            <div class="col-md-6 col-lg-3 mb-4">
+            <!-- Basic profile information -->
+            <div class="col-md-4 mb-4">
                 <div class="card h-100">
-                    <div class="card-header bg-primary text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Projects</h5>
-                            <button type="button" class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addProjectModal{{ member.id }}">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        </div>
+                    <div class="card-header">
+                        <h5>Profile</h5>
                     </div>
                     <div class="card-body">
-                        {% if member.projects %}
-                        <div class="list-group list-group-flush">
-                            {% for project in member.projects %}
-                            <div class="list-group-item px-0">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h6 class="mb-1">{{ project.name }}</h6>
-                                        {% if project.description %}
-                                        <p class="mb-1 small">{{ project.description|truncate(100) }}</p>
-                                        {% endif %}
-                                    </div>
-                                    <form action="{{ url_for('team.delete_member_project', project_id=project.id) }}" method="post">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                            {% endfor %}
+                        {% if member.notes %}
+                        <div class="p-3 bg-light rounded">
+                            {{ member.notes }}
                         </div>
                         {% else %}
-                        <p class="text-muted">No projects assigned yet.</p>
+                        <p class="text-muted">No additional information available.</p>
                         {% endif %}
                     </div>
                 </div>
             </div>
             
             <!-- Tasks Section -->
-            <div class="col-md-6 col-lg-3 mb-4">
+            <div class="col-md-8 mb-4">
                 <div class="card h-100">
                     <div class="card-header bg-success text-white">
                         <div class="d-flex justify-content-between align-items-center">
@@ -111,15 +90,18 @@
                             <div class="list-group-item px-0">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="form-check">
-                                        <input class="form-check-input task-checkbox" type="checkbox" 
-                                               {% if task.completed %}checked{% endif %}
-                                               onclick="toggleMemberTaskComplete({{ task.id }})" 
-                                               id="task-check-{{ task.id }}">
-                                        <label class="form-check-label {% if task.completed %}text-muted{% endif %}" for="task-check-{{ task.id }}">
-                                            {{ task.content }}
-                                        </label>
+                                        <!-- Using form submission instead of JavaScript -->
+                                        <form action="{{ url_for('team.toggle_member_task', task_id=task.id) }}" method="post" class="d-inline">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   {% if task.completed %}checked{% endif %}
+                                                   onChange="this.form.submit()"
+                                                   id="task-check-{{ task.id }}">
+                                            <label class="form-check-label {% if task.completed %}text-muted{% endif %}" for="task-check-{{ task.id }}">
+                                                {{ task.content }}
+                                            </label>
+                                        </form>
                                         {% if task.due_date %}
-                                        <div><small class="text-muted">Due: {{ task.due_date.strftime('%m/%d/%Y') }}</small></div>
+                                        <div><small class="text-muted">Due: {{ task.due_date.strftime('%m/%d/%Y') if task.due_date else '' }}</small></div>
                                         {% endif %}
                                     </div>
                                     <form action="{{ url_for('team.delete_member_task', task_id=task.id) }}" method="post">
@@ -136,117 +118,6 @@
                         {% endif %}
                     </div>
                 </div>
-            </div>
-            
-            <!-- Notes Section -->
-            <div class="col-md-6 col-lg-3 mb-4">
-                <div class="card h-100">
-                    <div class="card-header bg-info text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Notes</h5>
-                            <button type="button" class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addNoteModal{{ member.id }}">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        {% if member.member_notes %}
-                        <div class="list-group list-group-flush">
-                            {% for note in member.member_notes %}
-                            <div class="list-group-item px-0">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h6 class="mb-1">{{ note.title }}</h6>
-                                        {% if note.content %}
-                                        <p class="mb-1 small">{{ note.content|truncate(100) }}</p>
-                                        {% endif %}
-                                    </div>
-                                    <form action="{{ url_for('team.delete_member_note', note_id=note.id) }}" method="post">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% else %}
-                        <p class="text-muted">No notes available yet.</p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Developments Section -->
-            <div class="col-md-6 col-lg-3 mb-4">
-                <div class="card h-100">
-                    <div class="card-header bg-warning text-dark">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Developments</h5>
-                            <button type="button" class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addDevelopmentModal{{ member.id }}">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        {% if member.developments %}
-                        <div class="list-group list-group-flush">
-                            {% for development in member.developments %}
-                            <div class="list-group-item px-0">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h6 class="mb-1">{{ development.title }}</h6>
-                                        {% if development.description %}
-                                        <p class="mb-1 small">{{ development.description|truncate(100) }}</p>
-                                        {% endif %}
-                                        {% if development.date %}
-                                        <small class="text-muted">Date: {{ development.date.strftime('%Y-%m-%d') }}</small>
-                                        {% endif %}
-                                    </div>
-                                    <form action="{{ url_for('team.delete_member_development', development_id=development.id) }}" method="post">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% else %}
-                        <p class="text-muted">No developments recorded yet.</p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modals for adding projects, tasks, notes, and developments -->
-    <!-- Add Project Modal -->
-    <div class="modal fade" id="addProjectModal{{ member.id }}" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Project for {{ member.name }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="{{ url_for('team.add_member_project', member_id=member.id) }}" method="post">
-                    <div class="modal-body">
-                        {{ project_form.csrf_token }}
-                        <div class="mb-3">
-                            {{ project_form.name.label(class="form-label") }}
-                            {{ project_form.name(class="form-control", required=true) }}
-                        </div>
-                        <div class="mb-3">
-                            {{ project_form.description.label(class="form-label") }}
-                            {{ project_form.description(class="form-control", rows=3) }}
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        {{ project_form.submit(class="btn btn-primary") }}
-                    </div>
-                </form>
             </div>
         </div>
     </div>
@@ -274,68 +145,6 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         {{ task_form.submit(class="btn btn-primary") }}
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Add Note Modal -->
-    <div class="modal fade" id="addNoteModal{{ member.id }}" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Note for {{ member.name }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="{{ url_for('team.add_member_note', member_id=member.id) }}" method="post">
-                    <div class="modal-body">
-                        {{ note_form.csrf_token }}
-                        <div class="mb-3">
-                            {{ note_form.title.label(class="form-label") }}
-                            {{ note_form.title(class="form-control", required=true) }}
-                        </div>
-                        <div class="mb-3">
-                            {{ note_form.content.label(class="form-label") }}
-                            {{ note_form.content(class="form-control", rows=3) }}
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        {{ note_form.submit(class="btn btn-primary") }}
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Add Development Modal -->
-    <div class="modal fade" id="addDevelopmentModal{{ member.id }}" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Development for {{ member.name }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="{{ url_for('team.add_member_development', member_id=member.id) }}" method="post">
-                    <div class="modal-body">
-                        {{ development_form.csrf_token }}
-                        <div class="mb-3">
-                            {{ development_form.title.label(class="form-label") }}
-                            {{ development_form.title(class="form-control", required=true) }}
-                        </div>
-                        <div class="mb-3">
-                            {{ development_form.description.label(class="form-label") }}
-                            {{ development_form.description(class="form-control", rows=3) }}
-                        </div>
-                        <div class="mb-3">
-                            {{ development_form.date.label(class="form-label") }}
-                            {{ development_form.date(class="form-control", type="datetime-local") }}
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        {{ development_form.submit(class="btn btn-primary") }}
                     </div>
                 </form>
             </div>

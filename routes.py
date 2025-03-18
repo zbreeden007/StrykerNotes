@@ -510,10 +510,24 @@ def simple_view_member(member_id):
 
 @team.route('/minimal')
 def minimal_team_view():
-    """A minimal team view page to help debug template issues"""
+    """A minimal team view page with projects, notes, and developments"""
     members = TeamMember.query.all()
     
-    return render_template('minimal_all_members.html', members=members)
+    # Create the form instances needed for the modals
+    project_form = MemberProjectForm()
+    note_form = MemberNoteForm()
+    development_form = MemberDevelopmentForm()
+    
+    # Convert markdown to HTML for member notes if needed
+    for member in members:
+        if member.notes:
+            member.html_notes = convert_markdown_to_html(member.notes)
+    
+    return render_template('minimal_all_members.html', 
+                          members=members,
+                          project_form=project_form,
+                          note_form=note_form,
+                          development_form=development_form)
 
 # Links routes
 @links.route('/')
