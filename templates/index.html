@@ -183,12 +183,13 @@
                             <div class="accordion-body">
                                 {{ note.html_content|safe }}
                                 <div class="mt-2">
-                                    <!-- Updated to match the to-do style (gray icon, transparent background) -->
+                                    <!-- Edit button matching to-do style -->
                                     <a href="{{ url_for('notes.edit_note', note_id=note.id) }}"
                                        class="btn btn-sm p-0"
                                        style="background-color: transparent; border: none; color: #989B9A; text-decoration: none;">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    <!-- Optionally, you could add a delete button here if desired -->
                                 </div>
                             </div>
                         </div>
@@ -220,13 +221,23 @@
                 <div class="row row-cols-1 row-cols-md-2 g-4">
                     {% for member in team_members %}
                     <div class="col">
-                        <!-- Make each member card clickable, remove "View Details" -->
+                        <!-- Make each member card clickable -->
                         <div class="card h-100" style="cursor: pointer;" onclick="window.location.href='{{ url_for('team.view_member', member_id=member.id) }}'">
-                            <div class="card-body">
-                                <h6 class="card-title">{{ member.name }}</h6>
-                                {% if member.role %}
-                                <p class="card-subtitle mb-2 text-muted">{{ member.role }}</p>
+                            <div class="card-body d-flex align-items-center">
+                                <!-- Display member image/icon if available -->
+                                {% if member.profile_picture %}
+                                  <img src="{{ url_for('static', filename=member.profile_picture.replace('static/', '')) }}" alt="{{ member.name }}" class="profile-picture-sm me-2">
+                                {% else %}
+                                  <div class="profile-initial profile-initial-sm me-2">
+                                    <span>{{ member.name[:1] }}</span>
+                                  </div>
                                 {% endif %}
+                                <div>
+                                    <h6 class="card-title mb-0">{{ member.name }}</h6>
+                                    {% if member.role %}
+                                    <p class="card-subtitle mb-2 text-muted">{{ member.role }}</p>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
