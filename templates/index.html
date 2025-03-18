@@ -54,6 +54,7 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #49789F; color: white;">
                 <h5 class="mb-0">To-Do List</h5>
+                <!-- "+ Add Task" button in the header -->
                 <a href="#" id="toggleAddTask" class="btn btn-link btn-sm" style="color: white; text-decoration: none;">
                     + Add Task
                 </a>
@@ -182,7 +183,7 @@
                             <div class="accordion-body">
                                 {{ note.html_content|safe }}
                                 <div class="mt-2">
-                                    <!-- Updated to match the to-do style -->
+                                    <!-- Updated to match the to-do style (gray icon, transparent background) -->
                                     <a href="{{ url_for('notes.edit_note', note_id=note.id) }}"
                                        class="btn btn-sm p-0"
                                        style="background-color: transparent; border: none; color: #989B9A; text-decoration: none;">
@@ -258,13 +259,6 @@
 </div>
 {% endif %}
 {% endblock %}
-
-{% block extra_js %}
-<script>
-    // (Rest of the existing script remains the same)
-</script>
-{% endblock %}
-
 
 {% block extra_js %}
 <script>
