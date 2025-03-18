@@ -21,7 +21,8 @@
         <div class="card">
             <div class="card-header project-header d-flex justify-content-between align-items-center">
                 <h5>Projects</h5>
-                <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addProjectModal">
+                <!-- IMPORTANT: data-bs-target must match the modal's ID below -->
+                <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addProjectModal{{ member.id }}">
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
@@ -52,7 +53,7 @@
         <div class="card">
             <div class="card-header task-header d-flex justify-content-between align-items-center">
                 <h5>Tasks</h5>
-                <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+                <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addTaskModal{{ member.id }}">
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
@@ -83,7 +84,7 @@
         <div class="card">
             <div class="card-header development-header d-flex justify-content-between align-items-center">
                 <h5>Development</h5>
-                <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addDevelopmentModal">
+                <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addDevelopmentModal{{ member.id }}">
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
@@ -106,6 +107,71 @@
                     {% endfor %}
                 </ul>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Project Modal -->
+<div class="modal fade" id="addProjectModal{{ member.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ url_for('team.add_project', member_id=member.id) }}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{ project_form.csrf_token }}
+                    {{ project_form.name.label }} {{ project_form.name(class="form-control", required=true) }}
+                    {{ project_form.description.label }} {{ project_form.description(class="form-control", rows=3) }}
+                </div>
+                <div class="modal-footer">
+                    {{ project_form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal fade" id="addTaskModal{{ member.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ url_for('team.add_task', member_id=member.id) }}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{ task_form.csrf_token }}
+                    {{ task_form.content.label }} {{ task_form.content(class="form-control", required=true) }}
+                </div>
+                <div class="modal-footer">
+                    {{ task_form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Development Modal -->
+<div class="modal fade" id="addDevelopmentModal{{ member.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ url_for('team.add_development', member_id=member.id) }}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Development</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{ development_form.csrf_token }}
+                    {{ development_form.title.label }} {{ development_form.title(class="form-control", required=true) }}
+                    {{ development_form.description.label }} {{ development_form.description(class="form-control", rows=3) }}
+                </div>
+                <div class="modal-footer">
+                    {{ development_form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -135,6 +201,7 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Re-run the drag & drop setup for the single member page
         setupDragAndDrop('project');
         setupDragAndDrop('task');
         setupDragAndDrop('development');
