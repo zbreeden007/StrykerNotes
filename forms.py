@@ -15,6 +15,9 @@ class NoteForm(FlaskForm):
 class TodoForm(FlaskForm):
     content = StringField('Task', validators=[DataRequired(), Length(max=200)])
     priority = SelectField('Priority', choices=[(0, 'Low'), (1, 'Medium'), (2, 'High')], coerce=int)
+    # New Tag field:
+    tag = SelectField('Tag', choices=[('today', 'Today'), ('later', 'Later')], default='later')
+    
     submit = SubmitField('Add Task')
 
 class TeamMemberForm(FlaskForm):
