@@ -36,10 +36,10 @@
     </div>
 </div>
 
-<!-- Member details sections -->
+<!-- Member details sections (now visible by default) -->
 <div class="member-details">
     {% for member in members %}
-    <div class="member-content" id="member-content-{{ member.id }}" style="display: none;">
+    <div class="member-content" id="member-content-{{ member.id }}">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h3>{{ member.name }}'s Information</h3>
             <div>
@@ -109,9 +109,9 @@
                         </button>
                     </div>
                     <div class="card-body">
-                        {% if member.development %}
+                        {% if member.developments %}
                         <ul class="list-group">
-                            {% for dev in member.development %}
+                            {% for dev in member.developments %}
                             <li class="list-group-item">{{ dev.title }}</li>
                             {% endfor %}
                         </ul>
