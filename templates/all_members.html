@@ -100,9 +100,6 @@
                                                 {{ task.content }}
                                             </label>
                                         </form>
-                                        {% if task.due_date %}
-                                        <div><small class="text-muted">Due: {{ task.due_date.strftime('%m/%d/%Y') if task.due_date else '' }}</small></div>
-                                        {% endif %}
                                     </div>
                                     <form action="{{ url_for('team.delete_member_task', task_id=task.id) }}" method="post">
                                         <button type="submit" class="btn btn-sm btn-outline-danger">
@@ -137,10 +134,7 @@
                             {{ task_form.content.label(class="form-label") }}
                             {{ task_form.content(class="form-control", required=true) }}
                         </div>
-                        <div class="mb-3">
-                            {{ task_form.due_date.label(class="form-label") }}
-                            {{ task_form.due_date(class="form-control", type="datetime-local") }}
-                        </div>
+                        <!-- Removed due_date references -->
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
