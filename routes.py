@@ -350,7 +350,7 @@ def save_note_ajax():
 def all_members():
     """Main team members listing"""
     members = TeamMember.query.all()
-    return render_template('enhanced_team.html', members=members)
+    return render_template('all_members.html', members=members)
 
 @team.route('/new', methods=['GET', 'POST'])
 def new_member():
