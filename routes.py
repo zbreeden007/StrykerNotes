@@ -348,9 +348,15 @@ def save_note_ajax():
 # Team member routes
 @team.route('/')
 def all_members():
-    """Main team members listing"""
     members = TeamMember.query.all()
-    return render_template('all_members.html', members=members)
+    
+    # Create a form instance
+    from forms import MemberTaskForm
+    task_form = MemberTaskForm()
+    
+    # Pass the form to the template
+    return render_template('all_members.html', members=members, task_form=task_form)
+
 
 @team.route('/new', methods=['GET', 'POST'])
 def new_member():
