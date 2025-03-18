@@ -155,12 +155,16 @@ $(document).ready(function() {
         window.open(url, '_blank');
     });
     
-    // New: Toggle member details on all_members page
+    // Toggle member details on all_members page
     $('.member-select').on('click', function(){
-        var memberId = $(this).data('member-id');
-        // Hide all member details
+        // Hide all detail sections
         $('.member-content').hide();
-        // Show the selected member's detail section with a slide effect
+
+        // Grab the ID of the clicked member
+        const memberId = $(this).data('member-id');
+        console.log("Clicked member ID:", memberId);
+
+        // Show the container for that member
         $('#member-content-' + memberId).slideDown();
     });
 });

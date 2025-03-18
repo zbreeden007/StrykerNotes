@@ -145,7 +145,7 @@
             </div>
         </div>
 
-        <!-- Repeat Modal for Task and Development -->
+        <!-- Task Modal -->
         <div class="modal fade" id="addTaskModal{{ member.id }}" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -166,6 +166,7 @@
             </div>
         </div>
 
+        <!-- Development Modal -->
         <div class="modal fade" id="addDevelopmentModal{{ member.id }}" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -207,11 +208,12 @@
                 </div>
             </div>
         </div>
+    </div>
     {% endfor %}
 </div>
 {% endif %}
 {% endblock %}
 
 {% block extra_js %}
-<!-- No extra JS is needed here since the toggle functionality is now in main.js -->
+<!-- No extra JS needed here; we placed the toggle in main.js -->
 {% endblock %}
