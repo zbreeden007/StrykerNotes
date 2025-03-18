@@ -508,6 +508,13 @@ def simple_view_member(member_id):
     member = TeamMember.query.get_or_404(member_id)
     return f"<h1>Member: {member.name}</h1><p>Role: {member.role or 'Not specified'}</p>"
 
+@team.route('/minimal')
+def minimal_team_view():
+    """A minimal team view page to help debug template issues"""
+    members = TeamMember.query.all()
+    
+    return render_template('minimal_all_members.html', members=members)
+
 # Links routes
 @links.route('/')
 def all_links():
