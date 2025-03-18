@@ -143,7 +143,7 @@ function setupColorPicker() {
     });
 }
 
-// Document ready handler
+// Document ready handler for various functionalities
 $(document).ready(function() {
     // Initialize color picker if on settings page
     setupColorPicker();
@@ -153,6 +153,15 @@ $(document).ready(function() {
         e.preventDefault();
         const url = $(this).attr('href');
         window.open(url, '_blank');
+    });
+    
+    // New: Toggle member details on all_members page
+    $('.member-select').on('click', function(){
+        var memberId = $(this).data('member-id');
+        // Hide all member details
+        $('.member-content').hide();
+        // Show the selected member's detail section with a slide effect
+        $('#member-content-' + memberId).slideDown();
     });
 });
 
