@@ -393,21 +393,27 @@ def view_member(member_id):
 def edit_member(member_id):
     member = TeamMember.query.get_or_404(member_id)
     form = TeamMemberForm(obj=member)
-    
+
     if form.validate_on_submit():
         member.name = form.name.data
         member.role = form.role.data
         member.notes = form.notes.data
-        
-        if form.profile_picture.data:
+
+        # Handle profile picture upload properly
+        if form.profile_picture.data and hasattr(form.profile_picture.data, 'filename'):
             member.profile_picture = save_profile_picture(form.profile_picture.data)
-            
+        elif not form.profile_picture.data:  # No change in profile picture
+            pass
+        else:
+            flash('Invalid file format or missing profile picture.', 'danger')
+
         member.updated_at = datetime.utcnow()
         db.session.commit()
         flash('Team member updated successfully!', 'success')
         return redirect(url_for('team.view_member', member_id=member.id))
-    
+
     return render_template('member_form.html', form=form, member=member, is_new=False)
+
 
 @team.route('/<int:member_id>/delete', methods=['POST'])
 def delete_member(member_id):
