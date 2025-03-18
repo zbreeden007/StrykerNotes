@@ -31,15 +31,10 @@ def save_profile_picture(form_picture):
     filename = secure_filename(form_picture.filename)
     # Create a unique filename to avoid overwriting
     unique_filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{filename}"
-    
-    # Get the absolute path to the upload folder
-    uploads_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads', 'profile_pictures')
-    
+    # Set the path
+    picture_path = os.path.join('static', 'uploads', 'profile_pictures', unique_filename)
     # Ensure directory exists
-    os.makedirs(uploads_dir, exist_ok=True)
-    
-    # Set the full path to the file
-    picture_path = os.path.join(uploads_dir, unique_filename)
+    os.makedirs(os.path.dirname(picture_path), exist_ok=True)
     
     # Save the original file first
     form_picture.save(picture_path)
@@ -60,8 +55,7 @@ def save_profile_picture(form_picture):
         # Log the error but continue with the original image
         print(f"Error processing image: {e}")
     
-    # Return the relative path for storage in the database
-    return os.path.join('static', 'uploads', 'profile_pictures', unique_filename)
+    return picture_path
 
 # Helper function to convert Markdown to HTML
 def convert_markdown_to_html(markdown_text):
@@ -352,21 +346,13 @@ def new_member():
 
 @team.route('/<int:member_id>', methods=['GET'])
 def view_member(member_id):
-    try:
-        member = TeamMember.query.get_or_404(member_id)
-        task_form = MemberTaskForm()
-        
-        # Convert markdown to HTML for member notes (with error handling)
-        try:
-            member.html_notes = convert_markdown_to_html(member.notes) if member.notes else ""
-        except Exception as e:
-            print(f"Error converting markdown: {e}")
-            member.html_notes = member.notes if member.notes else ""
-        
-        return render_template('member.html', member=member, form=task_form)
-    except Exception as e:
-        print(f"Error in view_member: {e}")
-        abort(500)
+    member = TeamMember.query.get_or_404(member_id)
+    task_form = MemberTaskForm()
+    
+    # Convert markdown to HTML for member notes
+    member.html_notes = convert_markdown_to_html(member.notes)
+    
+    return render_template('member.html', member=member, form=task_form)
 
 @team.route('/<int:member_id>/edit', methods=['GET', 'POST'])
 def edit_member(member_id):
@@ -396,7 +382,8 @@ def delete_member(member_id):
     flash('Team member deleted successfully!', 'success')
     return redirect(url_for('team.all_members'))
 
-@team.route('/task/<int:member_id>/add', methods=['POST'])
+# Member Task Routes
+@team.route('/member/<int:member_id>/add_task', methods=['POST'])
 def add_member_task(member_id):
     member = TeamMember.query.get_or_404(member_id)
     form = MemberTaskForm()
@@ -407,7 +394,7 @@ def add_member_task(member_id):
             member_id=member.id
         )
         
-        # Handle due date if provided
+        # Handle the due_date if it's in the form
         if hasattr(form, 'due_date') and form.due_date.data:
             task.due_date = form.due_date.data
             
@@ -417,15 +404,6 @@ def add_member_task(member_id):
     
     return redirect(url_for('team.view_member', member_id=member.id))
 
-@team.route('/task/<int:task_id>/delete', methods=['POST'])
-def delete_member_task(task_id):
-    task = MemberTask.query.get_or_404(task_id)
-    member_id = task.member_id
-    db.session.delete(task)
-    db.session.commit()
-    flash('Task deleted successfully!', 'success')
-    return redirect(url_for('team.view_member', member_id=member_id))
-
 @team.route('/task/<int:task_id>/toggle', methods=['POST'])
 def toggle_member_task(task_id):
     task = MemberTask.query.get_or_404(task_id)
@@ -433,7 +411,17 @@ def toggle_member_task(task_id):
     db.session.commit()
     return jsonify({'status': 'success', 'completed': task.completed})
 
-@team.route('/project/<int:member_id>/add', methods=['POST'])
+@team.route('/task/<int:task_id>/delete', methods=['POST'])
+def delete_member_task(task_id):
+    task = MemberTask.query.get_or_404(task_id)
+    member_id = task.member_id  # Save the member_id before deleting the task
+    db.session.delete(task)
+    db.session.commit()
+    flash('Task deleted successfully!', 'success')
+    return redirect(url_for('team.view_member', member_id=member_id))
+
+# Member Project Routes
+@team.route('/member/<int:member_id>/add_project', methods=['POST'])
 def add_member_project(member_id):
     member = TeamMember.query.get_or_404(member_id)
     form = MemberProjectForm()
@@ -459,7 +447,8 @@ def delete_member_project(project_id):
     flash('Project deleted successfully!', 'success')
     return redirect(url_for('team.all_members'))
 
-@team.route('/note/<int:member_id>/add', methods=['POST'])
+# Member Note Routes
+@team.route('/member/<int:member_id>/add_note', methods=['POST'])
 def add_member_note(member_id):
     member = TeamMember.query.get_or_404(member_id)
     form = MemberNoteForm()
@@ -485,7 +474,8 @@ def delete_member_note(note_id):
     flash('Note deleted successfully!', 'success')
     return redirect(url_for('team.all_members'))
 
-@team.route('/development/<int:member_id>/add', methods=['POST'])
+# Member Development Routes
+@team.route('/member/<int:member_id>/add_development', methods=['POST'])
 def add_member_development(member_id):
     member = TeamMember.query.get_or_404(member_id)
     form = MemberDevelopmentForm()
@@ -494,16 +484,12 @@ def add_member_development(member_id):
         development = MemberDevelopment(
             title=form.title.data,
             description=form.description.data,
+            date=form.date.data if hasattr(form, 'date') else None,
             member_id=member.id
         )
-        
-        # Handle date if present
-        if hasattr(form, 'date') and form.date.data:
-            development.date = form.date.data
-            
         db.session.add(development)
         db.session.commit()
-        flash('Development record added successfully!', 'success')
+        flash('Development added successfully!', 'success')
     
     return redirect(url_for('team.all_members'))
 
@@ -513,7 +499,7 @@ def delete_member_development(development_id):
     member_id = development.member_id
     db.session.delete(development)
     db.session.commit()
-    flash('Development record deleted successfully!', 'success')
+    flash('Development deleted successfully!', 'success')
     return redirect(url_for('team.all_members'))
 
 # Links routes
