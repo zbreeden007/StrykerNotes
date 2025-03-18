@@ -166,28 +166,28 @@
                     {% for note in permanent_notes %}
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="heading{{ note.id }}">
-                            <!-- Note header with title + edit/delete icons -->
-                            <button class="accordion-button d-flex justify-content-between align-items-center {% if not loop.first %}collapsed{% endif %}"
+                            <!-- The entire note header, with the arrow on the far right by default -->
+                            <button class="accordion-button d-flex align-items-center w-100 {% if not loop.first %}collapsed{% endif %}"
                                     type="button"
                                     data-bs-toggle="collapse"
                                     data-bs-target="#collapse{{ note.id }}"
                                     aria-expanded="{{ 'true' if loop.first else 'false' }}"
                                     aria-controls="collapse{{ note.id }}"
                                     style="background-color: #B7CBCA; color: black;">
-                                
-                                <!-- Left side: Note title -->
-                                <span>{{ note.title }}</span>
-                                
-                                <!-- Right side: Edit & Delete icons (stop click from toggling accordion) -->
-                                <span class="d-flex align-items-center" style="pointer-events: auto;">
-                                    <!-- Edit button -->
+
+                                <!-- Title on the left -->
+                                <span class="me-auto">{{ note.title }}</span>
+
+                                <!-- Icons near the arrow on the right; pointer-events auto so clicks don't toggle accordion -->
+                                <div class="d-flex align-items-center ms-auto me-2" style="pointer-events: auto;">
+                                    <!-- Edit icon -->
                                     <a href="{{ url_for('notes.edit_note', note_id=note.id) }}"
-                                       onclick="event.stopPropagation();" 
+                                       onclick="event.stopPropagation();"
                                        class="btn p-0 me-2"
                                        style="background-color: transparent; border: none; color: #989B9A;">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <!-- Delete form -->
+                                    <!-- Delete icon -->
                                     <form action="{{ url_for('notes.delete_note', note_id=note.id) }}"
                                           method="post"
                                           class="d-inline"
@@ -198,7 +198,7 @@
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
-                                </span>
+                                </div>
                             </button>
                         </h2>
                         <div id="collapse{{ note.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading{{ note.id }}" data-bs-parent="#permanentNotesAccordion">
