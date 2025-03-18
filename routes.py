@@ -502,6 +502,12 @@ def delete_member_development(development_id):
     flash('Development deleted successfully!', 'success')
     return redirect(url_for('team.all_members'))
 
+@team.route('/simple/<int:member_id>', methods=['GET'])
+def simple_view_member(member_id):
+    """A simplified view to test member access"""
+    member = TeamMember.query.get_or_404(member_id)
+    return f"<h1>Member: {member.name}</h1><p>Role: {member.role or 'Not specified'}</p>"
+
 # Links routes
 @links.route('/')
 def all_links():
