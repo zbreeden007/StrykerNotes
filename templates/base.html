@@ -11,7 +11,6 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-
     
     {% if preferences %}
     <style>
@@ -19,33 +18,10 @@
             --font-family: {{ preferences.font_family }};
             --font-size: {{ preferences.font_size }};
             --accent-color: {{ preferences.accent_color }};
-            
-            {% if preferences.theme == 'dark' %}
-            --bg-color: #1e1e1e;
-            --bg-secondary: #2a2a2a;
-            --text-color: #e0e0e0;
-            --border-color: #3a3a3a;
-            --input-bg: #333;
-            --input-border: #444;
-            --input-text: #f0f0f0;
-            --card-bg: #252525;
-            --card-header-bg: #2c2c2c;
-            {% else %}{% if preferences.theme == 'blue' %}
-            --bg-color: #f0f8ff;
-            --bg-secondary: #e6f2ff;
-            --text-color: #333;
-            --border-color: #ccc;
-            {% else %}{% if preferences.theme == 'green' %}
-            --bg-color: #f0fff0;
-            --bg-secondary: #e6ffe6;
-            --text-color: #333;
-            --border-color: #ccc;
-            {% else %}
-            --bg-color: #ffffff;
+            --bg-color: #ffffff;            /* White dominant background */
             --bg-secondary: #f8f9fa;
-            --text-color: #333;
+            --text-color: #333333;
             --border-color: #ddd;
-            {% endif %}{% endif %}{% endif %}
         }
         
         body {
@@ -61,6 +37,11 @@
         .container {
             flex-grow: 1;
         }
+        
+        /* Headings use a bold, impactful font */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: "Arial Black", sans-serif;
+        }
     </style>
     {% endif %}
     
@@ -70,6 +51,7 @@
     <nav class="navbar navbar-expand-lg {% if preferences and preferences.theme == 'dark' %}navbar-dark bg-dark{% else %}navbar-light bg-light{% endif %} mb-4">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <!-- Optionally replace the text with a logo image -->
                 <i class="fas fa-tasks"></i> Stryker Notes
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -135,7 +117,6 @@
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     
-    <!-- Page-specific JS -->
     {% block extra_js %}{% endblock %}
 </body>
 </html>
