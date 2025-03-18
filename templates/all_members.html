@@ -52,26 +52,8 @@
             </div>
         </div>
 
-        <!-- Profile Details -->
+        <!-- Projects Section -->
         <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <h5>Profile</h5>
-                    </div>
-                    <div class="card-body">
-                        {% if member.notes %}
-                        <div class="p-3 bg-light rounded">
-                            {{ member.notes }}
-                        </div>
-                        {% else %}
-                        <p class="text-muted">No additional information available.</p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Projects Section -->
             <div class="col-md-4 mb-4">
                 <div class="card h-100">
                     <div class="card-header bg-info text-white">
@@ -134,6 +116,37 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Development Section -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Development</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if member.development %}
+                        <ul class="list-group">
+                            {% for dev in member.development %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6>{{ dev.title }}</h6>
+                                    <p>{{ dev.description }}</p>
+                                    <small class="text-muted">{{ dev.date.strftime('%Y-%m-%d') }}</small>
+                                </div>
+                                <form action="{{ url_for('team.delete_member_development', development_id=dev.id) }}" method="post">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="text-muted">No development milestones yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -173,7 +186,6 @@
 {% block extra_js %}
 <script>
     $(document).ready(function() {
-        // Handle member selection
         $('.member-select').click(function() {
             const memberId = $(this).data('member-id');
 
