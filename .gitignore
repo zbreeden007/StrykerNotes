@@ -1,3 +1,5 @@
+instance/productivity.db
+
 # Flask specific
 instance/
 *.db
