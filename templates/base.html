@@ -1,122 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Stryker Notes{% endblock %}</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Stryker Notes{% endblock %}</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  
+  {% if preferences %}
+  <style>
+    :root {
+      --font-family: {{ preferences.font_family }};
+      --font-size: {{ preferences.font_size }};
+      --accent-color: {{ preferences.accent_color }};
+      {% if preferences.theme == 'dark' %}
+        --bg-color: #1e1e1e;
+        --bg-secondary: #2a2a2a;
+        --text-color: #e0e0e0;
+        --border-color: #3a3a3a;
+      {% else %}
+        --bg-color: #ffffff;
+        --bg-secondary: #f8f9fa;
+        --text-color: #333333;
+        --border-color: #ddd;
+      {% endif %}
+    }
     
-    {% if preferences %}
-    <style>
-        :root {
-            --font-family: {{ preferences.font_family }};
-            --font-size: {{ preferences.font_size }};
-            --accent-color: {{ preferences.accent_color }};
-            --bg-color: #ffffff;            /* White dominant background */
-            --bg-secondary: #f8f9fa;
-            --text-color: #333333;
-            --border-color: #ddd;
-        }
-        
-        body {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            font-family: var(--font-family);
-            font-size: var(--font-size);
-            background-color: var(--bg-color);
-            color: var(--text-color);
-        }
-        
-        .container {
-            flex-grow: 1;
-        }
-        
-        /* Headings use a bold, impactful font */
-        h1, h2, h3, h4, h5, h6 {
-            font-family: "Arial Black", sans-serif;
-        }
-    </style>
-    {% endif %}
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: var(--font-family);
+      font-size: var(--font-size);
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
     
-    {% block extra_head %}{% endblock %}
+    .container {
+      flex-grow: 1;
+    }
+    
+    /* Headings use a bold, impactful font */
+    h1, h2, h3, h4, h5, h6 {
+      font-family: "Arial Black", sans-serif;
+    }
+  </style>
+  {% endif %}
+  
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg {% if preferences and preferences.theme == 'dark' %}navbar-dark bg-dark{% else %}navbar-light bg-light{% endif %} mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <!-- Optionally replace the text with a logo image -->
-                <i class="fas fa-tasks"></i> Stryker Notes
+  <nav class="navbar navbar-expand-lg {% if preferences and preferences.theme == 'dark' %}navbar-dark bg-dark{% else %}navbar-light bg-light{% endif %} mb-4">
+    <div class="container">
+      <a class="navbar-brand" href="{{ url_for('main.index') }}">
+        <!-- Optionally replace the text with a logo image -->
+        <i class="fas fa-tasks"></i> Stryker Notes
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('main.index') }}">Dashboard</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="notesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Notes
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.index') }}">Dashboard</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="notesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Notes
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="notesDropdown">
-                            <li><a class="dropdown-item" href="{{ url_for('notes.all_notes') }}">All Notes</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('notes.new_note') }}">New Note</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="teamDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Team
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="teamDropdown">
-                            <li><a class="dropdown-item" href="{{ url_for('team.all_members') }}">All Members</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('team.new_member') }}">Add Member</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('links.all_links') }}">Links</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('settings.preferences') }}">
-                            <i class="fas fa-cog"></i> Settings
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container mb-5">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        
-        {% block content %}{% endblock %}
+            <ul class="dropdown-menu" aria-labelledby="notesDropdown">
+              <li><a class="dropdown-item" href="{{ url_for('notes.all_notes') }}">All Notes</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('notes.new_note') }}">New Note</a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="teamDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Team
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="teamDropdown">
+              <li><a class="dropdown-item" href="{{ url_for('team.all_members') }}">All Members</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('team.new_member') }}">Add Member</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('links.all_links') }}">Links</a>
+          </li>
+        </ul>
+        <!-- Settings button removed per new requirements -->
+      </div>
     </div>
+  </nav>
 
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <!-- Custom JS -->
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <div class="container mb-5">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
     
-    {% block extra_js %}{% endblock %}
+    {% block content %}{% endblock %}
+  </div>
+
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <!-- Custom JS -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  
+  {% block extra_js %}{% endblock %}
 </body>
 </html>
