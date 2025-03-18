@@ -61,9 +61,11 @@ function toggleMemberTaskComplete(taskId) {
                 if (response.completed) {
                     taskItem.addClass('completed');
                     taskItem.find('.task-checkbox').prop('checked', true);
+                    taskItem.find('label.form-check-label').addClass('text-muted');
                 } else {
                     taskItem.removeClass('completed');
                     taskItem.find('.task-checkbox').prop('checked', false);
+                    taskItem.find('label.form-check-label').removeClass('text-muted');
                 }
             }
         },
