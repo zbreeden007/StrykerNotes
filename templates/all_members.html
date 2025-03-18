@@ -52,31 +52,108 @@
             </div>
         </div>
 
-        <!-- Projects Section -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5>Projects</h5>
-            </div>
-            <div class="card-body">
-                {% if member.projects %}
-                <ul class="list-group">
-                    {% for project in member.projects %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6>{{ project.name }}</h6>
-                            <p>{{ project.description }}</p>
+        <!-- Profile Details -->
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5>Profile</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if member.notes %}
+                        <div class="p-3 bg-light rounded">
+                            {{ member.notes }}
                         </div>
-                        <form action="{{ url_for('team.delete_member_project', project_id=project.id) }}" method="post">
-                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
-                    </li>
-                    {% endfor %}
-                </ul>
-                {% else %}
-                <p class="text-muted">No projects assigned yet.</p>
-                {% endif %}
+                        {% else %}
+                        <p class="text-muted">No additional information available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projects Section -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Projects</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if member.projects %}
+                        <ul class="list-group">
+                            {% for project in member.projects %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6>{{ project.name }}</h6>
+                                    <p>{{ project.description }}</p>
+                                </div>
+                                <form action="{{ url_for('team.delete_member_project', project_id=project.id) }}" method="post">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="text-muted">No projects assigned yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tasks Section -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Tasks</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if member.tasks %}
+                        <ul class="list-group">
+                            {% for task in member.tasks %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox"
+                                           {% if task.completed %}checked{% endif %}
+                                           id="task-check-{{ task.id }}">
+                                    <label class="form-check-label {% if task.completed %}text-muted{% endif %}" for="task-check-{{ task.id }}">
+                                        {{ task.content }}
+                                    </label>
+                                </div>
+                                <form action="{{ url_for('team.delete_member_task', task_id=task.id) }}" method="post">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="text-muted">No tasks assigned yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Member Modal -->
+    <div class="modal fade" id="deleteMemberModal{{ member.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete {{ member.name }} and all associated data? This cannot be undone.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form action="{{ url_for('team.delete_member', member_id=member.id) }}" method="post">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -91,4 +168,25 @@
     </a>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Handle member selection
+        $('.member-select').click(function() {
+            const memberId = $(this).data('member-id');
+
+            $('.member-content').hide();
+            $(`#member-content-${memberId}`).show();
+
+            $('.team-member-card').removeClass('selected');
+            $(this).closest('.team-member-card').addClass('selected');
+        });
+
+        if ($('.member-select').length > 0) {
+            $('.member-select').first().click();
+        }
+    });
+</script>
 {% endblock %}
