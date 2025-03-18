@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Team Members - Productivity Tool{% endblock %}
+{% block title %}Team Members - Stryker Notes{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -17,7 +17,7 @@
         <div class="d-flex flex-wrap">
             {% for member in members %}
             <div class="team-member-card mx-2 mb-3 text-center" style="min-width: 120px; max-width: 150px;">
-                <div>
+                <div class="member-select" data-member-id="{{ member.id }}">
                     {% if member.profile_picture %}
                     <img src="{{ url_for('static', filename=member.profile_picture.replace('static/', '')) }}" 
                          alt="{{ member.name }}" class="profile-picture profile-picture-md mb-2">
@@ -37,6 +37,62 @@
     </div>
 </div>
 
+<!-- Member details sections -->
+<div class="member-details">
+    {% for member in members %}
+    <div class="member-content" id="member-content-{{ member.id }}" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>{{ member.name }}'s Information</h3>
+            <div>
+                <a href="{{ url_for('team.edit_member', member_id=member.id) }}" class="btn btn-sm btn-outline-secondary me-2">
+                    <i class="fas fa-edit"></i> Edit Profile
+                </a>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteMemberModal{{ member.id }}">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+        
+        <!-- Basic profile information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Profile</h5>
+            </div>
+            <div class="card-body">
+                {% if member.notes %}
+                <div class="p-3 bg-light rounded">
+                    {{ member.notes }}
+                </div>
+                {% else %}
+                <p class="text-muted">No additional information available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Member Modal -->
+    <div class="modal fade" id="deleteMemberModal{{ member.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete {{ member.name }} and all associated data? This cannot be undone.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form action="{{ url_for('team.delete_member', member_id=member.id) }}" method="post">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
 {% else %}
 <div class="alert alert-info">
     <p>No team members added yet. Add your first team member to get started.</p>
@@ -45,4 +101,30 @@
     </a>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Handle member selection
+        $('.member-select').click(function() {
+            const memberId = $(this).data('member-id');
+            
+            // Hide all member content
+            $('.member-content').hide();
+            
+            // Show selected member content
+            $(`#member-content-${memberId}`).show();
+            
+            // Highlight selected member
+            $('.team-member-card').removeClass('selected');
+            $(this).closest('.team-member-card').addClass('selected');
+        });
+        
+        // Show first member by default if there are members
+        if ($('.member-select').length > 0) {
+            $('.member-select').first().click();
+        }
+    });
+</script>
 {% endblock %}
