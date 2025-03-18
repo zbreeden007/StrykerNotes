@@ -348,7 +348,7 @@ def save_note_ajax():
     })
 
 # Team member routes
-@team.route('/team/')
+@team.route('/')
 def all_members():
     members = TeamMember.query.all()
     
