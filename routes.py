@@ -15,26 +15,53 @@ links = Blueprint('links', __name__, url_prefix='/links')
 settings = Blueprint('settings', __name__, url_prefix='/settings')
 todos = Blueprint('todos', __name__, url_prefix='/todos')  # Keep for redirects
 
-# Add context processor to make preferences available in all templates
+# This should replace the existing inject_preferences function in routes.py
 @main.app_context_processor
 def inject_preferences():
-    preferences = UserPreference.query.first()
-    if not preferences:
-        # Create a default preferences object with all fields set
-        preferences = UserPreference(
-            theme='light',
-            font_family='Arial, sans-serif',
-            font_size='14px',
-            accent_color='#007bff'
-        )
-        db.session.add(preferences)
-        try:
-            db.session.commit()
-        except:
-            # If there's an error committing, roll back and use the default object without saving
-            db.session.rollback()
-    
-    return dict(preferences=preferences)
+    try:
+        preferences = UserPreference.query.first()
+        if not preferences:
+            # Create a default preferences object with all fields set
+            preferences = UserPreference(
+                theme='light',
+                font_family='Arial, sans-serif',
+                font_size='14px',
+                accent_color='#007bff'
+            )
+            db.session.add(preferences)
+            try:
+                db.session.commit()
+            except Exception as e:
+                print(f"Error saving preferences: {e}")
+                db.session.rollback()
+        
+        # Ensure all required attributes exist
+        if not hasattr(preferences, 'font_family') or not preferences.font_family:
+            preferences.font_family = 'Arial, sans-serif'
+        if not hasattr(preferences, 'font_size') or not preferences.font_size:
+            preferences.font_size = '14px'
+        if not hasattr(preferences, 'theme') or not preferences.theme:
+            preferences.theme = 'light'
+        if not hasattr(preferences, 'accent_color') or not preferences.accent_color:
+            preferences.accent_color = '#007bff'
+            
+        return dict(preferences=preferences)
+    except Exception as e:
+        print(f"Error in context processor: {e}")
+        # Return default preferences if anything goes wrong
+        default_preferences = {
+            'theme': 'light',
+            'font_family': 'Arial, sans-serif',
+            'font_size': '14px',
+            'accent_color': '#007bff'
+        }
+        # Create a simple object that behaves like a UserPreference
+        class DefaultPreferences:
+            def __init__(self, **kwargs):
+                for key, value in kwargs.items():
+                    setattr(self, key, value)
+        
+        return dict(preferences=DefaultPreferences(**default_preferences))
 
 # Function to save profile pictures
 def save_profile_picture(form_picture):
@@ -321,18 +348,9 @@ def save_note_ajax():
 # Team member routes
 @team.route('/')
 def all_members():
+    """Main team members listing"""
     members = TeamMember.query.all()
-    project_form = MemberProjectForm()
-    task_form = MemberTaskForm()
-    note_form = MemberNoteForm()
-    development_form = MemberDevelopmentForm()
-    
-    return render_template('all_members.html', 
-                           members=members, 
-                           project_form=project_form,
-                           task_form=task_form,
-                           note_form=note_form, 
-                           development_form=development_form)
+    return render_template('enhanced_team.html', members=members)
 
 @team.route('/new', methods=['GET', 'POST'])
 def new_member():
