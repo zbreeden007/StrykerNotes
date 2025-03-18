@@ -254,3 +254,20 @@ member-content .card:hover {
     transform: translateY(-5px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
+
+/* Custom header colors for member cards */
+.project-header {
+    background-color: #779AB7 !important;
+    color: #ffffff !important;
+}
+
+.task-header {
+    background-color: #94B1AF !important;
+    color: #ffffff !important;
+}
+
+.development-header {
+    background-color: #B68FB9 !important;
+    color: #ffffff !important;
+}
+
