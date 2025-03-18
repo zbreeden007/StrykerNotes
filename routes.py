@@ -6,6 +6,8 @@ from werkzeug.utils import secure_filename
 from models import db, Note, Todo, TodoList, TeamMember, MemberTask, Link, UserPreference, MemberProject, MemberNote, MemberDevelopment
 from forms import NoteForm, TodoForm, TeamMemberForm, MemberTaskForm, LinkForm, UserPreferenceForm, MemberProjectForm, MemberNoteForm, MemberDevelopmentForm
 from PIL import Image
+from forms import ProjectForm, TaskForm, DevelopmentForm
+
 
 # Create blueprints for different sections of the app
 main = Blueprint('main', __name__)
