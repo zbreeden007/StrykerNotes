@@ -54,7 +54,6 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #49789F; color: white;">
                 <h5 class="mb-0">To-Do List</h5>
-                <!-- "+ Add Task" button in the header -->
                 <a href="#" id="toggleAddTask" class="btn btn-link btn-sm" style="color: white; text-decoration: none;">
                     + Add Task
                 </a>
@@ -83,21 +82,18 @@
                     </form>
                 </div>
                 
-                <!-- To-Do List Items -->
                 {% if todos %}
                 <div class="todo-list">
                     <ul class="list-group" id="dashboard-todo-list">
                         {% for todo in todos %}
-                        <!-- Removed checkbox, priority text, and 'completed' references -->
                         <li class="list-group-item" id="todo-{{ todo.id }}">
                             <div class="d-flex justify-content-between align-items-center">
-                                <!-- Left side: handle icon + task text -->
                                 <div>
                                     <i class="fas fa-grip-vertical handle me-2 text-muted"></i>
                                     {{ todo.content }}
                                 </div>
-                                <!-- Right side: Edit and Delete icons with transparent background and grey color -->
                                 <div class="d-flex align-items-center">
+                                    <!-- Transparent background, grey icons (#989B9A) -->
                                     <button type="button" class="btn btn-sm me-1"
                                             data-bs-toggle="modal" data-bs-target="#editTodoModal{{ todo.id }}"
                                             style="background-color: transparent; border: none; color: #989B9A;">
@@ -170,25 +166,45 @@
                     {% for note in permanent_notes %}
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="heading{{ note.id }}">
-                            <!-- Inline style to change each note’s header background & text color -->
-                            <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" 
-                                    type="button" 
-                                    data-bs-toggle="collapse" 
-                                    data-bs-target="#collapse{{ note.id }}" 
-                                    aria-expanded="{{ 'true' if loop.first else 'false' }}" 
+                            <!-- Note header with title + edit/delete icons -->
+                            <button class="accordion-button d-flex justify-content-between align-items-center {% if not loop.first %}collapsed{% endif %}"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#collapse{{ note.id }}"
+                                    aria-expanded="{{ 'true' if loop.first else 'false' }}"
                                     aria-controls="collapse{{ note.id }}"
                                     style="background-color: #B7CBCA; color: black;">
-                                {{ note.title }}
+                                
+                                <!-- Left side: Note title -->
+                                <span>{{ note.title }}</span>
+                                
+                                <!-- Right side: Edit & Delete icons (stop click from toggling accordion) -->
+                                <span class="d-flex align-items-center" style="pointer-events: auto;">
+                                    <!-- Edit button -->
+                                    <a href="{{ url_for('notes.edit_note', note_id=note.id) }}"
+                                       onclick="event.stopPropagation();" 
+                                       class="btn p-0 me-2"
+                                       style="background-color: transparent; border: none; color: #989B9A;">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <!-- Delete form -->
+                                    <form action="{{ url_for('notes.delete_note', note_id=note.id) }}"
+                                          method="post"
+                                          class="d-inline"
+                                          onsubmit="event.stopPropagation();">
+                                        <button type="submit"
+                                                class="btn p-0"
+                                                style="background-color: transparent; border: none; color: #989B9A;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </span>
                             </button>
                         </h2>
                         <div id="collapse{{ note.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading{{ note.id }}" data-bs-parent="#permanentNotesAccordion">
                             <div class="accordion-body">
                                 {{ note.html_content|safe }}
-                                <div class="mt-2">
-                                    <a href="{{ url_for('notes.edit_note', note_id=note.id) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </a>
-                                </div>
+                                <!-- Removed the old "Edit" button from inside the body -->
                             </div>
                         </div>
                     </div>
