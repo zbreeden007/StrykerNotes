@@ -17,7 +17,7 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #DDDEDD;">
                 <h5 class="mb-0"><i class="fas fa-star me-2"></i>Favorite Links</h5>
-                <a href="{{ url_for('links.all_links') }}" class="btn btn-sm btn-dark">
+                <a href="{{ url_for('links.all_links') }}" class="btn btn-link btn-sm">
                     <i class="fas fa-link"></i> All Links
                 </a>
             </div>
@@ -51,7 +51,7 @@
                             {{ todo_form.content(class="form-control", required=true, placeholder="New task...") }}
                         </div>
                         <div class="col-md-3 mb-2">
-                            {{ todo_form.submit(class="btn btn-primary w-100") }}
+                            {{ todo_form.submit(class="btn btn-link w-100") }}
                         </div>
                     </div>
                     <div class="row">
@@ -164,7 +164,7 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #709795; color: white;">
                 <h5 class="mb-0">Permanent Notes</h5>
-                <a href="{{ url_for('notes.new_note') }}?permanent=true" class="btn btn-sm btn-primary">
+                <a href="{{ url_for('notes.new_note') }}?permanent=true" class="btn btn-link btn-sm">
                     <i class="fas fa-plus"></i> Add
                 </a>
             </div>
@@ -201,7 +201,7 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #9D6AA1; color: white;">
                 <h5 class="mb-0">Team Members</h5>
-                <a href="{{ url_for('team.new_member') }}" class="btn btn-sm btn-primary">
+                <a href="{{ url_for('team.new_member') }}" class="btn btn-link btn-sm">
                     <i class="fas fa-plus"></i> Add Member
                 </a>
             </div>
