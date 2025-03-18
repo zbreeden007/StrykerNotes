@@ -54,7 +54,6 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #49789F; color: white;">
                 <h5 class="mb-0">To-Do List</h5>
-                <!-- "+ Add Task" button in the header -->
                 <a href="#" id="toggleAddTask" class="btn btn-link btn-sm" style="color: white; text-decoration: none;">
                     + Add Task
                 </a>
@@ -88,7 +87,6 @@
                 <div class="todo-list">
                     <ul class="list-group" id="dashboard-todo-list">
                         {% for todo in todos %}
-                        <!-- Removed checkbox, priority text, and 'completed' references -->
                         <li class="list-group-item" id="todo-{{ todo.id }}">
                             <div class="d-flex justify-content-between align-items-center">
                                 <!-- Left side: handle icon + task text -->
@@ -96,7 +94,7 @@
                                     <i class="fas fa-grip-vertical handle me-2 text-muted"></i>
                                     {{ todo.content }}
                                 </div>
-                                <!-- Right side: Edit and Delete icons with transparent background and grey color -->
+                                <!-- Right side: Edit and Delete icons -->
                                 <div class="d-flex align-items-center">
                                     <button type="button" class="btn btn-sm me-1"
                                             data-bs-toggle="modal" data-bs-target="#editTodoModal{{ todo.id }}"
@@ -183,8 +181,8 @@
                         <div id="collapse{{ note.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading{{ note.id }}" data-bs-parent="#permanentNotesAccordion">
                             <div class="accordion-body">
                                 {{ note.html_content|safe }}
-                                <!-- Updated Edit button to match to-do style -->
                                 <div class="mt-2">
+                                    <!-- Updated to match the to-do style -->
                                     <a href="{{ url_for('notes.edit_note', note_id=note.id) }}"
                                        class="btn btn-sm p-0"
                                        style="background-color: transparent; border: none; color: #989B9A; text-decoration: none;">
@@ -205,7 +203,13 @@
         <!-- Team Members Section -->
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #9D6AA1; color: white;">
-                <h5 class="mb-0">Team Members</h5>
+                <h5 class="mb-0">
+                    Team Members
+                    <!-- Link icon next to "Team Members" -->
+                    <a href="https://zbreeden007.pythonanywhere.com/team/" style="color: white; text-decoration: none; margin-left: 8px;">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </h5>
                 <a href="{{ url_for('team.new_member') }}" class="btn btn-link btn-sm" style="color: white; text-decoration: none;">
                     <i class="fas fa-plus"></i> Add Member
                 </a>
@@ -222,7 +226,6 @@
                                 {% if member.role %}
                                 <p class="card-subtitle mb-2 text-muted">{{ member.role }}</p>
                                 {% endif %}
-                                <!-- Removed the "View Details" button -->
                             </div>
                         </div>
                     </div>
@@ -255,6 +258,13 @@
 </div>
 {% endif %}
 {% endblock %}
+
+{% block extra_js %}
+<script>
+    // (Rest of the existing script remains the same)
+</script>
+{% endblock %}
+
 
 {% block extra_js %}
 <script>
