@@ -237,12 +237,14 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Card height consistency */
 .member-content .card {
-    min-height: 300px;
+    min-height: auto;
+    height: auto;
 }
 
 .member-content .card-body {
-    overflow-y: auto;
-    max-height: 250px;
+    overflow-y: visible;
+    max-height: none;
+    height: auto;
 }
 
 /* Section card transitions */
