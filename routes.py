@@ -7,6 +7,11 @@ from models import db, Note, Todo, TodoList, TeamMember, MemberTask, Link, UserP
 from forms import NoteForm, TodoForm, TeamMemberForm, MemberTaskForm, LinkForm, UserPreferenceForm, MemberProjectForm, MemberNoteForm, MemberDevelopmentForm, FileForm
 from forms import ProjectForm, TaskForm, DevelopmentForm, TeamPriorityForm
 from PIL import Image
+from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed, FileRequired
+from wtforms import StringField, TextAreaField, BooleanField, SelectField, SubmitField, IntegerField, FloatField
+from wtforms.validators import DataRequired, Length, Optional
+from wtforms.fields import DateField
 
 # Create blueprints for different sections of the app
 main = Blueprint('main', __name__)
