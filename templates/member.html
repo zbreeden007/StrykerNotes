@@ -33,8 +33,16 @@
                         <div>
                             <!-- Display priority badge -->
                             {% if project.priority > 0 %}
-                                <span class="badge {% if project.priority > 40 %}bg-danger{% elif project.priority > 50 %}bg-warning{% elif project.priority > 1 %}bg-info{% else %}bg-secondary{% endif %} me-2"
-                                    {{ project.priority }}
+                                <span class="badge {% if project.priority == 1 %}bg-danger{% elif project.priority == 2 %}bg-warning{% elif project.priority == 3 %}bg-info{% elif project.priority == 4 %}bg-secondary{% endif %} me-2">
+                                    {% if project.priority == 1 %}
+                                        Critical
+                                    {% elif project.priority == 2 %}
+                                        High
+                                    {% elif project.priority == 3 %}
+                                        Medium
+                                    {% elif project.priority == 4 %}
+                                        On Hold
+                                    {% endif %}
                                 </span>
                             {% endif %}
                             <span id="project-content-{{ project.id }}" contenteditable="false">{{ project.name }}</span>

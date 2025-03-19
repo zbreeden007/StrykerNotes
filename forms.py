@@ -34,7 +34,13 @@ class ProjectForm(FlaskForm):
     name = StringField('Project Name', validators=[DataRequired()])
     description = TextAreaField('Description')
     priority = SelectField('Priority', 
-                          choices=[(0, 'None')] + [(i, str(i)) for i in range(1, 21)], 
+                          choices=[
+                              (0, 'None'),
+                              (1, 'Critical'),
+                              (2, 'High'),
+                              (3, 'Medium'),
+                              (4, 'On Hold')
+                          ], 
                           coerce=int, default=0)
     submit = SubmitField('Save Project')
 
@@ -99,7 +105,13 @@ class MemberProjectForm(FlaskForm):
     name = StringField('Project Name', validators=[DataRequired(), Length(max=100)])
     description = TextAreaField('Description')
     priority = SelectField('Priority', 
-                          choices=[(0, 'None')] + [(i, str(i)) for i in range(1, 21)], 
+                          choices=[
+                              (0, 'None'),
+                              (1, 'Critical'),
+                              (2, 'High'),
+                              (3, 'Medium'),
+                              (4, 'On Hold')
+                          ], 
                           coerce=int, default=0)
     submit = SubmitField('Save Project')
 
