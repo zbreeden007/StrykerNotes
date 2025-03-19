@@ -90,7 +90,7 @@
             </div>
             <div class="card-body">
                 <ul id="development-list" class="list-group">
-                    {% for dev in member.development %}
+                    {% for dev in member.developments %}
                     <li class="list-group-item d-flex justify-content-between align-items-center" data-item-id="{{ dev.id }}">
                         <div id="development-content-{{ dev.id }}" contenteditable="false">{{ dev.title }}</div>
                         <div>
