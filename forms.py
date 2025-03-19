@@ -33,7 +33,9 @@ class MemberTaskForm(FlaskForm):
 class ProjectForm(FlaskForm):
     name = StringField('Project Name', validators=[DataRequired()])
     description = TextAreaField('Description')
-    priority = SelectField('Priority', choices=[(0, 'None'), (1, '1'), (2, '2'), (3, '3')], coerce=int, default=0)
+    priority = SelectField('Priority', 
+                          choices=[(0, 'None')] + [(i, str(i)) for i in range(1, 21)], 
+                          coerce=int, default=0)
     submit = SubmitField('Save Project')
 
 class TaskForm(FlaskForm):
@@ -96,7 +98,9 @@ class UserPreferenceForm(FlaskForm):
 class MemberProjectForm(FlaskForm):
     name = StringField('Project Name', validators=[DataRequired(), Length(max=100)])
     description = TextAreaField('Description')
-    priority = SelectField('Priority', choices=[(0, 'None'), (1, '1'), (2, '2'), (3, '3')], coerce=int, default=0)
+    priority = SelectField('Priority', 
+                          choices=[(0, 'None')] + [(i, str(i)) for i in range(1, 21)], 
+                          coerce=int, default=0)
     submit = SubmitField('Save Project')
 
 class MemberNoteForm(FlaskForm):
