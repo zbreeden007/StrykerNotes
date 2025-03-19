@@ -23,7 +23,30 @@
 {% block content %}
 <h1 class="mb-4">Dashboard</h1>
 
-<!-- ... Favorite Links, etc. omitted for brevity ... -->
+<!-- Favorite Links Row -->
+{% if favorite_links %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #DDDEDD;">
+                <h5 class="mb-0"><i class="fas fa-star me-2"></i>Favorite Links</h5>
+                <a href="{{ url_for('links.all_links') }}" class="btn btn-link btn-sm" style="color: black; text-decoration: none;">
+                    <i class="fas fa-link"></i> All Links
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    {% for link in favorite_links %}
+                    <a href="{{ link.url }}" target="_blank" class="btn btn-outline-warning">
+                        {{ link.title }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <div class="row">
     <!-- Left Column: To-Do List Section -->
@@ -31,6 +54,7 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #49789F; color: white;">
                 <h5 class="mb-0">To-Do List</h5>
+                <!-- "+ Add Task" button in the header -->
                 <a href="#" id="toggleAddTask" class="btn btn-link btn-sm" style="color: white; text-decoration: none;">
                     + Add Task
                 </a>
@@ -41,31 +65,21 @@
                     <form action="{{ url_for('main.add_todo') }}" method="post">
                         {{ todo_form.csrf_token }}
                         <div class="row">
-                            <!-- Task content input -->
-                            <div class="col-md-6 mb-2">
+                            <div class="col-md-9 mb-2">
                                 {{ todo_form.content(class="form-control", id="newTaskInput", required=true, placeholder="New task...") }}
                             </div>
-                            
-                            <!-- Priority dropdown -->
                             <div class="col-md-3 mb-2">
+                                {{ todo_form.submit(class="btn btn-link w-100", style="color: black; text-decoration: none;") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-2">
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-flag"></i></span>
                                     {{ todo_form.priority(class="form-select") }}
                                 </div>
                             </div>
-                            
-                            <!-- Tag dropdown -->
-                            <div class="col-md-3 mb-2">
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-tag"></i></span>
-                                    {{ todo_form.tag(class="form-select") }}
-                                </div>
-                            </div>
                         </div>
-                        
-                        <button type="submit" class="btn btn-link" style="color: black; text-decoration: none;">
-                            {{ todo_form.submit.label.text }}
-                        </button>
                     </form>
                 </div>
                 
@@ -80,23 +94,14 @@
                                 <div>
                                     <i class="fas fa-grip-vertical handle me-2 text-muted"></i>
                                     {{ todo.content }}
-                                    <!-- Display the Tag as a small badge -->
-                                    {% if todo.tag == 'today' %}
-                                        <span class="badge bg-info text-dark ms-1">Today</span>
-                                    {% elif todo.tag == 'later' %}
-                                        <span class="badge bg-secondary ms-1">Later</span>
-                                    {% endif %}
                                 </div>
-                                
                                 <!-- Right side: Edit and Delete icons -->
                                 <div class="d-flex align-items-center">
-                                    <!-- Edit button triggers modal -->
                                     <button type="button" class="btn btn-sm me-1"
                                             data-bs-toggle="modal" data-bs-target="#editTodoModal{{ todo.id }}"
                                             style="background-color: transparent; border: none; color: #989B9A;">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <!-- Delete form -->
                                     <form action="{{ url_for('main.delete_todo', todo_id=todo.id) }}" method="post" class="d-inline">
                                         <button type="submit" class="btn btn-sm"
                                                 style="background-color: transparent; border: none; color: #989B9A;">
@@ -117,7 +122,6 @@
                                     </div>
                                     <form action="{{ url_for('main.edit_todo', todo_id=todo.id) }}" method="post">
                                         <div class="modal-body">
-                                            {{ todo_form.csrf_token }}
                                             <div class="mb-3">
                                                 <label class="form-label">Task</label>
                                                 <input type="text" name="content" class="form-control" value="{{ todo.content }}" required>
@@ -128,14 +132,6 @@
                                                     <option value="0" {% if todo.priority == 0 %}selected{% endif %}>Low</option>
                                                     <option value="1" {% if todo.priority == 1 %}selected{% endif %}>Medium</option>
                                                     <option value="2" {% if todo.priority == 2 %}selected{% endif %}>High</option>
-                                                </select>
-                                            </div>
-                                            <!-- Tag field in Edit modal -->
-                                            <div class="mb-3">
-                                                <label class="form-label">Tag</label>
-                                                <select name="tag" class="form-select">
-                                                    <option value="today" {% if todo.tag == 'today' %}selected{% endif %}>Today</option>
-                                                    <option value="later" {% if todo.tag == 'later' %}selected{% endif %}>Later</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -158,13 +154,125 @@
     </div>
     
     <!-- Right Column: Permanent Notes and Team Members -->
-    <!-- ... The rest of your layout remains unchanged ... -->
+    <div class="col-md-5">
+        <!-- Permanent Notes Section -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #709795; color: white;">
+                <h5 class="mb-0">Permanent Notes</h5>
+                <a href="{{ url_for('notes.new_note') }}?permanent=true" class="btn btn-link btn-sm" style="color: white; text-decoration: none;">
+                    + Add Note
+                </a>
+            </div>
+            <div class="card-body">
+                {% if permanent_notes %}
+                <div class="accordion" id="permanentNotesAccordion">
+                    {% for note in permanent_notes %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{ note.id }}">
+                            <button class="accordion-button {% if not loop.first %}collapsed{% endif %}"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#collapse{{ note.id }}"
+                                    aria-expanded="{{ 'true' if loop.first else 'false' }}"
+                                    aria-controls="collapse{{ note.id }}"
+                                    style="background-color: #B7CBCA; color: black;">
+                                {{ note.title }}
+                            </button>
+                        </h2>
+                        <div id="collapse{{ note.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading{{ note.id }}" data-bs-parent="#permanentNotesAccordion">
+                            <div class="accordion-body">
+                                {{ note.html_content|safe }}
+                                <div class="mt-2">
+                                    <!-- Edit button matching to-do style -->
+                                    <a href="{{ url_for('notes.edit_note', note_id=note.id) }}"
+                                       class="btn btn-sm p-0"
+                                       style="background-color: transparent; border: none; color: #989B9A; text-decoration: none;">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No permanent notes yet. Create one to keep important information always visible.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Team Members Section -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #9D6AA1; color: white;">
+                <h5 class="mb-0">
+                    Team Members
+                    <!-- Link icon next to "Team Members", slightly reduced size -->
+                    <a href="https://zbreeden007.pythonanywhere.com/team/"
+                       style="color: white; text-decoration: none; margin-left: 8px; font-size: 0.85em;">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </h5>
+                <a href="{{ url_for('team.new_member') }}" class="btn btn-link btn-sm" style="color: white; text-decoration: none;">
+                    <i class="fas fa-plus"></i> Add Member
+                </a>
+            </div>
+            <div class="card-body">
+                {% if team_members %}
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    {% for member in team_members %}
+                    <div class="col">
+                        <!-- Make each member card clickable -->
+                        <div class="card h-100" style="cursor: pointer;" onclick="window.location.href='{{ url_for('team.view_member', member_id=member.id) }}'">
+                            <div class="card-body d-flex align-items-center">
+                                <!-- Display member image/icon if available -->
+                                {% if member.profile_picture %}
+                                  <img src="{{ url_for('static', filename=member.profile_picture.replace('static/', '')) }}" alt="{{ member.name }}" class="profile-picture-sm me-2">
+                                {% else %}
+                                  <div class="profile-initial profile-initial-sm me-2">
+                                    <span>{{ member.name[:1] }}</span>
+                                  </div>
+                                {% endif %}
+                                <div>
+                                    <h6 class="card-title mb-0">{{ member.name }}</h6>
+                                    {% if member.role %}
+                                    <p class="card-subtitle mb-2 text-muted">{{ member.role }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No team members added yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
 
+<!-- No Favorites Call to Action -->
+{% if not favorite_links %}
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-light border">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <i class="fas fa-star fa-2x text-warning"></i>
+                </div>
+                <div>
+                    <h5 class="mb-1">Add Favorite Links</h5>
+                    <p class="mb-0">Mark links as favorites to display them here for quick access. <a href="{{ url_for('links.all_links') }}">View your links</a> or <a href="{{ url_for('links.new_link') }}">add a new one</a>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // (Rest of your JS remains the same)
+    // (Rest of the existing script remains the same)
 </script>
 {% endblock %}
