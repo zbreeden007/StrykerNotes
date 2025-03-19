@@ -651,7 +651,7 @@ def view_member(member_id):
         development_form = MemberDevelopmentForm()
         
         # Sort projects by priority (higher priority first)
-        projects = MemberProject.query.filter_by(member_id=member_id).order_by(MemberProject.priority.desc()).all()
+        projects = MemberProject.query.filter_by(member_id=member_id).order_by(MemberProject.order.asc()).all()
         member.projects = projects
         
         # Convert markdown to HTML for member notes - safely handle None
