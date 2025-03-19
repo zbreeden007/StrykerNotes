@@ -77,11 +77,11 @@
                 <ul id="task-list" class="list-group">
                     {% for task in member.tasks %}
                     <li class="list-group-item d-flex justify-content-between align-items-center" data-item-id="{{ task.id }}">
-                        <div>
+                        <div class="d-flex align-items-center">
                             <span id="task-content-{{ task.id }}" contenteditable="false">{{ task.content }}</span>
                         </div>
                         <div>
-                            <button class="btn btn-sm btn-outline-primary task-edit" data-item-id="{{ task.id }}">
+                            <button type="button" class="btn btn-sm btn-outline-primary task-edit" data-item-id="{{ task.id }}">
                                 <i class="fas fa-edit"></i>
                             </button>
                             <form action="{{ url_for('team.delete_member_task', task_id=task.id) }}" method="post" class="d-inline">
