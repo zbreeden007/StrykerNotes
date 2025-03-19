@@ -753,7 +753,8 @@ def delete_member_project(project_id):
 def add_member_note(member_id):
     member = TeamMember.query.get_or_404(member_id)
     form = MemberNoteForm()
-if form.validate_on_submit():
+    
+    if form.validate_on_submit():
         note = MemberNote(
             title=form.title.data,
             content=form.content.data,
