@@ -117,6 +117,20 @@ class Link(db.Model):
     def __repr__(self):
         return f'<Link {self.title}>'
 
+class File(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(255), nullable=False)
+    filepath = db.Column(db.String(500), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    filetype = db.Column(db.String(50), nullable=True)  # For categorizing files by type
+    filesize = db.Column(db.Integer, nullable=True)  # Size in bytes
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    category = db.Column(db.String(50), nullable=True)
+    is_favorite = db.Column(db.Boolean, default=False)  # For dashboard display
+    
+    def __repr__(self):
+        return f'<File {self.filename}>'
+
 class UserPreference(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     theme = db.Column(db.String(50), default='light')

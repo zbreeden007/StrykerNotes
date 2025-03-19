@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileAllowed
+from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms import StringField, TextAreaField, BooleanField, SelectField, SubmitField, IntegerField
 from wtforms.validators import DataRequired, Length, Optional
 from wtforms.fields import DateField
@@ -60,6 +60,18 @@ class LinkForm(FlaskForm):
     category = StringField('Category', validators=[Length(max=50)])
     is_favorite = BooleanField('Add to Favorites')
     submit = SubmitField('Save Link')
+
+class FileForm(FlaskForm):
+    file = FileField('File', validators=[
+        FileRequired(),
+        FileAllowed(['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv', 'jpg', 'jpeg', 'png', 'gif'], 
+                   'Allowed file types: PDF, Office documents, text files, and images.')
+    ])
+    title = StringField('Title', validators=[DataRequired(), Length(max=100)])
+    description = TextAreaField('Description')
+    category = StringField('Category', validators=[Length(max=50)])
+    is_favorite = BooleanField('Add to Favorites')
+    submit = SubmitField('Upload File')
 
 class UserPreferenceForm(FlaskForm):
     theme = SelectField('Theme', choices=[('light', 'Light'), ('dark', 'Dark'), ('blue', 'Blue'), ('green', 'Green')])

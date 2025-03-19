@@ -1,10 +1,10 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort, send_from_directory
 from datetime import datetime
 import os
 import markdown
 from werkzeug.utils import secure_filename
-from models import db, Note, Todo, TodoList, TeamMember, MemberTask, Link, UserPreference, MemberProject, MemberNote, MemberDevelopment, TeamPriority
-from forms import NoteForm, TodoForm, TeamMemberForm, MemberTaskForm, LinkForm, UserPreferenceForm, MemberProjectForm, MemberNoteForm, MemberDevelopmentForm
+from models import db, Note, Todo, TodoList, TeamMember, MemberTask, Link, UserPreference, MemberProject, MemberNote, MemberDevelopment, TeamPriority, File
+from forms import NoteForm, TodoForm, TeamMemberForm, MemberTaskForm, LinkForm, UserPreferenceForm, MemberProjectForm, MemberNoteForm, MemberDevelopmentForm, FileForm
 from forms import ProjectForm, TaskForm, DevelopmentForm, TeamPriorityForm
 from PIL import Image
 
@@ -15,6 +15,7 @@ team = Blueprint('team', __name__, url_prefix='/team')
 links = Blueprint('links', __name__, url_prefix='/links')
 settings = Blueprint('settings', __name__, url_prefix='/settings')
 todos = Blueprint('todos', __name__, url_prefix='/todos')  # Keep for redirects
+files = Blueprint('files', __name__, url_prefix='/files')  # New blueprint for files
 
 # This should replace the existing inject_preferences function in routes.py
 @main.app_context_processor
@@ -95,6 +96,48 @@ def save_profile_picture(form_picture):
     
     return picture_path
 
+# Function to save uploaded files
+def save_uploaded_file(form_file):
+    # Generate a secure filename
+    filename = secure_filename(form_file.filename)
+    # Create a unique filename to avoid overwriting
+    unique_filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{filename}"
+    # Set the path
+    file_path = os.path.join('static', 'uploads', 'files', unique_filename)
+    # Ensure directory exists
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    
+    # Save the file
+    form_file.save(file_path)
+    
+    # Get file size
+    file_size = os.path.getsize(file_path)
+    
+    # Determine file type based on extension
+    _, ext = os.path.splitext(filename)
+    ext = ext.lower().lstrip('.')
+    
+    # Map extensions to file types
+    file_type_map = {
+        'pdf': 'PDF',
+        'doc': 'Word',
+        'docx': 'Word',
+        'xls': 'Excel',
+        'xlsx': 'Excel',
+        'ppt': 'PowerPoint',
+        'pptx': 'PowerPoint',
+        'txt': 'Text',
+        'csv': 'CSV',
+        'jpg': 'Image',
+        'jpeg': 'Image',
+        'png': 'Image',
+        'gif': 'Image'
+    }
+    
+    file_type = file_type_map.get(ext, 'Other')
+    
+    return file_path, file_size, file_type
+
 # Helper function to convert Markdown to HTML
 def convert_markdown_to_html(markdown_text):
     if not markdown_text:
@@ -130,6 +173,7 @@ def index():
     
     team_members = TeamMember.query.all()
     favorite_links = Link.query.filter_by(is_favorite=True).all()
+    favorite_files = File.query.filter_by(is_favorite=True).all()
     
     # Convert markdown to HTML for all notes
     for note in recent_notes + permanent_notes:
@@ -145,6 +189,7 @@ def index():
                           todo_form=todo_form,
                           team_members=team_members,
                           favorite_links=favorite_links,
+                          favorite_files=favorite_files,
                           team_priorities=team_priorities,
                           priority_form=priority_form,
                           now=now)
@@ -425,6 +470,126 @@ def save_note_ajax():
         'title': note.title,
         'updated_at': note.updated_at.strftime('%Y-%m-%d %H:%M:%S')
     })
+
+# Files routes
+@files.route('/')
+def all_files():
+    files_list = File.query.order_by(File.created_at.desc()).all()
+    return render_template('all_files.html', files=files_list)
+
+@files.route('/new', methods=['GET', 'POST'])
+def new_file():
+    form = FileForm()
+    if form.validate_on_submit():
+        try:
+            file_path, file_size, file_type = save_uploaded_file(form.file.data)
+            
+            # Create file record in database
+            file = File(
+                filename=form.title.data or form.file.data.filename,
+                filepath=file_path,
+                description=form.description.data,
+                filetype=file_type,
+                filesize=file_size,
+                category=form.category.data,
+                is_favorite=form.is_favorite.data
+            )
+            db.session.add(file)
+            db.session.commit()
+            flash('File uploaded successfully!', 'success')
+            return redirect(url_for('files.all_files'))
+        except Exception as e:
+            flash(f'Error uploading file: {str(e)}', 'danger')
+    
+    return render_template('file_form.html', form=form, is_new=True)
+
+@files.route('/<int:file_id>', methods=['GET'])
+def view_file(file_id):
+    file = File.query.get_or_404(file_id)
+    return render_template('file_view.html', file=file)
+
+@files.route('/<int:file_id>/edit', methods=['GET', 'POST'])
+def edit_file(file_id):
+    file = File.query.get_or_404(file_id)
+    form = FileForm(obj=file)
+    
+    # We don't require a new file upload when editing
+    form.file.validators = []
+    if form.file.data is None:
+        del form.file
+    
+    if form.validate_on_submit():
+        # Update file metadata
+        file.filename = form.title.data
+        file.description = form.description.data
+        file.category = form.category.data
+        file.is_favorite = form.is_favorite.data
+        
+        # If a new file is uploaded, replace the old one
+        if hasattr(form, 'file') and form.file.data:
+            # Delete old file if it exists
+            if os.path.exists(file.filepath):
+                try:
+                    os.remove(file.filepath)
+                except Exception as e:
+                    print(f"Error deleting old file: {e}")
+            
+            # Save new file
+            file_path, file_size, file_type = save_uploaded_file(form.file.data)
+            file.filepath = file_path
+            file.filesize = file_size
+            file.filetype = file_type
+        
+        db.session.commit()
+        flash('File updated successfully!', 'success')
+        return redirect(url_for('files.all_files'))
+    
+    return render_template('file_form.html', form=form, file=file, is_new=False)
+
+@files.route('/<int:file_id>/delete', methods=['POST'])
+def delete_file(file_id):
+    file = File.query.get_or_404(file_id)
+    
+    # Delete physical file
+    if file.filepath and os.path.exists(file.filepath):
+        try:
+            os.remove(file.filepath)
+        except Exception as e:
+            print(f"Error deleting file: {e}")
+    
+    # Delete database record
+    db.session.delete(file)
+    db.session.commit()
+    flash('File deleted successfully!', 'success')
+    return redirect(url_for('files.all_files'))
+
+@files.route('/<int:file_id>/download')
+def download_file(file_id):
+    file = File.query.get_or_404(file_id)
+    
+    # Extract directory and filename from the filepath
+    directory = os.path.dirname(file.filepath)
+    filename = os.path.basename(file.filepath)
+    
+    # Use send_from_directory to send the file
+    return send_from_directory(
+        directory, 
+        filename, 
+        as_attachment=True, 
+        download_name=secure_filename(file.filename)
+    )
+
+@files.route('/<int:file_id>/toggle_favorite', methods=['POST'])
+def toggle_favorite(file_id):
+    file = File.query.get_or_404(file_id)
+    file.is_favorite = not file.is_favorite
+    db.session.commit()
+    
+    # Check if we should return to the dashboard or files page
+    referer = request.headers.get('Referer')
+    if referer and 'files' in referer:
+        return redirect(url_for('files.all_files'))
+    return redirect(url_for('main.index'))
 
 # Team member routes
 @team.route('/')
@@ -901,3 +1066,4 @@ def register_blueprints(app):
     app.register_blueprint(links)
     app.register_blueprint(settings)
     app.register_blueprint(todos)  # Keep this to handle redirects
+    app.register_blueprint(files)  # Register the new files blueprint

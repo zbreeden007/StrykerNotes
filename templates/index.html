@@ -35,6 +35,46 @@
 </div>
 {% endif %}
 
+<!-- Favorite Files Row -->
+{% if favorite_files %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #4B9CD3;">
+                <h5 class="mb-0" style="color: white;"><i class="fas fa-file me-2"></i>Favorite Files</h5>
+                <a href="{{ url_for('files.all_files') }}" class="btn btn-link btn-sm" style="color: white; text-decoration: none;">
+                    <i class="fas fa-folder-open"></i> All Files
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    {% for file in favorite_files %}
+                    <a href="{{ url_for('files.download_file', file_id=file.id) }}" class="btn position-relative" style="background-color: #767979; color: white; border-color: white;">
+                        {% if file.filetype == 'PDF' %}
+                            <i class="fas fa-file-pdf me-1"></i>
+                        {% elif file.filetype == 'Word' %}
+                            <i class="fas fa-file-word me-1"></i>
+                        {% elif file.filetype == 'Excel' %}
+                            <i class="fas fa-file-excel me-1"></i>
+                        {% elif file.filetype == 'PowerPoint' %}
+                            <i class="fas fa-file-powerpoint me-1"></i>
+                        {% elif file.filetype == 'Image' %}
+                            <i class="fas fa-file-image me-1"></i>
+                        {% elif file.filetype == 'Text' or file.filetype == 'CSV' %}
+                            <i class="fas fa-file-alt me-1"></i>
+                        {% else %}
+                            <i class="fas fa-file me-1"></i>
+                        {% endif %}
+                        {{ file.filename }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="row">
     <!-- Left Column: To-Do List Section -->
     <div class="col-md-4">

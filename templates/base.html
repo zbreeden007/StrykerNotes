@@ -105,6 +105,15 @@
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('links.all_links') }}">Links</a>
           </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="filesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Files
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="filesDropdown">
+              <li><a class="dropdown-item" href="{{ url_for('files.all_files') }}">All Files</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('files.new_file') }}">Upload File</a></li>
+            </ul>
+          </li>
         </ul>
         <!-- Settings button removed per new requirements -->
       </div>

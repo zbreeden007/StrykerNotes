@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if is_new %}Upload File{% else %}Edit File{% endif %} - Stryker Notes{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{% if is_new %}Upload File{% else %}Edit File{% endif %}</h1>
+    
+    {% if not is_new %}
+    <div>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteFileModal">
+            <i class="fas fa-trash"></i> Delete
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {{ form.csrf_token }}
+            
+            {% if is_new %}
+            <div class="mb-3">
+                {{ form.file.label(class="form-label") }}
+                {{ form.file(class="form-control", required=true) }}
+                <small class="text-muted">Allowed file types: PDF, Office documents, text files, and images.</small>
+            </div>
+            {% endif %}
+            
+            <div class="mb-3">
+                {{ form.title.label(class="form-label") }}
+                {{ form.title(class="form-control", required=true, autofocus=true) }}
+                <small class="text-muted">Give your file a descriptive name</small>
+            </div>
+            
+            <div class="mb-3">
+                {{ form.description.label(class="form-label") }}
+                {{ form.description(class="form-control", rows=3) }}
+                <small class="text-muted">Optional: Add details about this file</small>
+            </div>
+            
+            <div class="mb-3">
+                {{ form.category.label(class="form-label") }}
+                {{ form.category(class="form-control") }}
+                <small class="text-muted">Optional: Categorize this file</small>
+            </div>
+            
+            <div class="mb-3">
+                <div class="form-check">
+                    {{ form.is_favorite(class="form-check-input") }}
+                    {{ form.is_favorite.label(class="form-check-label") }}
+                </div>
+                <small class="text-muted">Favorite files appear on the dashboard for quick access</small>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('files.all_files') }}" class="btn btn-secondary">Cancel</a>
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if not is_new %}
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteFileModal" tabindex="-1" aria-labelledby="deleteFileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteFileModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the file "{{ file.filename }}"? This cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('files.delete_file', file_id=file.id) }}" method="post">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

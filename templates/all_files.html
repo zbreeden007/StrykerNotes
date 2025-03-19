@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}Files - Stryker Notes{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Files</h1>
+    <a href="{{ url_for('files.new_file') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Upload File
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search files...">
+            </div>
+            <div class="col-md-4">
+                <select id="categoryFilter" class="form-select">
+                    <option value="">All Categories</option>
+                    {% set categories = files|map(attribute='category')|unique|reject('none')|list %}
+                    {% for category in categories %}
+                    <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select id="typeFilter" class="form-select">
+                    <option value="">All File Types</option>
+                    {% set types = files|map(attribute='filetype')|unique|reject('none')|list %}
+                    {% for type in types %}
+                    <option value="{{ type }}">{{ type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        {% if files %}
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for file in files %}
+            <div class="col file-item" 
+                 data-title="{{ file.filename|lower }}" 
+                 data-category="{{ file.category|lower if file.category else '' }}"
+                 data-type="{{ file.filetype|lower if file.filetype else '' }}"
+                 data-favorite="{{ 'true' if file.is_favorite else 'false' }}">
+                <div class="card h-100 {{ 'border-warning' if file.is_favorite }}">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h5 class="card-title mb-0">{{ file.filename }}</h5>
+                                {% if file.is_favorite %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-star"></i> Favorite
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="file-icon fs-3">
+                                {% if file.filetype == 'PDF' %}
+                                    <i class="fas fa-file-pdf text-danger"></i>
+                                {% elif file.filetype == 'Word' %}
+                                    <i class="fas fa-file-word text-primary"></i>
+                                {% elif file.filetype == 'Excel' %}
+                                    <i class="fas fa-file-excel text-success"></i>
+                                {% elif file.filetype == 'PowerPoint' %}
+                                    <i class="fas fa-file-powerpoint text-warning"></i>
+                                {% elif file.filetype == 'Image' %}
+                                    <i class="fas fa-file-image text-info"></i>
+                                {% elif file.filetype == 'Text' or file.filetype == 'CSV' %}
+                                    <i class="fas fa-file-alt text-secondary"></i>
+                                {% else %}
+                                    <i class="fas fa-file text-secondary"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if file.category %}
+                        <span class="badge bg-secondary mb-2">{{ file.category }}</span>
+                        {% endif %}
+                        
+                        {% if file.description %}
+                        <p class="card-text small mb-2">{{ file.description }}</p>
+                        {% endif %}
+                        
+                        <div class="mb-2 text-muted small">
+                            <div>Type: {{ file.filetype or 'Unknown' }}</div>
+                            <div>Size: {{ (file.filesize / 1024)|round(1) }} KB</div>
+                            <div>Uploaded: {{ file.created_at.strftime('%Y-%m-%d') }}</div>
+                        </div>
+                        
+                        <div class="mt-auto d-flex">
+                            <a href="{{ url_for('files.download_file', file_id=file.id) }}" class="btn btn-outline-primary btn-sm me-1 flex-grow-1">
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                            <a href="{{ url_for('files.edit_file', file_id=file.id) }}" class="btn btn-outline-secondary btn-sm me-1">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form action="{{ url_for('files.toggle_favorite', file_id=file.id) }}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-outline-{{ 'warning' if file.is_favorite else 'light' }} btn-sm" title="{{ 'Remove from favorites' if file.is_favorite else 'Add to favorites' }}">
+                                    <i class="fas fa-star"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            No files uploaded yet. Upload your first file to get started.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Search functionality
+        $('#searchInput').on('keyup', filterFiles);
+        $('#categoryFilter').on('change', filterFiles);
+        $('#typeFilter').on('change', filterFiles);
+        
+        function filterFiles() {
+            const searchText = $('#searchInput').val().toLowerCase();
+            const categoryFilter = $('#categoryFilter').val().toLowerCase();
+            const typeFilter = $('#typeFilter').val().toLowerCase();
+            
+            $('.file-item').each(function() {
+                const title = $(this).data('title');
+                const category = $(this).data('category');
+                const type = $(this).data('type');
+                
+                const matchesSearch = title.includes(searchText);
+                const matchesCategory = !categoryFilter || category === categoryFilter;
+                const matchesType = !typeFilter || type === typeFilter;
+                
+                if (matchesSearch && matchesCategory && matchesType) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
