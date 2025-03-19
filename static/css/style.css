@@ -346,3 +346,43 @@ member-content .card:hover {
 .delete-priority-btn:hover {
     color: rgba(0, 0, 0, 0.8);
 }
+
+/* Styles for inline editing and drag-drop */
+.saving-in-progress {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+[contenteditable=true] {
+    border: 1px dashed #aaa;
+    padding: 2px;
+    min-height: 20px;
+    background-color: #f8f9fa;
+}
+
+/* Visual feedback for edit mode */
+[contenteditable=true]:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Autosave notification styles */
+.autosave-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: rgba(40, 167, 69, 0.9);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    z-index: 9999;
+    animation: fadeInOut 2s ease;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+}

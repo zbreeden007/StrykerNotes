@@ -955,43 +955,74 @@ def delete_project(project_id):
 
 @team.route('/reorder_items/<string:item_type>', methods=['POST'])
 def reorder_items(item_type):
-    data = request.json.get('order')
-    if item_type == 'project':
-        items = MemberProject.query.filter(MemberProject.id.in_(data)).all()
-    elif item_type == 'task':
-        items = MemberTask.query.filter(MemberTask.id.in_(data)).all()
-    elif item_type == 'development':
-        items = MemberDevelopment.query.filter(MemberDevelopment.id.in_(data)).all()
-    else:
-        return jsonify({'status': 'error', 'message': 'Invalid item type'}), 400
+    data = request.json
+    item_ids = data.get('order')
+    
+    try:
+        # Validate we have item_ids to work with
+        if not item_ids:
+            return jsonify({'status': 'error', 'message': 'No items to reorder'}), 400
+            
+        if item_type == 'project':
+            model = MemberProject
+        elif item_type == 'task':
+            model = MemberTask
+        elif item_type == 'development':
+            model = MemberDevelopment
+        else:
+            return jsonify({'status': 'error', 'message': 'Invalid item type'}), 400
 
-    # Reordering logic
-    for index, item_id in enumerate(data):
-        item = next((item for item in items if item.id == int(item_id)), None)
-        if item:
-            item.order = index
-
-    db.session.commit()
-    return jsonify({'status': 'success'})
+        # Get all items at once
+        items = model.query.filter(model.id.in_([int(id) for id in item_ids])).all()
+        item_dict = {item.id: item for item in items}
+        
+        # Update order for each item
+        for index, item_id in enumerate(item_ids):
+            item_id = int(item_id)
+            if item_id in item_dict:
+                item_dict[item_id].order = index
+        
+        # Commit changes
+        db.session.commit()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error reordering items: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @team.route('/update_item/<string:item_type>/<int:item_id>', methods=['POST'])
 def update_item(item_type, item_id):
-    data = request.json
-    if item_type == 'project':
-        item = MemberProject.query.get_or_404(item_id)
-        item.name = data.get('name')
-        item.description = data.get('description')
-    elif item_type == 'task':
-        item = MemberTask.query.get_or_404(item_id)
-        item.content = data.get('content')
-        item.completed = data.get('completed')
-    elif item_type == 'development':
-        item = MemberDevelopment.query.get_or_404(item_id)
-        item.title = data.get('title')
-        item.description = data.get('description')
-
-    db.session.commit()
-    return jsonify({'status': 'success'})
+    try:
+        data = request.json
+        
+        if item_type == 'project':
+            item = MemberProject.query.get_or_404(item_id)
+            if 'name' in data:
+                item.name = data.get('name')
+            if 'description' in data:
+                item.description = data.get('description')
+        elif item_type == 'task':
+            item = MemberTask.query.get_or_404(item_id)
+            if 'content' in data:
+                item.content = data.get('content')
+            if 'completed' in data:
+                item.completed = data.get('completed')
+        elif item_type == 'development':
+            item = MemberDevelopment.query.get_or_404(item_id)
+            if 'title' in data:
+                item.title = data.get('title')
+            if 'description' in data:
+                item.description = data.get('description')
+        else:
+            return jsonify({'status': 'error', 'message': 'Invalid item type'}), 400
+        
+        # Make sure we commit the changes
+        db.session.commit()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error updating item: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 # Links routes
 @links.route('/')

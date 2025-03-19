@@ -291,15 +291,35 @@ function setupDragAndDrop(itemType) {
     new Sortable(container, {
         animation: 150,
         onEnd: function (evt) {
-            const itemOrder = Array.from(container.children).map(item => item.dataset.itemId);
-
-            fetch(`/reorder_items/${itemType}`, {
+            const itemOrder = Array.from(container.children)
+                .map(item => item.dataset.itemId);
+            
+            // Show visual feedback that saving is in progress
+            container.classList.add('saving-in-progress');
+            
+            fetch(`/team/reorder_items/${itemType}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 body: JSON.stringify({ order: itemOrder })
-            }).then(response => response.json())
-              .then(data => console.log(data))
-              .catch(error => console.error('Error reordering:', error));
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(`${itemType} items reordered successfully`);
+                container.classList.remove('saving-in-progress');
+            })
+            .catch(error => {
+                console.error(`Error reordering ${itemType} items:`, error);
+                container.classList.remove('saving-in-progress');
+                // Could add code here to show an error message to the user
+            });
         }
     });
 }
@@ -362,19 +382,70 @@ function enableInlineEditing(itemType) {
             const itemId = this.dataset.itemId;
             const contentField = document.getElementById(`${itemType}-content-${itemId}`);
 
+            // Make the field editable
             contentField.contentEditable = 'true';
             contentField.focus();
-
-            contentField.addEventListener('blur', function () {
+            
+            // Store original content in case we need to revert
+            const originalContent = contentField.innerText;
+            
+            // Function to save the content
+            const saveContent = function() {
                 const updatedContent = contentField.innerText;
-
-                fetch(`/update_item/${itemType}/${itemId}`, {
+                if (updatedContent === originalContent) {
+                    // No changes, don't make an API call
+                    contentField.contentEditable = 'false';
+                    return;
+                }
+                
+                // Prepare the data to send based on item type
+                let data = {};
+                if (itemType === 'project') {
+                    data = { name: updatedContent };
+                } else if (itemType === 'task') {
+                    data = { content: updatedContent };
+                } else if (itemType === 'development') {
+                    data = { title: updatedContent };
+                }
+                
+                // Send the update to the server
+                fetch(`/team/update_item/${itemType}/${itemId}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: updatedContent })
-                }).then(response => response.json())
-                  .then(data => console.log(data))
-                  .catch(error => console.error('Error updating:', error));
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        console.log(`${itemType} updated successfully`);
+                    } else {
+                        console.error(`Error updating ${itemType}:`, data.message);
+                        // Revert to original content if there was an error
+                        contentField.innerText = originalContent;
+                    }
+                    // Make the field non-editable again
+                    contentField.contentEditable = 'false';
+                })
+                .catch(error => {
+                    console.error(`Error updating ${itemType}:`, error);
+                    // Revert to original content
+                    contentField.innerText = originalContent;
+                    contentField.contentEditable = 'false';
+                });
+            };
+            
+            // Save on blur
+            contentField.addEventListener('blur', saveContent, { once: true });
+            
+            // Also save on Enter key
+            contentField.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    contentField.blur(); // Trigger the blur event which saves the content
+                }
             });
         });
     });
