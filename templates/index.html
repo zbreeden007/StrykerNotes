@@ -5,19 +5,6 @@
 {% block extra_head %}
 <!-- SortableJS for drag-and-drop functionality -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-<script>
-  // Toggle the display of the Add Task form
-  $(document).ready(function(){
-    $('#toggleAddTask').on('click', function(e){
-      e.preventDefault();
-      $('#addTaskFormContainer').toggleClass('d-none');
-      // Focus the input field if the form is now visible
-      if (!$('#addTaskFormContainer').hasClass('d-none')) {
-        $('#newTaskInput').focus();
-      }
-    });
-  });
-</script>
 {% endblock %}
 
 {% block content %}
@@ -273,6 +260,50 @@
 
 {% block extra_js %}
 <script>
-    // (Rest of the existing script remains the same)
+    // Initialize the todo list sorting functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // Setup the toggle functionality for the add task form
+        $('#toggleAddTask').on('click', function(e) {
+            e.preventDefault();
+            $('#addTaskFormContainer').toggleClass('d-none');
+            
+            // Focus the input field if the form is now visible
+            if (!$('#addTaskFormContainer').hasClass('d-none')) {
+                $('#newTaskInput').focus();
+            }
+        });
+        
+        // Task list drag and drop functionality
+        const todoList = document.getElementById('dashboard-todo-list');
+        if (todoList) {
+            new Sortable(todoList, {
+                animation: 150,
+                handle: '.handle',
+                ghostClass: 'sortable-ghost',
+                onEnd: function(evt) {
+                    const todoIds = Array.from(todoList.children)
+                        .map(item => item.id.replace('todo-', ''));
+                    
+                    // Send the new order to the server
+                    fetch('{{ url_for("main.reorder_todos") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ todoIds: todoIds })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status !== 'success') {
+                            console.error('Error reordering todos:', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error reordering todos:', error);
+                    });
+                }
+            });
+        }
+    });
 </script>
 {% endblock %}
