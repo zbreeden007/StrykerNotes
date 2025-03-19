@@ -235,16 +235,25 @@ h1, h2, h3, h4, h5, h6 {
     background-color: rgba(191, 138, 54, 0.05); /* Light tint of Stryker Gold */
 }
 
-/* Card height consistency */
+/* Card height consistency - MODIFIED FOR INDEPENDENT SIZING */
 .member-content .card {
-    min-height: auto;
     height: auto;
 }
 
 .member-content .card-body {
     overflow-y: visible;
-    max-height: none;
     height: auto;
+}
+
+/* Each column can size independently based on content */
+.col-md-4 {
+    display: flex;
+    flex-direction: column;
+}
+
+.col-md-4 .card {
+    flex-grow: 0;
+    flex-shrink: 0;
 }
 
 /* Section card transitions */
