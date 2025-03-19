@@ -180,7 +180,6 @@ def add_todo():
 @main.route('/get_todos', methods=['GET'])
 def get_todos():
     """AJAX endpoint to get the current todo list HTML"""
-    # Get all todos with ordering
     try:
         todos = Todo.query.order_by(Todo.order.asc(), Todo.priority.desc()).all()
     except:
@@ -214,6 +213,11 @@ def edit_todo(todo_id):
     todo.priority = int(request.form.get('priority', todo.priority))
     
     db.session.commit()
+    
+    # Check if it's an AJAX request
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'status': 'success', 'message': 'Task updated successfully!'})
+    
     flash('Task updated successfully!', 'success')
     return redirect(url_for('main.index'))
 

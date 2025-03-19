@@ -385,3 +385,63 @@ document.addEventListener('DOMContentLoaded', function () {
     enableInlineEditing('task');
     enableInlineEditing('development');
 });
+
+// Add a task submission handler
+document.addEventListener('DOMContentLoaded', function() {
+    // When a modal is hidden (closed), immediately update the todo content
+    // This avoids the loss of changes when adding new tasks
+    $('.modal').on('hidden.bs.modal', function() {
+        if ($(this).attr('id') && $(this).attr('id').startsWith('editTodoModal')) {
+            // After editing a task and closing the modal, update the list
+            $.get('/get_todos', function(data) {
+                $('#dashboard-todo-list').html(data);
+            });
+        }
+    });
+    
+    // Handle Edit Todo Modal submission via AJAX
+    $('.modal form').on('submit', function(e) {
+        // Only intercept task edit forms
+        if ($(this).attr('action').includes('/todo/') && $(this).attr('action').includes('/edit')) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const modalId = $(this).closest('.modal').attr('id');
+            
+            // Add X-Requested-With header through the AJAX call itself
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(response) {
+                    // Close the modal
+                    $(`#${modalId}`).modal('hide');
+                    
+                    // Update the todo item in the list without full page reload
+                    $.get('/get_todos', function(data) {
+                        $('#dashboard-todo-list').html(data);
+                    });
+                },
+                error: function(error) {
+                    console.error('Error updating task:', error);
+                    alert('Failed to update the task. Please try again.');
+                }
+            });
+        }
+    });
+    
+    // Extra safety: update the list when a form is submitted
+    $('form').on('submit', function() {
+        // Give the server a moment to process
+        setTimeout(function() {
+            $.get('/get_todos', function(data) {
+                $('#dashboard-todo-list').html(data);
+            });
+        }, 500);
+    });
+});
