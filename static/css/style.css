@@ -251,6 +251,17 @@ h1, h2, h3, h4, h5, h6 {
     flex-direction: column;
 }
 
+/* Remove fixed heights from all cards */
+.card {
+    height: auto !important;
+}
+
+.card-body {
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+}
+
 .col-md-4 .card {
     flex-grow: 0;
     flex-shrink: 0;
