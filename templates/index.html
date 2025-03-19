@@ -267,12 +267,12 @@
                                     {% if member.role %}
                                     <p class="card-subtitle mb-2 text-muted">{{ member.role }}</p>
                                     {% endif %}
-                                    <div class="d-flex mt-1">
-                                        <span class="badge bg-info me-2" title="Projects">
-                                            <i class="fas fa-project-diagram me-1"></i>{{ member.projects|length }}
+                                    <div class="d-flex mt-1 member-stats">
+                                        <span class="badge bg-info me-2">
+                                            Projects: {{ member.projects|length }}
                                         </span>
-                                        <span class="badge bg-success" title="Tasks">
-                                            <i class="fas fa-tasks me-1"></i>{{ member.tasks|length }}
+                                        <span class="badge bg-success">
+                                            Tasks: {{ member.tasks|length }}
                                         </span>
                                     </div>
                                 </div>
