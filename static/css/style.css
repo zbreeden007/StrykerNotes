@@ -278,3 +278,47 @@ member-content .card:hover {
     color: #333333;
 }
 
+/* Sticky Note Styles */
+.sticky-note {
+    display: inline-block;
+    width: 140px;
+    height: 140px;
+    padding: 15px;
+    margin: 15px;
+    position: relative;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+    text-align: center;
+    overflow-wrap: break-word;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sticky-note::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-width: 0 16px 16px 0;
+    border-style: solid;
+    border-color: #f9f9f9 #f9f9f9 rgba(0,0,0,0.1) rgba(0,0,0,0.1);
+    box-shadow: -1px 1px 1px rgba(0,0,0,0.1);
+}
+
+.sticky-note p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+/* Make sticky notes respond to hover */
+.sticky-note {
+    transition: all 0.2s ease;
+}
+
+.sticky-note:hover {
+    transform: scale(1.05) rotate(0deg) !important;
+    z-index: 10;
+    box-shadow: 0 5px 12px rgba(0,0,0,0.3);
+}
