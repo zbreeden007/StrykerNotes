@@ -292,7 +292,8 @@
                     {% for member in team_members %}
                     <div class="col">
                         <!-- Make each member card clickable -->
-                        <div class="card h-100" style="cursor: pointer;" onclick="window.location.href='{{ url_for('team.view_member', member_id=member.id) }}'">
+                        <!-- In the Team Members section of the dashboard -->
+                        <div class="card h-100" style="cursor: pointer;" onclick="window.location.href='{{ url_for('team.all_members') }}'">
                             <div class="card-body d-flex align-items-center">
                                 <!-- Display member image/icon if available -->
                                 {% if member.profile_picture %}

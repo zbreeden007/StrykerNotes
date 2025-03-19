@@ -284,14 +284,15 @@ function initTodoSortable() {
     }
 }
 
-function setupDragAndDrop(itemType) {
-    const container = document.getElementById(`${itemType}-list`);
+// Update this function to account for member-specific lists
+function setupDragAndDrop(itemType, memberId) {
+    const container = document.getElementById(`${itemType}-list-${memberId}`);
     if (!container) {
-        console.error(`Container not found for ${itemType}-list`);
+        console.error(`Container not found for ${itemType}-list-${memberId}`);
         return;
     }
     
-    console.log(`Setting up drag and drop for ${itemType}-list`);
+    console.log(`Setting up drag and drop for ${itemType}-list-${memberId}`);
     console.log(`Found ${container.children.length} ${itemType} items`);
 
     new Sortable(container, {
