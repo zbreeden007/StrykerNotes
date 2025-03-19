@@ -177,6 +177,19 @@ def add_todo():
     
     return redirect(url_for('main.index'))
 
+@main.route('/get_todos', methods=['GET'])
+def get_todos():
+    """AJAX endpoint to get the current todo list HTML"""
+    # Get all todos with ordering
+    try:
+        todos = Todo.query.order_by(Todo.order.asc(), Todo.priority.desc()).all()
+    except:
+        # Fallback in case order column doesn't exist yet
+        todos = Todo.query.order_by(Todo.priority.desc()).all()
+    
+    # Render just the todo list items (not the full page)
+    return render_template('partials/todo_list.html', todos=todos)
+
 @main.route('/todo/<int:todo_id>/toggle', methods=['POST'])
 def toggle_todo(todo_id):
     todo = Todo.query.get_or_404(todo_id)

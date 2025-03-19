@@ -167,7 +167,122 @@ $(document).ready(function() {
         // Show the container for that member
         $('#member-content-' + memberId).slideDown();
     });
+
+    // AJAX form submission for adding new tasks
+    $('#addTaskFormContainer form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                // Refresh the todo list without full page reload
+                refreshTodoList();
+                
+                // Clear the form
+                $('#newTaskInput').val('');
+                
+                // Hide the form after submission
+                $('#addTaskFormContainer').addClass('d-none');
+            },
+            error: function(error) {
+                console.error('Error adding task:', error);
+                alert('Failed to add the task. Please try again.');
+            }
+        });
+    });
+
+    // Handle Edit Todo Modal submission via AJAX
+    $('.modal form').on('submit', function(e) {
+        // Only intercept task edit forms
+        if ($(this).attr('action').includes('/todo/') && $(this).attr('action').includes('/edit')) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const modalId = $(this).closest('.modal').attr('id');
+            
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    // Close the modal
+                    $(`#${modalId}`).modal('hide');
+                    
+                    // Update the todo item in the list without full page reload
+                    refreshTodoList();
+                },
+                error: function(error) {
+                    console.error('Error updating task:', error);
+                    alert('Failed to update the task. Please try again.');
+                }
+            });
+        }
+    });
 });
+
+// Function to refresh the todo list via AJAX
+function refreshTodoList() {
+    $.ajax({
+        url: '/get_todos', // You'll need to create this endpoint
+        type: 'GET',
+        success: function(response) {
+            // Replace the todo list HTML with the updated version
+            $('#dashboard-todo-list').html(response);
+            
+            // Re-initialize sortable if needed
+            initTodoSortable();
+        },
+        error: function(error) {
+            console.error('Error refreshing todo list:', error);
+        }
+    });
+}
+
+// Initialize the todo list sorting functionality
+function initTodoSortable() {
+    const todoList = document.getElementById('dashboard-todo-list');
+    if (todoList) {
+        if (todoList.sortable) {
+            todoList.sortable.destroy();
+        }
+        
+        new Sortable(todoList, {
+            animation: 150,
+            handle: '.handle',
+            ghostClass: 'sortable-ghost',
+            onEnd: function(evt) {
+                const todoIds = Array.from(todoList.children)
+                    .map(item => item.id.replace('todo-', ''));
+                
+                // Send the new order to the server
+                fetch('/todo/reorder', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ todoIds: todoIds })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status !== 'success') {
+                        console.error('Error reordering todos:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error reordering todos:', error);
+                });
+            }
+        });
+    }
+}
 
 function setupDragAndDrop(itemType) {
     const container = document.getElementById(`${itemType}-list`);
@@ -193,6 +308,52 @@ document.addEventListener('DOMContentLoaded', function () {
     setupDragAndDrop('project');
     setupDragAndDrop('task');
     setupDragAndDrop('development');
+    
+    // Initialize todo sortable
+    initTodoSortable();
+
+    // Setup the toggle functionality for the add task form
+    $('#toggleAddTask').on('click', function(e) {
+        e.preventDefault();
+        $('#addTaskFormContainer').toggleClass('d-none');
+        
+        // Focus the input field if the form is now visible
+        if (!$('#addTaskFormContainer').hasClass('d-none')) {
+            $('#newTaskInput').focus();
+        }
+    });
+    
+    // Make priorities draggable
+    const prioritiesContainer = document.getElementById('priorities-container');
+    if (prioritiesContainer) {
+        new Sortable(prioritiesContainer, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            onEnd: function(evt) {
+                const priorityIds = Array.from(prioritiesContainer.children)
+                    .filter(item => item.id && item.id.startsWith('priority-'))
+                    .map(item => item.id.replace('priority-', ''));
+                
+                // Send the new order to the server
+                fetch('/priority/reorder', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ priorityIds: priorityIds })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status !== 'success') {
+                        console.error('Error reordering priorities:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error reordering priorities:', error);
+                });
+            }
+        });
+    }
 });
 
 function enableInlineEditing(itemType) {
