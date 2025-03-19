@@ -116,3 +116,22 @@ class TeamPriorityForm(FlaskForm):
         ('#ffa8a8', 'Red')
     ])
     submit = SubmitField('Add Priority')
+
+class AdHocForm(FlaskForm):
+    month = SelectField('Month', validators=[DataRequired()], choices=[])
+    title = StringField('Title', validators=[DataRequired(), Length(max=100)])
+    description = TextAreaField('Description')
+    completed_by = StringField('Completed By', validators=[DataRequired(), Length(max=100)])
+    hours_needed = FloatField('Hours Needed', validators=[DataRequired()])
+    submit = SubmitField('Save')
+    
+    def __init__(self, *args, **kwargs):
+        super(AdHocForm, self).__init__(*args, **kwargs)
+        # Generate month choices for the current year and the past year
+        current_year = datetime.utcnow().year
+        months = []
+        for year in range(current_year - 1, current_year + 1):
+            for month in range(1, 13):
+                month_name = datetime(year, month, 1).strftime('%B %Y')
+                months.append((month_name, month_name))
+        self.month.choices = months

@@ -16,6 +16,7 @@ links = Blueprint('links', __name__, url_prefix='/links')
 settings = Blueprint('settings', __name__, url_prefix='/settings')
 todos = Blueprint('todos', __name__, url_prefix='/todos')  # Keep for redirects
 files = Blueprint('files', __name__, url_prefix='/files')  # New blueprint for files
+adhocs = Blueprint('adhocs', __name__, url_prefix='/adhocs')
 
 # This should replace the existing inject_preferences function in routes.py
 @main.app_context_processor
@@ -144,7 +145,6 @@ def convert_markdown_to_html(markdown_text):
         return ""
     return markdown.markdown(markdown_text)
 
-# Main routes
 @main.route('/')
 def index():
     # Get latest notes, todos, and team members for dashboard
@@ -175,6 +175,10 @@ def index():
     favorite_links = Link.query.filter_by(is_favorite=True).all()
     favorite_files = File.query.filter_by(is_favorite=True).all()
     
+    # Get ad-hoc statistics
+    adhoc_count = AdHoc.query.count()
+    total_adhoc_hours = db.session.query(db.func.sum(AdHoc.hours_needed)).scalar() or 0
+    
     # Convert markdown to HTML for all notes
     for note in recent_notes + permanent_notes:
         note.html_content = convert_markdown_to_html(note.content)
@@ -192,6 +196,8 @@ def index():
                           favorite_files=favorite_files,
                           team_priorities=team_priorities,
                           priority_form=priority_form,
+                          adhoc_count=adhoc_count,
+                          total_adhoc_hours=total_adhoc_hours,
                           now=now)
 
 # Todo routes - Now only on dashboard
@@ -1037,6 +1043,57 @@ def toggle_favorite(link_id):
         return redirect(url_for('links.all_links'))
     return redirect(url_for('main.index'))
 
+# Ad-hoc routes
+@adhocs.route('/')
+def all_adhocs():
+    adhocs_list = AdHoc.query.order_by(AdHoc.created_at.desc()).all()
+    # Calculate total hours
+    total_hours = sum(adhoc.hours_needed for adhoc in adhocs_list)
+    return render_template('all_adhocs.html', adhocs=adhocs_list, total_hours=total_hours)
+
+@adhocs.route('/new', methods=['GET', 'POST'])
+def new_adhoc():
+    form = AdHocForm()
+    if form.validate_on_submit():
+        adhoc = AdHoc(
+            month=form.month.data,
+            title=form.title.data,
+            description=form.description.data,
+            completed_by=form.completed_by.data,
+            hours_needed=form.hours_needed.data
+        )
+        db.session.add(adhoc)
+        db.session.commit()
+        flash('Ad-hoc added successfully!', 'success')
+        return redirect(url_for('adhocs.all_adhocs'))
+    
+    return render_template('adhoc_form.html', form=form, is_new=True)
+
+@adhocs.route('/<int:adhoc_id>/edit', methods=['GET', 'POST'])
+def edit_adhoc(adhoc_id):
+    adhoc = AdHoc.query.get_or_404(adhoc_id)
+    form = AdHocForm(obj=adhoc)
+    
+    if form.validate_on_submit():
+        adhoc.month = form.month.data
+        adhoc.title = form.title.data
+        adhoc.description = form.description.data
+        adhoc.completed_by = form.completed_by.data
+        adhoc.hours_needed = form.hours_needed.data
+        db.session.commit()
+        flash('Ad-hoc updated successfully!', 'success')
+        return redirect(url_for('adhocs.all_adhocs'))
+    
+    return render_template('adhoc_form.html', form=form, adhoc=adhoc, is_new=False)
+
+@adhocs.route('/<int:adhoc_id>/delete', methods=['POST'])
+def delete_adhoc(adhoc_id):
+    adhoc = AdHoc.query.get_or_404(adhoc_id)
+    db.session.delete(adhoc)
+    db.session.commit()
+    flash('Ad-hoc deleted successfully!', 'success')
+    return redirect(url_for('adhocs.all_adhocs'))
+
 # Settings routes
 @settings.route('/', methods=['GET', 'POST'])
 def preferences():
@@ -1066,4 +1123,5 @@ def register_blueprints(app):
     app.register_blueprint(links)
     app.register_blueprint(settings)
     app.register_blueprint(todos)  # Keep this to handle redirects
-    app.register_blueprint(files)  # Register the new files blueprint
+    app.register_blueprint(files)  # Register the files blueprint
+    app.register_blueprint(adhocs)  # Register the adhocs blueprint

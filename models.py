@@ -150,3 +150,15 @@ class TeamPriority(db.Model):
     
     def __repr__(self):
         return f'<TeamPriority {self.content}>'
+
+class AdHoc(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    month = db.Column(db.String(20), nullable=False)  # e.g., "January 2023"
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    completed_by = db.Column(db.String(100), nullable=False)
+    hours_needed = db.Column(db.Float, nullable=False)  # Using float to allow for partial hours
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<AdHoc {self.title}>'

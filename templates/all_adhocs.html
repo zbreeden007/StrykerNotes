@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Ad-hoc Tracking - Stryker Notes{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Ad-hoc Tracking</h1>
+    <div>
+        <span class="badge bg-info me-2">Total Hours: {{ total_hours }}</span>
+        <a href="{{ url_for('adhocs.new_adhoc') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Ad-hoc
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search ad-hocs...">
+            </div>
+            <div class="col-md-4">
+                <select id="monthFilter" class="form-select">
+                    <option value="">All Months</option>
+                    {% set months = adhocs|map(attribute='month')|unique|list %}
+                    {% for month in months %}
+                    <option value="{{ month }}">{{ month }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select id="completedByFilter" class="form-select">
+                    <option value="">All Team Members</option>
+                    {% set members = adhocs|map(attribute='completed_by')|unique|list %}
+                    {% for member in members %}
+                    <option value="{{ member }}">{{ member }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        {% if adhocs %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Completed By</th>
+                        <th>Hours</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="adhocsTableBody">
+                    {% for adhoc in adhocs %}
+                    <tr class="adhoc-row"
+                        data-title="{{ adhoc.title|lower }}"
+                        data-month="{{ adhoc.month|lower }}"
+                        data-completed-by="{{ adhoc.completed_by|lower }}">
+                        <td>{{ adhoc.month }}</td>
+                        <td>{{ adhoc.title }}</td>
+                        <td>{{ adhoc.description|truncate(50) }}</td>
+                        <td>{{ adhoc.completed_by }}</td>
+                        <td>{{ adhoc.hours_needed }}</td>
+                        <td>
+                            <a href="{{ url_for('adhocs.edit_adhoc', adhoc_id=adhoc.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                    onclick="confirmDelete({{ adhoc.id }}, '{{ adhoc.title }}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            No ad-hocs recorded yet. Add your first ad-hoc to get started.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteAdHocModal" tabindex="-1" aria-labelledby="deleteAdHocModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteAdHocModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="deleteModalBody">
+                Are you sure you want to delete this ad-hoc?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteAdHocForm" action="" method="post">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmDelete(adhocId, adhocTitle) {
+        $('#deleteModalBody').text(`Are you sure you want to delete the ad-hoc "${adhocTitle}"? This cannot be undone.`);
+        $('#deleteAdHocForm').attr('action', `{{ url_for('adhocs.delete_adhoc', adhoc_id=0) }}`.replace('0', adhocId));
+        $('#deleteAdHocModal').modal('show');
+    }
+    
+    $(document).ready(function() {
+        // Search and filter functionality
+        $('#searchInput').on('keyup', filterAdhocs);
+        $('#monthFilter').on('change', filterAdhocs);
+        $('#completedByFilter').on('change', filterAdhocs);
+        
+        function filterAdhocs() {
+            const searchText = $('#searchInput').val().toLowerCase();
+            const monthFilter = $('#monthFilter').val().toLowerCase();
+            const completedByFilter = $('#completedByFilter').val().toLowerCase();
+            
+            $('.adhoc-row').each(function() {
+                const title = $(this).data('title');
+                const month = $(this).data('month');
+                const completedBy = $(this).data('completed-by');
+                
+                const matchesSearch = title.includes(searchText);
+                const matchesMonth = !monthFilter || month === monthFilter;
+                const matchesCompletedBy = !completedByFilter || completedBy === completedByFilter;
+                
+                if (matchesSearch && matchesMonth && matchesCompletedBy) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

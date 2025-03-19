@@ -10,6 +10,24 @@
 {% block content %}
 <h1 class="mb-4">Dashboard</h1>
 
+<!-- Ad-hoc Statistics Ticker -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-end">
+            <div class="me-4">
+                <a href="{{ url_for('adhocs.all_adhocs') }}" style="text-decoration: none; color: white;">
+                    <span style="font-weight: normal; color: white;"># Ad-hocs: {{ adhoc_count }}</span>
+                </a>
+            </div>
+            <div>
+                <a href="{{ url_for('adhocs.all_adhocs') }}" style="text-decoration: none; color: white;">
+                    <span style="font-weight: normal; color: white;">Total Hours: {{ total_adhoc_hours }}</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Favorite Links & Files Row -->
 {% if favorite_links or favorite_files %}
 <div class="row mb-4">
