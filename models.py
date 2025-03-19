@@ -74,6 +74,7 @@ class MemberProject(db.Model):
     description = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     member_id = db.Column(db.Integer, db.ForeignKey('team_member.id'), nullable=False)
+    priority = db.Column(db.Integer, default=0)  # Add this new field for priority
     
     def __repr__(self):
         return f'<MemberProject {self.name}>'

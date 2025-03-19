@@ -650,6 +650,10 @@ def view_member(member_id):
         task_form = MemberTaskForm()
         development_form = MemberDevelopmentForm()
         
+        # Sort projects by priority (higher priority first)
+        projects = MemberProject.query.filter_by(member_id=member_id).order_by(MemberProject.priority.desc()).all()
+        member.projects = projects
+        
         # Convert markdown to HTML for member notes - safely handle None
         if member.notes:
             member.html_notes = convert_markdown_to_html(member.notes)
@@ -752,6 +756,7 @@ def add_member_project(member_id):
         project = MemberProject(
             name=form.name.data,
             description=form.description.data,
+            priority=form.priority.data,
             member_id=member.id
         )
         db.session.add(project)
@@ -882,6 +887,7 @@ def edit_project(project_id):
     if form.validate_on_submit():
         project.name = form.name.data
         project.description = form.description.data
+        project.priority = form.priority.data  # Add this line to update priority
         db.session.commit()
         flash('Project updated successfully!', 'success')
     return redirect(url_for('team.view_member', member_id=project.member_id))
