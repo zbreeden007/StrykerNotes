@@ -470,22 +470,27 @@ def edit_member(member_id):
     form = TeamMemberForm(obj=member)
 
     if form.validate_on_submit():
-        member.name = form.name.data
-        member.role = form.role.data
-        member.notes = form.notes.data
+        try:
+            member.name = form.name.data
+            member.role = form.role.data
+            member.notes = form.notes.data
 
-        # Handle profile picture upload properly
-        if form.profile_picture.data and hasattr(form.profile_picture.data, 'filename'):
-            member.profile_picture = save_profile_picture(form.profile_picture.data)
-        elif not form.profile_picture.data:  # No change in profile picture
-            pass
-        else:
-            flash('Invalid file format or missing profile picture.', 'danger')
-
-        member.updated_at = datetime.utcnow()
-        db.session.commit()
-        flash('Team member updated successfully!', 'success')
-        return redirect(url_for('team.view_member', member_id=member.id))
+            # Handle profile picture upload properly
+            if form.profile_picture.data and hasattr(form.profile_picture.data, 'filename') and form.profile_picture.data.filename:
+                try:
+                    member.profile_picture = save_profile_picture(form.profile_picture.data)
+                except Exception as e:
+                    print(f"Error saving profile picture: {e}")
+                    flash('There was an error uploading the profile picture. Other information was saved.', 'warning')
+            
+            member.updated_at = datetime.utcnow()
+            db.session.commit()
+            flash('Team member updated successfully!', 'success')
+            return redirect(url_for('team.view_member', member_id=member.id))
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error updating team member: {e}")
+            flash('An error occurred while saving the team member information.', 'danger')
 
     return render_template('member_form.html', form=form, member=member, is_new=False)
 
