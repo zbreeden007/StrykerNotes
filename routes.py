@@ -653,6 +653,10 @@ def view_member(member_id):
         # Sort projects by priority (higher priority first)
         projects = MemberProject.query.filter_by(member_id=member_id).order_by(MemberProject.order.asc()).all()
         member.projects = projects
+
+        # Sort tasks by priority (higher priority first)
+        projects = MemberTask.query.filter_by(member_id=member_id).order_by(MemberTask.order.asc()).all()
+        member.task = tasks
         
         # Convert markdown to HTML for member notes - safely handle None
         if member.notes:
