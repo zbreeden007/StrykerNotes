@@ -77,7 +77,8 @@
                 <ul id="task-list" class="list-group">
                     {% for task in member.tasks %}
                     <li class="list-group-item d-flex justify-content-between align-items-center" data-item-id="{{ task.id }}">
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center w-100">
+                            <i class="fas fa-grip-vertical handle me-2 text-muted"></i>
                             <span id="task-content-{{ task.id }}" contenteditable="false">{{ task.content }}</span>
                         </div>
                         <div>
