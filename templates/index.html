@@ -82,8 +82,18 @@
                                     <i class="fas fa-grip-vertical handle me-2 text-muted"></i>
                                     {{ todo.content }}
                                 </div>
-                                <!-- Right side: Edit and Delete icons -->
+                                <!-- Right side: Priority label, Edit and Delete icons -->
                                 <div class="d-flex align-items-center">
+                                    <!-- Priority label -->
+                                    <span class="badge me-2 {% if todo.priority == 2 %}bg-danger{% elif todo.priority == 1 %}bg-warning{% else %}bg-secondary{% endif %}">
+                                        {% if todo.priority == 2 %}
+                                            Today
+                                        {% elif todo.priority == 1 %}
+                                            This Week
+                                        {% else %}
+                                            Later
+                                        {% endif %}
+                                    </span>
                                     <button type="button" class="btn btn-sm me-1"
                                             data-bs-toggle="modal" data-bs-target="#editTodoModal{{ todo.id }}"
                                             style="background-color: transparent; border: none; color: #989B9A;">
@@ -140,7 +150,7 @@
         </div>
     </div>
     
-    <!-- Right Column: Permanent Notes and Team Members -->
+    <!-- Rest of the content remains the same -->
     <div class="col-md-5">
         <!-- Permanent Notes Section -->
         <div class="card mb-4">
