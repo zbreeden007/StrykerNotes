@@ -3,7 +3,6 @@ from flask import Flask
 from config import Config
 from models import db
 from routes import register_blueprints
-from flask_migrate import Migrate
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -21,9 +20,6 @@ def create_app(config_class=Config):
     # Create database tables
     with app.app_context():
         db.create_all()
-
-    # Add this after creating your app and initializing db
-    migrate = Migrate(app, db)
     
     return app
 
