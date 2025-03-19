@@ -5,7 +5,7 @@ import markdown
 from werkzeug.utils import secure_filename
 from models import db, Note, Todo, TodoList, TeamMember, MemberTask, Link, UserPreference, MemberProject, MemberNote, MemberDevelopment, TeamPriority, File, AdHoc
 from forms import NoteForm, TodoForm, TeamMemberForm, MemberTaskForm, LinkForm, UserPreferenceForm, MemberProjectForm, MemberNoteForm, MemberDevelopmentForm, FileForm
-from forms import ProjectForm, TaskForm, DevelopmentForm, TeamPriorityForm
+from forms import ProjectForm, TaskForm, DevelopmentForm, TeamPriorityForm, AdHocForm  # Add AdHocForm here
 from PIL import Image
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
