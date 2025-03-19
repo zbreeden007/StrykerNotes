@@ -450,19 +450,28 @@ def new_member():
 
 @team.route('/<int:member_id>', methods=['GET'])
 def view_member(member_id):
-    member = TeamMember.query.get_or_404(member_id)
-    # Instantiate the forms for the member detail modals
-    project_form = MemberProjectForm()
-    task_form = MemberTaskForm()
-    development_form = MemberDevelopmentForm()
-    
-    # Convert markdown to HTML for member notes
-    member.html_notes = convert_markdown_to_html(member.notes)
-    
-    return render_template('member.html', member=member,
-                           project_form=project_form,
-                           task_form=task_form,
-                           development_form=development_form)
+    try:
+        member = TeamMember.query.get_or_404(member_id)
+        # Instantiate the forms for the member detail modals
+        project_form = MemberProjectForm()
+        task_form = MemberTaskForm()
+        development_form = MemberDevelopmentForm()
+        
+        # Convert markdown to HTML for member notes - safely handle None
+        if member.notes:
+            member.html_notes = convert_markdown_to_html(member.notes)
+        else:
+            member.html_notes = ""
+        
+        return render_template('member.html', member=member,
+                              project_form=project_form,
+                              task_form=task_form,
+                              development_form=development_form)
+    except Exception as e:
+        # Log the error for troubleshooting
+        print(f"Error in view_member: {e}")
+        # Return a user-friendly error page
+        return render_template('error.html', error=str(e)), 500
 
 @team.route('/<int:member_id>/edit', methods=['GET', 'POST'])
 def edit_member(member_id):
