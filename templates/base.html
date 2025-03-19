@@ -49,13 +49,27 @@
     h1, h2, h3, h4, h5, h6 {
       font-family: "Arial Black", sans-serif;
     }
+    
+    /* Custom navbar styling */
+    .navbar-custom {
+      background-color: #BBBCBC !important;
+    }
+    
+    .navbar-custom .navbar-brand,
+    .navbar-custom .nav-link {
+      color: #333333 !important;
+    }
+    
+    .navbar-custom .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2851, 51, 51, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
   </style>
   {% endif %}
   
   {% block extra_head %}{% endblock %}
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg {% if preferences and preferences.theme == 'dark' %}navbar-dark bg-dark{% else %}navbar-light bg-light{% endif %} mb-4">
+  <nav class="navbar navbar-expand-lg navbar-custom mb-4">
     <div class="container">
       <a class="navbar-brand" href="{{ url_for('main.index') }}">
         <!-- Optionally replace the text with a logo image -->
