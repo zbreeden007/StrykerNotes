@@ -1060,17 +1060,21 @@ def all_adhocs():
 def new_adhoc():
     form = AdHocForm()
     if form.validate_on_submit():
-        adhoc = AdHoc(
-            month=form.month.data,
-            title=form.title.data,
-            description=form.description.data,
-            completed_by=form.completed_by.data,
-            hours_needed=form.hours_needed.data
-        )
-        db.session.add(adhoc)
-        db.session.commit()
-        flash('Ad-hoc added successfully!', 'success')
-        return redirect(url_for('adhocs.all_adhocs'))
+        try:
+            hours = float(form.hours_needed.data)
+            adhoc = AdHoc(
+                month=form.month.data,
+                title=form.title.data,
+                description=form.description.data,
+                completed_by=form.completed_by.data,
+                hours_needed=hours
+            )
+            db.session.add(adhoc)
+            db.session.commit()
+            flash('Ad-hoc added successfully!', 'success')
+            return redirect(url_for('adhocs.all_adhocs'))
+        except ValueError:
+            flash('Please enter a valid number for hours needed', 'danger')
     
     return render_template('adhoc_form.html', form=form, is_new=True)
 
@@ -1080,14 +1084,18 @@ def edit_adhoc(adhoc_id):
     form = AdHocForm(obj=adhoc)
     
     if form.validate_on_submit():
-        adhoc.month = form.month.data
-        adhoc.title = form.title.data
-        adhoc.description = form.description.data
-        adhoc.completed_by = form.completed_by.data
-        adhoc.hours_needed = form.hours_needed.data
-        db.session.commit()
-        flash('Ad-hoc updated successfully!', 'success')
-        return redirect(url_for('adhocs.all_adhocs'))
+        try:
+            hours = float(form.hours_needed.data)
+            adhoc.month = form.month.data
+            adhoc.title = form.title.data
+            adhoc.description = form.description.data
+            adhoc.completed_by = form.completed_by.data
+            adhoc.hours_needed = hours
+            db.session.commit()
+            flash('Ad-hoc updated successfully!', 'success')
+            return redirect(url_for('adhocs.all_adhocs'))
+        except ValueError:
+            flash('Please enter a valid number for hours needed', 'danger')
     
     return render_template('adhoc_form.html', form=form, adhoc=adhoc, is_new=False)
 

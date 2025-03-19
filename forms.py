@@ -3,6 +3,7 @@ from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms import StringField, TextAreaField, BooleanField, SelectField, SubmitField, IntegerField
 from wtforms.validators import DataRequired, Length, Optional
 from wtforms.fields import DateField
+from datetime import datetime
 
 class NoteForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired(), Length(max=100)])
@@ -122,7 +123,7 @@ class AdHocForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired(), Length(max=100)])
     description = TextAreaField('Description')
     completed_by = StringField('Completed By', validators=[DataRequired(), Length(max=100)])
-    hours_needed = FloatField('Hours Needed', validators=[DataRequired()])
+    hours_needed = StringField('Hours Needed', validators=[DataRequired()])
     submit = SubmitField('Save')
     
     def __init__(self, *args, **kwargs):
