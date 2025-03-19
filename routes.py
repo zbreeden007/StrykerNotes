@@ -3,7 +3,7 @@ from datetime import datetime
 import os
 import markdown
 from werkzeug.utils import secure_filename
-from models import db, Note, Todo, TodoList, TeamMember, MemberTask, Link, UserPreference, MemberProject, MemberNote, MemberDevelopment, TeamPriority, File
+from models import db, Note, Todo, TodoList, TeamMember, MemberTask, Link, UserPreference, MemberProject, MemberNote, MemberDevelopment, TeamPriority, File, AdHoc
 from forms import NoteForm, TodoForm, TeamMemberForm, MemberTaskForm, LinkForm, UserPreferenceForm, MemberProjectForm, MemberNoteForm, MemberDevelopmentForm, FileForm
 from forms import ProjectForm, TaskForm, DevelopmentForm, TeamPriorityForm
 from PIL import Image
