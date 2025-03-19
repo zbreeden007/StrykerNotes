@@ -35,7 +35,7 @@
                             <button class="btn btn-sm btn-outline-primary project-edit" data-item-id="{{ project.id }}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <form action="{{ url_for('team.delete_project', project_id=project.id) }}" method="post" class="d-inline">
+                            <form action="{{ url_for('team.delete_member_project', project_id=project.id) }}" method="post" class="d-inline">
                                 <button type="submit" class="btn btn-sm btn-outline-danger">
                                     <i class="fas fa-trash"></i>
                                 </button>
@@ -66,7 +66,7 @@
                             <button class="btn btn-sm btn-outline-primary task-edit" data-item-id="{{ task.id }}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <form action="{{ url_for('team.delete_task', task_id=task.id) }}" method="post" class="d-inline">
+                            <form action="{{ url_for('team.delete_member_task', task_id=task.id) }}" method="post" class="d-inline">
                                 <button type="submit" class="btn btn-sm btn-outline-danger">
                                     <i class="fas fa-trash"></i>
                                 </button>
@@ -97,7 +97,7 @@
                             <button class="btn btn-sm btn-outline-primary development-edit" data-item-id="{{ dev.id }}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <form action="{{ url_for('team.delete_development', development_id=dev.id) }}" method="post" class="d-inline">
+                            <form action="{{ url_for('team.delete_member_development', development_id=dev.id) }}" method="post" class="d-inline">
                                 <button type="submit" class="btn btn-sm btn-outline-danger">
                                     <i class="fas fa-trash"></i>
                                 </button>
@@ -115,7 +115,7 @@
 <div class="modal fade" id="addProjectModal{{ member.id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ url_for('team.add_project', member_id=member.id) }}" method="post">
+            <form action="{{ url_for('team.add_member_project', member_id=member.id) }}" method="post">
                 <div class="modal-header">
                     <h5 class="modal-title">Add Project</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -137,7 +137,7 @@
 <div class="modal fade" id="addTaskModal{{ member.id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ url_for('team.add_task', member_id=member.id) }}" method="post">
+            <form action="{{ url_for('team.add_member_task', member_id=member.id) }}" method="post">
                 <div class="modal-header">
                     <h5 class="modal-title">Add Task</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -158,7 +158,7 @@
 <div class="modal fade" id="addDevelopmentModal{{ member.id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ url_for('team.add_development', member_id=member.id) }}" method="post">
+            <form action="{{ url_for('team.add_member_development', member_id=member.id) }}" method="post">
                 <div class="modal-header">
                     <h5 class="modal-title">Add Development</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
