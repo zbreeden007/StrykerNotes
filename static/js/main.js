@@ -377,10 +377,21 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function enableInlineEditing(itemType) {
-    document.querySelectorAll(`.${itemType}-edit`).forEach(item => {
-        item.addEventListener('click', function () {
+    console.log(`Setting up inline editing for ${itemType} items`);
+    const editButtons = document.querySelectorAll(`.${itemType}-edit`);
+    console.log(`Found ${editButtons.length} ${itemType} edit buttons`);
+    
+    editButtons.forEach(btn => {
+        btn.addEventListener('click', function () {
             const itemId = this.dataset.itemId;
+            console.log(`Edit button clicked for ${itemType} with ID: ${itemId}`);
+            
             const contentField = document.getElementById(`${itemType}-content-${itemId}`);
+            if (!contentField) {
+                console.error(`Content field not found for ${itemType}-content-${itemId}`);
+                return;
+            }
+            console.log(`Content field found: ${contentField.innerText}`);
 
             // Make the field editable
             contentField.contentEditable = 'true';
@@ -388,12 +399,16 @@ function enableInlineEditing(itemType) {
             
             // Store original content in case we need to revert
             const originalContent = contentField.innerText;
+            console.log(`Original content: ${originalContent}`);
             
             // Function to save the content
             const saveContent = function() {
                 const updatedContent = contentField.innerText;
+                console.log(`Updated content: ${updatedContent}`);
+                
                 if (updatedContent === originalContent) {
                     // No changes, don't make an API call
+                    console.log('No changes detected, not saving');
                     contentField.contentEditable = 'false';
                     return;
                 }
@@ -408,6 +423,8 @@ function enableInlineEditing(itemType) {
                     data = { title: updatedContent };
                 }
                 
+                console.log(`Sending update request for ${itemType} ${itemId} with data:`, data);
+                
                 // Send the update to the server
                 fetch(`/team/update_item/${itemType}/${itemId}`, {
                     method: 'POST',
@@ -417,14 +434,28 @@ function enableInlineEditing(itemType) {
                     },
                     body: JSON.stringify(data)
                 })
-                .then(response => response.json())
+                .then(response => {
+                    console.log(`Response status: ${response.status}`);
+                    return response.json();
+                })
                 .then(data => {
+                    console.log(`Response data:`, data);
                     if (data.status === 'success') {
                         console.log(`${itemType} updated successfully`);
+                        // Add a visual confirmation
+                        const tempHighlight = contentField.style.backgroundColor;
+                        contentField.style.backgroundColor = '#d4edda';
+                        setTimeout(() => {
+                            contentField.style.backgroundColor = tempHighlight;
+                        }, 1000);
                     } else {
                         console.error(`Error updating ${itemType}:`, data.message);
                         // Revert to original content if there was an error
                         contentField.innerText = originalContent;
+                        contentField.style.backgroundColor = '#f8d7da';
+                        setTimeout(() => {
+                            contentField.style.backgroundColor = '';
+                        }, 1000);
                     }
                     // Make the field non-editable again
                     contentField.contentEditable = 'false';
@@ -434,6 +465,10 @@ function enableInlineEditing(itemType) {
                     // Revert to original content
                     contentField.innerText = originalContent;
                     contentField.contentEditable = 'false';
+                    contentField.style.backgroundColor = '#f8d7da';
+                    setTimeout(() => {
+                        contentField.style.backgroundColor = '';
+                    }, 1000);
                 });
             };
             
@@ -450,7 +485,6 @@ function enableInlineEditing(itemType) {
         });
     });
 }
-
 document.addEventListener('DOMContentLoaded', function () {
     enableInlineEditing('project');
     enableInlineEditing('task');
