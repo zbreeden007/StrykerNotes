@@ -61,6 +61,7 @@ class MemberTask(db.Model):
     completed = db.Column(db.Boolean, default=False)
     due_date = db.Column(db.DateTime, nullable=True)
     member_id = db.Column(db.Integer, db.ForeignKey('team_member.id'), nullable=False)
+    order = db.Column(db.Integer, default=0)  # Add this field to store the order
     
     def __repr__(self):
         return f'<MemberTask {self.content}>'
@@ -75,6 +76,7 @@ class MemberProject(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     member_id = db.Column(db.Integer, db.ForeignKey('team_member.id'), nullable=False)
     priority = db.Column(db.Integer, default=0)  # Add this new field for priority
+    order = db.Column(db.Integer, default=0)  # Add this field to store the order
     
     def __repr__(self):
         return f'<MemberProject {self.name}>'
@@ -102,6 +104,7 @@ class MemberDevelopment(db.Model):
     date = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     member_id = db.Column(db.Integer, db.ForeignKey('team_member.id'), nullable=False)
+    order = db.Column(db.Integer, default=0)  # Add this field to store the order
     
     def __repr__(self):
         return f'<MemberDevelopment {self.title}>'
