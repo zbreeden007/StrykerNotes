@@ -286,13 +286,24 @@ function initTodoSortable() {
 
 function setupDragAndDrop(itemType) {
     const container = document.getElementById(`${itemType}-list`);
-    if (!container) return;
+    if (!container) {
+        console.error(`Container not found for ${itemType}-list`);
+        return;
+    }
+    
+    console.log(`Setting up drag and drop for ${itemType}-list`);
+    console.log(`Found ${container.children.length} ${itemType} items`);
 
     new Sortable(container, {
         animation: 150,
         onEnd: function (evt) {
             const itemOrder = Array.from(container.children)
-                .map(item => item.dataset.itemId);
+                .map(item => {
+                    console.log(`Item in ${itemType} list:`, item);
+                    return item.dataset.itemId;
+                });
+            
+            console.log(`New order for ${itemType} items:`, itemOrder);
             
             // Show visual feedback that saving is in progress
             container.classList.add('saving-in-progress');
@@ -306,19 +317,32 @@ function setupDragAndDrop(itemType) {
                 body: JSON.stringify({ order: itemOrder })
             })
             .then(response => {
+                console.log(`Reorder response status: ${response.status}`);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
                 return response.json();
             })
             .then(data => {
+                console.log(`Reorder response data:`, data);
                 console.log(`${itemType} items reordered successfully`);
                 container.classList.remove('saving-in-progress');
+                
+                // Add visual feedback of success
+                container.style.backgroundColor = '#d4edda';
+                setTimeout(() => {
+                    container.style.backgroundColor = '';
+                }, 500);
             })
             .catch(error => {
                 console.error(`Error reordering ${itemType} items:`, error);
                 container.classList.remove('saving-in-progress');
-                // Could add code here to show an error message to the user
+                
+                // Add visual feedback of error
+                container.style.backgroundColor = '#f8d7da';
+                setTimeout(() => {
+                    container.style.backgroundColor = '';
+                }, 500);
             });
         }
     });
