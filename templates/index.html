@@ -150,7 +150,55 @@
         </div>
     </div>
     
-    <!-- Middle Column: Team Members Section -->
+    <!-- Middle Column: Permanent Notes Section (swapped position) -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #709795; color: white;">
+                <h5 class="mb-0">Permanent Notes</h5>
+                <a href="{{ url_for('notes.new_note') }}?permanent=true" class="btn btn-link btn-sm" style="color: white; text-decoration: none;">
+                    + Add Note
+                </a>
+            </div>
+            <div class="card-body">
+                {% if permanent_notes %}
+                <div class="accordion" id="permanentNotesAccordion">
+                    {% for note in permanent_notes %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{ note.id }}">
+                            <button class="accordion-button collapsed"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#collapse{{ note.id }}"
+                                    aria-expanded="false"
+                                    aria-controls="collapse{{ note.id }}"
+                                    style="background-color: #B7CBCA; color: black;">
+                                {{ note.title }}
+                            </button>
+                        </h2>
+                        <div id="collapse{{ note.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ note.id }}" data-bs-parent="#permanentNotesAccordion">
+                            <div class="accordion-body">
+                                {{ note.html_content|safe }}
+                                <div class="mt-2">
+                                    <!-- Edit button matching to-do style -->
+                                    <a href="{{ url_for('notes.edit_note', note_id=note.id) }}"
+                                       class="btn btn-sm p-0"
+                                       style="background-color: transparent; border: none; color: #989B9A; text-decoration: none;">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No permanent notes yet. Create one to keep important information always visible.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Column: Team Members Section (swapped position) -->
     <div class="col-md-4">
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #9D6AA1; color: white;">
@@ -195,54 +243,6 @@
                 </div>
                 {% else %}
                 <p class="text-muted">No team members added yet.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <!-- Right Column: Permanent Notes Section -->
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #709795; color: white;">
-                <h5 class="mb-0">Permanent Notes</h5>
-                <a href="{{ url_for('notes.new_note') }}?permanent=true" class="btn btn-link btn-sm" style="color: white; text-decoration: none;">
-                    + Add Note
-                </a>
-            </div>
-            <div class="card-body">
-                {% if permanent_notes %}
-                <div class="accordion" id="permanentNotesAccordion">
-                    {% for note in permanent_notes %}
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading{{ note.id }}">
-                            <button class="accordion-button collapsed"
-                                    type="button"
-                                    data-bs-toggle="collapse"
-                                    data-bs-target="#collapse{{ note.id }}"
-                                    aria-expanded="false"
-                                    aria-controls="collapse{{ note.id }}"
-                                    style="background-color: #B7CBCA; color: black;">
-                                {{ note.title }}
-                            </button>
-                        </h2>
-                        <div id="collapse{{ note.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ note.id }}" data-bs-parent="#permanentNotesAccordion">
-                            <div class="accordion-body">
-                                {{ note.html_content|safe }}
-                                <div class="mt-2">
-                                    <!-- Edit button matching to-do style -->
-                                    <a href="{{ url_for('notes.edit_note', note_id=note.id) }}"
-                                       class="btn btn-sm p-0"
-                                       style="background-color: transparent; border: none; color: #989B9A; text-decoration: none;">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <p class="text-muted">No permanent notes yet. Create one to keep important information always visible.</p>
                 {% endif %}
             </div>
         </div>
