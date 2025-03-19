@@ -93,3 +93,14 @@ class MemberDevelopmentForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired(), Length(max=100)])
     description = TextAreaField('Description')
     submit = SubmitField('Save Development')
+
+class TeamPriorityForm(FlaskForm):
+    content = StringField('Priority', validators=[DataRequired(), Length(max=200)])
+    color = SelectField('Color', choices=[
+        ('#fff740', 'Yellow'),
+        ('#ff7eb9', 'Pink'),
+        ('#7afcff', 'Blue'),
+        ('#8cff89', 'Green'),
+        ('#ffa8a8', 'Red')
+    ])
+    submit = SubmitField('Add Priority')

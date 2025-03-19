@@ -3,9 +3,9 @@ from datetime import datetime
 import os
 import markdown
 from werkzeug.utils import secure_filename
-from models import db, Note, Todo, TodoList, TeamMember, MemberTask, Link, UserPreference, MemberProject, MemberNote, MemberDevelopment
+from models import db, Note, Todo, TodoList, TeamMember, MemberTask, Link, UserPreference, MemberProject, MemberNote, MemberDevelopment, TeamPriority
 from forms import NoteForm, TodoForm, TeamMemberForm, MemberTaskForm, LinkForm, UserPreferenceForm, MemberProjectForm, MemberNoteForm, MemberDevelopmentForm
-from forms import ProjectForm, TaskForm, DevelopmentForm
+from forms import ProjectForm, TaskForm, DevelopmentForm, TeamPriorityForm
 from PIL import Image
 
 # Create blueprints for different sections of the app
@@ -22,7 +22,7 @@ def inject_preferences():
     try:
         preferences = UserPreference.query.first()
         if not preferences:
-            # Create a default preferences object using Stryker’s brand values
+            # Create a default preferences object using Stryker's brand values
             preferences = UserPreference(
                 theme='light',  # White background, light theme as dominant
                 font_family='Cambria, serif',  # Use Cambria for body copy
@@ -115,8 +115,18 @@ def index():
         # Fallback in case order column doesn't exist yet
         todos = Todo.query.order_by(Todo.priority.desc()).all()
     
+    # Get team priorities with ordering
+    try:
+        team_priorities = TeamPriority.query.order_by(TeamPriority.order.asc()).all()
+    except:
+        # Fallback in case order column doesn't exist yet
+        team_priorities = TeamPriority.query.all()
+    
     # Initialize the todo form for direct editing on dashboard
     todo_form = TodoForm()
+    
+    # Initialize the team priority form
+    priority_form = TeamPriorityForm()
     
     team_members = TeamMember.query.all()
     favorite_links = Link.query.filter_by(is_favorite=True).all()
@@ -135,6 +145,8 @@ def index():
                           todo_form=todo_form,
                           team_members=team_members,
                           favorite_links=favorite_links,
+                          team_priorities=team_priorities,
+                          priority_form=priority_form,
                           now=now)
 
 # Todo routes - Now only on dashboard
@@ -211,6 +223,58 @@ def reorder_todos():
         for i, todo_id in enumerate(todo_ids):
             todo = Todo.query.get_or_404(int(todo_id))
             todo.order = i
+        
+        db.session.commit()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+# Team Priority routes
+@main.route('/priority/add', methods=['POST'])
+def add_priority():
+    form = TeamPriorityForm()
+    
+    if form.validate_on_submit():
+        # Get the highest order value to add new priorities at the end
+        try:
+            highest_order = db.session.query(db.func.max(TeamPriority.order)).scalar() or -1
+            
+            priority = TeamPriority(
+                content=form.content.data,
+                color=form.color.data,
+                order=highest_order + 1  # Set order to be after all existing priorities
+            )
+        except:
+            # Fallback in case order column doesn't exist yet
+            priority = TeamPriority(
+                content=form.content.data,
+                color=form.color.data
+            )
+            
+        db.session.add(priority)
+        db.session.commit()
+        flash('Team priority added successfully!', 'success')
+    
+    return redirect(url_for('main.index'))
+
+@main.route('/priority/<int:priority_id>/delete', methods=['POST'])
+def delete_priority(priority_id):
+    priority = TeamPriority.query.get_or_404(priority_id)
+    db.session.delete(priority)
+    db.session.commit()
+    flash('Team priority deleted successfully!', 'success')
+    return redirect(url_for('main.index'))
+
+@main.route('/priority/reorder', methods=['POST'])
+def reorder_priorities():
+    data = request.json
+    priority_ids = data.get('priorityIds', [])
+    
+    try:
+        # Update the order of priorities in the database
+        for i, priority_id in enumerate(priority_ids):
+            priority = TeamPriority.query.get_or_404(int(priority_id))
+            priority.order = i
         
         db.session.commit()
         return jsonify({'status': 'success'})
@@ -667,7 +731,6 @@ def move_item(item_type, item_id):
         flash(f'Item successfully moved to {new_type.capitalize()}!', 'success')
     return redirect(url_for('team.view_member', member_id=item.member_id))
 
-# Delete Entries
 @team.route('/project/<int:project_id>/delete', methods=['POST'])
 def delete_project(project_id):
     project = MemberProject.query.get_or_404(project_id)

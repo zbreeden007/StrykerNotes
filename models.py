@@ -126,3 +126,13 @@ class UserPreference(db.Model):
     
     def __repr__(self):
         return f'<UserPreference {self.id}>'
+
+class TeamPriority(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.String(200), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    order = db.Column(db.Integer, default=0)
+    color = db.Column(db.String(20), default="#fff740")  # Default to yellow
+    
+    def __repr__(self):
+        return f'<TeamPriority {self.content}>'
