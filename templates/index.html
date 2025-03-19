@@ -10,46 +10,32 @@
 {% block content %}
 <h1 class="mb-4">Dashboard</h1>
 
-<!-- Favorite Links Row -->
-{% if favorite_links %}
+<!-- Favorite Links & Files Row -->
+{% if favorite_links or favorite_files %}
 <div class="row mb-4">
     <div class="col-12">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #DDDEDD;">
-                <h5 class="mb-0"><i class="fas fa-star me-2"></i>Favorite Links</h5>
-                <a href="{{ url_for('links.all_links') }}" class="btn btn-link btn-sm" style="color: black; text-decoration: none;">
-                    <i class="fas fa-link"></i> All Links
-                </a>
+                <h5 class="mb-0"><i class="fas fa-star me-2"></i>Favorite Links & Files</h5>
+                <div>
+                    <a href="{{ url_for('links.all_links') }}" class="btn btn-link btn-sm me-2" style="color: black; text-decoration: none;">
+                        <i class="fas fa-link"></i> All Links
+                    </a>
+                    <a href="{{ url_for('files.all_files') }}" class="btn btn-link btn-sm" style="color: black; text-decoration: none;">
+                        <i class="fas fa-folder-open"></i> All Files
+                    </a>
+                </div>
             </div>
             <div class="card-body">
                 <div class="d-flex flex-wrap gap-2">
                     {% for link in favorite_links %}
                     <a href="{{ link.url }}" target="_blank" class="btn" style="background-color: #767979; color: white; border-color: white;">
-                        {{ link.title }}
+                        <i class="fas fa-link me-1"></i> {{ link.title }}
                     </a>
                     {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-<!-- Favorite Files Row -->
-{% if favorite_files %}
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #4B9CD3;">
-                <h5 class="mb-0" style="color: white;"><i class="fas fa-file me-2"></i>Favorite Files</h5>
-                <a href="{{ url_for('files.all_files') }}" class="btn btn-link btn-sm" style="color: white; text-decoration: none;">
-                    <i class="fas fa-folder-open"></i> All Files
-                </a>
-            </div>
-            <div class="card-body">
-                <div class="d-flex flex-wrap gap-2">
+                    
                     {% for file in favorite_files %}
-                    <a href="{{ url_for('files.download_file', file_id=file.id) }}" class="btn position-relative" style="background-color: #767979; color: white; border-color: white;">
+                    <a href="{{ url_for('files.download_file', file_id=file.id) }}" class="btn" style="background-color: #4B9CD3; color: white; border-color: white;">
                         {% if file.filetype == 'PDF' %}
                             <i class="fas fa-file-pdf me-1"></i>
                         {% elif file.filetype == 'Word' %}
@@ -355,7 +341,7 @@
 </div>
 
 <!-- No Favorites Call to Action -->
-{% if not favorite_links %}
+{% if not favorite_links and not favorite_files %}
 <div class="row">
     <div class="col-12">
         <div class="alert alert-light border">
@@ -364,8 +350,13 @@
                     <i class="fas fa-star fa-2x text-warning"></i>
                 </div>
                 <div>
-                    <h5 class="mb-1">Add Favorite Links</h5>
-                    <p class="mb-0">Mark links as favorites to display them here for quick access. <a href="{{ url_for('links.all_links') }}">View your links</a> or <a href="{{ url_for('links.new_link') }}">add a new one</a>.</p>
+                    <h5 class="mb-1">Add Favorite Items</h5>
+                    <p class="mb-0">Mark links or files as favorites to display them here for quick access. 
+                       <a href="{{ url_for('links.all_links') }}">View your links</a>, 
+                       <a href="{{ url_for('files.all_files') }}">view your files</a>, 
+                       <a href="{{ url_for('links.new_link') }}">add a new link</a>, or 
+                       <a href="{{ url_for('files.new_file') }}">upload a new file</a>.
+                    </p>
                 </div>
             </div>
         </div>
