@@ -34,7 +34,7 @@
                             <!-- Display priority badge -->
                             {% if project.priority > 0 %}
                                 <span class="badge {% if project.priority == 3 %}bg-danger{% elif project.priority == 2 %}bg-warning{% elif project.priority == 1 %}bg-info{% else %}bg-secondary{% endif %} me-2">
-                                    P{{ project.priority }}
+                                    {{ project.priority }}
                                 </span>
                             {% endif %}
                             <span id="project-content-{{ project.id }}" contenteditable="false">{{ project.name }}</span>
