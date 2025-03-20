@@ -143,91 +143,6 @@ function setupColorPicker() {
     });
 }
 
-// Document ready handler for various functionalities
-$(document).ready(function() {
-    // Initialize color picker if on settings page
-    setupColorPicker();
-    
-    // Handle embedded link clicks to open in new tab/window
-    $('.external-link').on('click', function(e) {
-        e.preventDefault();
-        const url = $(this).attr('href');
-        window.open(url, '_blank');
-    });
-    
-    // Toggle member details on all_members page
-    $('.member-select').on('click', function(){
-        // Hide all detail sections
-        $('.member-content').hide();
-
-        // Grab the ID of the clicked member
-        const memberId = $(this).data('member-id');
-        console.log("Clicked member ID:", memberId);
-
-        // Show the container for that member
-        $('#member-content-' + memberId).slideDown();
-    });
-
-    // AJAX form submission for adding new tasks
-    $('#addTaskFormContainer form').on('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        
-        $.ajax({
-            url: $(this).attr('action'),
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                // Refresh the todo list without full page reload
-                refreshTodoList();
-                
-                // Clear the form
-                $('#newTaskInput').val('');
-                
-                // Hide the form after submission
-                $('#addTaskFormContainer').addClass('d-none');
-            },
-            error: function(error) {
-                console.error('Error adding task:', error);
-                alert('Failed to add the task. Please try again.');
-            }
-        });
-    });
-
-    // Handle Edit Todo Modal submission via AJAX
-    $('.modal form').on('submit', function(e) {
-        // Only intercept task edit forms
-        if ($(this).attr('action').includes('/todo/') && $(this).attr('action').includes('/edit')) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const modalId = $(this).closest('.modal').attr('id');
-            
-            $.ajax({
-                url: $(this).attr('action'),
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    // Close the modal
-                    $(`#${modalId}`).modal('hide');
-                    
-                    // Update the todo item in the list without full page reload
-                    refreshTodoList();
-                },
-                error: function(error) {
-                    console.error('Error updating task:', error);
-                    alert('Failed to update the task. Please try again.');
-                }
-            });
-        }
-    });
-});
-
 // Function to refresh the todo list via AJAX
 function refreshTodoList() {
     $.ajax({
@@ -349,58 +264,6 @@ function setupDragAndDrop(itemType, memberId) {
     });
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    setupDragAndDrop('project');
-    setupDragAndDrop('task');
-    setupDragAndDrop('development');
-    
-    // Initialize todo sortable
-    initTodoSortable();
-
-    // Setup the toggle functionality for the add task form
-    $('#toggleAddTask').on('click', function(e) {
-        e.preventDefault();
-        $('#addTaskFormContainer').toggleClass('d-none');
-        
-        // Focus the input field if the form is now visible
-        if (!$('#addTaskFormContainer').hasClass('d-none')) {
-            $('#newTaskInput').focus();
-        }
-    });
-    
-    // Make priorities draggable
-    const prioritiesContainer = document.getElementById('priorities-container');
-    if (prioritiesContainer) {
-        new Sortable(prioritiesContainer, {
-            animation: 150,
-            ghostClass: 'sortable-ghost',
-            onEnd: function(evt) {
-                const priorityIds = Array.from(prioritiesContainer.children)
-                    .filter(item => item.id && item.id.startsWith('priority-'))
-                    .map(item => item.id.replace('priority-', ''));
-                
-                // Send the new order to the server
-                fetch('/priority/reorder', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ priorityIds: priorityIds })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status !== 'success') {
-                        console.error('Error reordering priorities:', data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error reordering priorities:', error);
-                });
-            }
-        });
-    }
-});
-
 function enableInlineEditing(itemType) {
     console.log(`Setting up inline editing for ${itemType} items`);
     const editButtons = document.querySelectorAll(`.${itemType}-edit`);
@@ -510,25 +373,73 @@ function enableInlineEditing(itemType) {
         });
     });
 }
-document.addEventListener('DOMContentLoaded', function () {
-    enableInlineEditing('project');
-    enableInlineEditing('task');
-    enableInlineEditing('development');
-});
 
-// Add a task submission handler
-document.addEventListener('DOMContentLoaded', function() {
-    // When a modal is hidden (closed), immediately update the todo content
-    // This avoids the loss of changes when adding new tasks
-    $('.modal').on('hidden.bs.modal', function() {
-        if ($(this).attr('id') && $(this).attr('id').startsWith('editTodoModal')) {
-            // After editing a task and closing the modal, update the list
-            $.get('/get_todos', function(data) {
-                $('#dashboard-todo-list').html(data);
-            });
-        }
+// Document ready handler for various functionalities
+$(document).ready(function() {
+    // Initialize color picker if on settings page
+    setupColorPicker();
+    
+    // Handle embedded link clicks to open in new tab/window
+    $('.external-link').on('click', function(e) {
+        e.preventDefault();
+        const url = $(this).attr('href');
+        window.open(url, '_blank');
     });
     
+    // Toggle member details on all_members page
+    $('.member-select').on('click', function(){
+        // Hide all detail sections
+        $('.member-content').hide();
+
+        // Grab the ID of the clicked member
+        const memberId = $(this).data('member-id');
+        console.log("Clicked member ID:", memberId);
+
+        // Show the container for that member
+        $('#member-content-' + memberId).slideDown();
+    });
+
+    // Setup the toggle functionality for the add task form
+    $('#toggleAddTask').on('click', function(e) {
+        e.preventDefault();
+        console.log("Toggle Add Task clicked");
+        $('#addTaskFormContainer').toggleClass('d-none');
+        
+        // Focus the input field if the form is now visible
+        if (!$('#addTaskFormContainer').hasClass('d-none')) {
+            $('#newTaskInput').focus();
+        }
+    });
+
+    // AJAX form submission for adding new tasks
+    $('#addTaskFormContainer form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                // Refresh the todo list without full page reload
+                refreshTodoList();
+                
+                // Clear the form
+                $('#newTaskInput').val('');
+                
+                // Hide the form after submission
+                $('#addTaskFormContainer').addClass('d-none');
+            },
+            error: function(error) {
+                console.error('Error adding task:', error);
+                alert('Failed to add the task. Please try again.');
+            }
+        });
+    });
+
     // Handle Edit Todo Modal submission via AJAX
     $('.modal form').on('submit', function(e) {
         // Only intercept task edit forms
@@ -538,24 +449,18 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData(this);
             const modalId = $(this).closest('.modal').attr('id');
             
-            // Add X-Requested-With header through the AJAX call itself
             $.ajax({
                 url: $(this).attr('action'),
                 type: 'POST',
                 data: formData,
                 processData: false,
                 contentType: false,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
                 success: function(response) {
                     // Close the modal
                     $(`#${modalId}`).modal('hide');
                     
                     // Update the todo item in the list without full page reload
-                    $.get('/get_todos', function(data) {
-                        $('#dashboard-todo-list').html(data);
-                    });
+                    refreshTodoList();
                 },
                 error: function(error) {
                     console.error('Error updating task:', error);
@@ -565,13 +470,56 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Extra safety: update the list when a form is submitted
-    $('form').on('submit', function() {
-        // Give the server a moment to process
-        setTimeout(function() {
+    // Initialize todo sortable
+    initTodoSortable();
+    
+    // Enable inline editing for various elements
+    enableInlineEditing('project');
+    enableInlineEditing('task');
+    enableInlineEditing('development');
+    
+    // Initialize tooltips
+    $('[data-bs-toggle="tooltip"]').tooltip();
+    
+    // Initialize priorities container sortable
+    const prioritiesContainer = document.getElementById('priorities-container');
+    if (prioritiesContainer) {
+        new Sortable(prioritiesContainer, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            onEnd: function(evt) {
+                const priorityIds = Array.from(prioritiesContainer.children)
+                    .filter(item => item.id && item.id.startsWith('priority-'))
+                    .map(item => item.id.replace('priority-', ''));
+                
+                // Send the new order to the server
+                fetch('/priority/reorder', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ priorityIds: priorityIds })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status !== 'success') {
+                        console.error('Error reordering priorities:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error reordering priorities:', error);
+                });
+            }
+        });
+    }
+    
+    // When a modal is hidden (closed), immediately update the todo content
+    $('.modal').on('hidden.bs.modal', function() {
+        if ($(this).attr('id') && $(this).attr('id').startsWith('editTodoModal')) {
+            // After editing a task and closing the modal, update the list
             $.get('/get_todos', function(data) {
                 $('#dashboard-todo-list').html(data);
             });
-        }, 500);
+        }
     });
 });
