@@ -13,7 +13,12 @@ body {
 .card {
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     transition: all 0.3s ease;
-    display: block !important;  /* Force all card sections to display */
+    display: block; /* Removed !important */
+}
+
+/* Ensure d-none overrides other display settings */
+.d-none {
+    display: none !important;
 }
 
 .card:hover {
@@ -253,13 +258,13 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Remove fixed heights from all cards */
 .card {
-    height: auto !important;
+    height: auto; /* Removed !important */
 }
 
 .card-body {
-    height: auto !important;
-    max-height: none !important;
-    overflow-y: visible !important;
+    height: auto; /* Removed !important */
+    max-height: none; /* Removed !important */
+    overflow-y: visible; /* Removed !important */
 }
 
 .col-md-4 .card {
