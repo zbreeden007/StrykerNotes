@@ -5,6 +5,21 @@
 {% block extra_head %}
 <!-- SortableJS for drag-and-drop functionality -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<style>
+  /* Direct styling to override any conflicting CSS */
+  #addTaskFormContainer {
+    display: none; /* Start hidden */
+  }
+  
+  #addTaskFormContainer.show-form {
+    display: block !important; /* Use !important to override other styles */
+    background-color: #f8f9fa;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -88,7 +103,7 @@
             </div>
             <div class="card-body">
                 <!-- New Task Form (hidden by default) -->
-                <div id="addTaskFormContainer" class="mb-3 d-none">
+                <div id="addTaskFormContainer">
                     <form action="{{ url_for('main.add_todo') }}" method="post">
                         {{ todo_form.csrf_token }}
                         <div class="row">
@@ -382,19 +397,41 @@
 
 {% block extra_js %}
 <script>
+    // Immediately executed function to toggle the task form
+    (function() {
+        const toggleBtn = document.getElementById('toggleAddTask');
+        const formContainer = document.getElementById('addTaskFormContainer');
+        
+        if (toggleBtn && formContainer) {
+            // Direct click handler
+            toggleBtn.onclick = function(e) {
+                e.preventDefault();
+                console.log("Toggle Add Task clicked");
+                
+                // Toggle custom show-form class instead of Bootstrap's d-none
+                formContainer.classList.toggle('show-form');
+                
+                // Focus the input if form is now visible
+                if (formContainer.classList.contains('show-form')) {
+                    const inputField = document.getElementById('newTaskInput');
+                    if (inputField) {
+                        setTimeout(() => {
+                            inputField.focus();
+                        }, 100); // Small delay to ensure DOM has updated
+                    }
+                }
+                
+                return false; // Prevent default action
+            };
+            
+            console.log("Toggle button handler set up");
+        } else {
+            console.error("Could not find toggle button or form container");
+        }
+    })();
+
     // Initialize the todo list sorting functionality
     document.addEventListener('DOMContentLoaded', function() {
-        // Setup the toggle functionality for the add task form
-        $('#toggleAddTask').on('click', function(e) {
-            e.preventDefault();
-            $('#addTaskFormContainer').toggleClass('d-none');
-            
-            // Focus the input field if the form is now visible
-            if (!$('#addTaskFormContainer').hasClass('d-none')) {
-                $('#newTaskInput').focus();
-            }
-        });
-        
         // Task list drag and drop functionality
         const todoList = document.getElementById('dashboard-todo-list');
         if (todoList) {
@@ -456,6 +493,49 @@
                         console.error('Error reordering priorities:', error);
                     });
                 }
+            });
+        }
+        
+        // AJAX form submission for adding new tasks
+        const todoForm = document.querySelector('#addTaskFormContainer form');
+        if (todoForm) {
+            todoForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(() => {
+                    // Refresh the todo list by making a GET request
+                    return fetch('/get_todos');
+                })
+                .then(response => response.text())
+                .then(html => {
+                    // Update the todo list with the new HTML
+                    const todoListContainer = document.getElementById('dashboard-todo-list');
+                    if (todoListContainer) {
+                        todoListContainer.innerHTML = html;
+                    }
+                    
+                    // Clear the form
+                    document.getElementById('newTaskInput').value = '';
+                    
+                    // Hide the form after submission
+                    document.getElementById('addTaskFormContainer').classList.remove('show-form');
+                })
+                .catch(error => {
+                    console.error('Error adding task:', error);
+                    alert('Failed to add the task. Please try again.');
+                });
             });
         }
     });
