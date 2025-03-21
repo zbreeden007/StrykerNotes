@@ -13,16 +13,24 @@ body {
 .card {
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     transition: all 0.3s ease;
-    display: block; /* Removed !important */
-}
-
-/* Ensure d-none overrides other display settings */
-.d-none {
-    display: none !important;
 }
 
 .card:hover {
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Fixed display issues */
+.d-none {
+    display: none !important;
+}
+
+.show-form {
+    display: block !important;
+}
+
+/* Ensure jQuery show/hide methods work properly */
+.card, .card-body {
+    display: block;
 }
 
 /* Card Header with Stryker Gold Gradient */
@@ -101,7 +109,7 @@ h1, h2, h3, h4, h5, h6 {
     transition: opacity 0.2s ease;
 }
 
-.todo-item:hover .handle {
+li:hover .handle {
     opacity: 1;
 }
 
@@ -240,36 +248,15 @@ h1, h2, h3, h4, h5, h6 {
     background-color: rgba(191, 138, 54, 0.05); /* Light tint of Stryker Gold */
 }
 
-/* Card height consistency - MODIFIED FOR INDEPENDENT SIZING */
+/* Member Content Flexibility */
 .member-content .card {
     height: auto;
+    margin-bottom: 1rem;
 }
 
 .member-content .card-body {
-    overflow-y: visible;
-    height: auto;
-}
-
-/* Each column can size independently based on content */
-.col-md-4 {
-    display: flex;
-    flex-direction: column;
-}
-
-/* Remove fixed heights from all cards */
-.card {
-    height: auto; /* Removed !important */
-}
-
-.card-body {
-    height: auto; /* Removed !important */
-    max-height: none; /* Removed !important */
-    overflow-y: visible; /* Removed !important */
-}
-
-.col-md-4 .card {
-    flex-grow: 0;
-    flex-shrink: 0;
+    overflow-y: auto;
+    max-height: 400px; /* Set a reasonable max height */
 }
 
 /* Section card transitions */
@@ -277,7 +264,7 @@ h1, h2, h3, h4, h5, h6 {
     transition: transform 0.2s ease;
 }
 
-member-content .card:hover {
+.member-content .card:hover {
     transform: translateY(-5px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
@@ -394,6 +381,12 @@ member-content .card:hover {
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
+/* Visual feedback for saving state */
+.saving {
+    opacity: 0.7;
+    background-color: #f8f9fa;
+}
+
 /* Autosave notification styles */
 .autosave-notification {
     position: fixed;
@@ -412,4 +405,18 @@ member-content .card:hover {
     20% { opacity: 1; }
     80% { opacity: 1; }
     100% { opacity: 0; }
+}
+
+/* Proper Add Task form styles */
+#addTaskFormContainer {
+    display: none;
+}
+
+#addTaskFormContainer.show-form {
+    display: block !important;
+    background-color: #f8f9fa;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
 }

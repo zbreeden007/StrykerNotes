@@ -95,17 +95,6 @@ function setupAutosave(formSelector, saveUrl, getDataFunction) {
                 success: function(response) {
                     // Show a subtle "Saved" message that fades out
                     const savedMsg = $('<div class="autosave-notification">Saved</div>');
-                    savedMsg.css({
-                        'position': 'fixed',
-                        'bottom': '20px',
-                        'right': '20px',
-                        'background-color': 'rgba(40, 167, 69, 0.9)',
-                        'color': 'white',
-                        'padding': '10px 20px',
-                        'border-radius': '5px',
-                        'z-index': '9999'
-                    });
-                    
                     $('body').append(savedMsg);
                     setTimeout(() => {
                         savedMsg.fadeOut(300, function() { $(this).remove(); });
@@ -146,7 +135,7 @@ function setupColorPicker() {
 // Function to refresh the todo list via AJAX
 function refreshTodoList() {
     $.ajax({
-        url: '/get_todos', // You'll need to create this endpoint
+        url: '/get_todos',
         type: 'GET',
         success: function(response) {
             // Replace the todo list HTML with the updated version
@@ -165,11 +154,13 @@ function refreshTodoList() {
 function initTodoSortable() {
     const todoList = document.getElementById('dashboard-todo-list');
     if (todoList) {
+        // Check if there's an existing Sortable instance and destroy it
         if (todoList.sortable) {
             todoList.sortable.destroy();
         }
         
-        new Sortable(todoList, {
+        // Create a new Sortable instance
+        const sortableInstance = new Sortable(todoList, {
             animation: 150,
             handle: '.handle',
             ghostClass: 'sortable-ghost',
@@ -196,295 +187,23 @@ function initTodoSortable() {
                 });
             }
         });
+        
+        // Store the Sortable instance on the element itself
+        todoList.sortable = sortableInstance;
     }
 }
 
-// Update this function to account for member-specific lists
-function setupDragAndDrop(itemType, memberId) {
-    const container = document.getElementById(`${itemType}-list-${memberId}`);
-    if (!container) {
-        console.error(`Container not found for ${itemType}-list-${memberId}`);
-        return;
-    }
-    
-    console.log(`Setting up drag and drop for ${itemType}-list-${memberId}`);
-    console.log(`Found ${container.children.length} ${itemType} items`);
-
-    new Sortable(container, {
-        animation: 150,
-        onEnd: function (evt) {
-            const itemOrder = Array.from(container.children)
-                .map(item => {
-                    console.log(`Item in ${itemType} list:`, item);
-                    return item.dataset.itemId;
-                });
-            
-            console.log(`New order for ${itemType} items:`, itemOrder);
-            
-            // Show visual feedback that saving is in progress
-            container.classList.add('saving-in-progress');
-            
-            fetch(`/team/reorder_items/${itemType}`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({ order: itemOrder })
-            })
-            .then(response => {
-                console.log(`Reorder response status: ${response.status}`);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log(`Reorder response data:`, data);
-                console.log(`${itemType} items reordered successfully`);
-                container.classList.remove('saving-in-progress');
-                
-                // Add visual feedback of success
-                container.style.backgroundColor = '#d4edda';
-                setTimeout(() => {
-                    container.style.backgroundColor = '';
-                }, 500);
-            })
-            .catch(error => {
-                console.error(`Error reordering ${itemType} items:`, error);
-                container.classList.remove('saving-in-progress');
-                
-                // Add visual feedback of error
-                container.style.backgroundColor = '#f8d7da';
-                setTimeout(() => {
-                    container.style.backgroundColor = '';
-                }, 500);
-            });
-        }
-    });
-}
-
-function enableInlineEditing(itemType) {
-    console.log(`Setting up inline editing for ${itemType} items`);
-    const editButtons = document.querySelectorAll(`.${itemType}-edit`);
-    console.log(`Found ${editButtons.length} ${itemType} edit buttons`);
-    
-    editButtons.forEach(btn => {
-        btn.addEventListener('click', function () {
-            const itemId = this.dataset.itemId;
-            console.log(`Edit button clicked for ${itemType} with ID: ${itemId}`);
-            
-            const contentField = document.getElementById(`${itemType}-content-${itemId}`);
-            if (!contentField) {
-                console.error(`Content field not found for ${itemType}-content-${itemId}`);
-                return;
-            }
-            console.log(`Content field found: ${contentField.innerText}`);
-
-            // Make the field editable
-            contentField.contentEditable = 'true';
-            contentField.focus();
-            
-            // Store original content in case we need to revert
-            const originalContent = contentField.innerText;
-            console.log(`Original content: ${originalContent}`);
-            
-            // Function to save the content
-            const saveContent = function() {
-                const updatedContent = contentField.innerText;
-                console.log(`Updated content: ${updatedContent}`);
-                
-                if (updatedContent === originalContent) {
-                    // No changes, don't make an API call
-                    console.log('No changes detected, not saving');
-                    contentField.contentEditable = 'false';
-                    return;
-                }
-                
-                // Prepare the data to send based on item type
-                let data = {};
-                if (itemType === 'project') {
-                    data = { name: updatedContent };
-                } else if (itemType === 'task') {
-                    data = { content: updatedContent };
-                } else if (itemType === 'development') {
-                    data = { title: updatedContent };
-                }
-                
-                console.log(`Sending update request for ${itemType} ${itemId} with data:`, data);
-                
-                // Send the update to the server
-                fetch(`/team/update_item/${itemType}/${itemId}`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify(data)
-                })
-                .then(response => {
-                    console.log(`Response status: ${response.status}`);
-                    return response.json();
-                })
-                .then(data => {
-                    console.log(`Response data:`, data);
-                    if (data.status === 'success') {
-                        console.log(`${itemType} updated successfully`);
-                        // Add a visual confirmation
-                        const tempHighlight = contentField.style.backgroundColor;
-                        contentField.style.backgroundColor = '#d4edda';
-                        setTimeout(() => {
-                            contentField.style.backgroundColor = tempHighlight;
-                        }, 1000);
-                    } else {
-                        console.error(`Error updating ${itemType}:`, data.message);
-                        // Revert to original content if there was an error
-                        contentField.innerText = originalContent;
-                        contentField.style.backgroundColor = '#f8d7da';
-                        setTimeout(() => {
-                            contentField.style.backgroundColor = '';
-                        }, 1000);
-                    }
-                    // Make the field non-editable again
-                    contentField.contentEditable = 'false';
-                })
-                .catch(error => {
-                    console.error(`Error updating ${itemType}:`, error);
-                    // Revert to original content
-                    contentField.innerText = originalContent;
-                    contentField.contentEditable = 'false';
-                    contentField.style.backgroundColor = '#f8d7da';
-                    setTimeout(() => {
-                        contentField.style.backgroundColor = '';
-                    }, 1000);
-                });
-            };
-            
-            // Save on blur
-            contentField.addEventListener('blur', saveContent, { once: true });
-            
-            // Also save on Enter key
-            contentField.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    contentField.blur(); // Trigger the blur event which saves the content
-                }
-            });
-        });
-    });
-}
-
-// Document ready handler for various functionalities
-$(document).ready(function() {
-    // Initialize color picker if on settings page
-    setupColorPicker();
-    
-    // Handle embedded link clicks to open in new tab/window
-    $('.external-link').on('click', function(e) {
-        e.preventDefault();
-        const url = $(this).attr('href');
-        window.open(url, '_blank');
-    });
-    
-    // Toggle member details on all_members page
-    $('.member-select').on('click', function(){
-        // Hide all detail sections
-        $('.member-content').hide();
-
-        // Grab the ID of the clicked member
-        const memberId = $(this).data('member-id');
-        console.log("Clicked member ID:", memberId);
-
-        // Show the container for that member
-        $('#member-content-' + memberId).slideDown();
-    });
-
-    // Setup the toggle functionality for the add task form
-    $('#toggleAddTask').on('click', function(e) {
-        e.preventDefault();
-        console.log("Toggle Add Task clicked");
-        $('#addTaskFormContainer').toggleClass('d-none');
-        
-        // Focus the input field if the form is now visible
-        if (!$('#addTaskFormContainer').hasClass('d-none')) {
-            $('#newTaskInput').focus();
-        }
-    });
-
-    // AJAX form submission for adding new tasks
-    $('#addTaskFormContainer form').on('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        
-        $.ajax({
-            url: $(this).attr('action'),
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                // Refresh the todo list without full page reload
-                refreshTodoList();
-                
-                // Clear the form
-                $('#newTaskInput').val('');
-                
-                // Hide the form after submission
-                $('#addTaskFormContainer').addClass('d-none');
-            },
-            error: function(error) {
-                console.error('Error adding task:', error);
-                alert('Failed to add the task. Please try again.');
-            }
-        });
-    });
-
-    // Handle Edit Todo Modal submission via AJAX
-    $('.modal form').on('submit', function(e) {
-        // Only intercept task edit forms
-        if ($(this).attr('action').includes('/todo/') && $(this).attr('action').includes('/edit')) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const modalId = $(this).closest('.modal').attr('id');
-            
-            $.ajax({
-                url: $(this).attr('action'),
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    // Close the modal
-                    $(`#${modalId}`).modal('hide');
-                    
-                    // Update the todo item in the list without full page reload
-                    refreshTodoList();
-                },
-                error: function(error) {
-                    console.error('Error updating task:', error);
-                    alert('Failed to update the task. Please try again.');
-                }
-            });
-        }
-    });
-    
-    // Initialize todo sortable
-    initTodoSortable();
-    
-    // Enable inline editing for various elements
-    enableInlineEditing('project');
-    enableInlineEditing('task');
-    enableInlineEditing('development');
-    
-    // Initialize tooltips
-    $('[data-bs-toggle="tooltip"]').tooltip();
-    
-    // Initialize priorities container sortable
+// Initialize the priorities container sorting functionality
+function initPrioritiesSortable() {
     const prioritiesContainer = document.getElementById('priorities-container');
     if (prioritiesContainer) {
-        new Sortable(prioritiesContainer, {
+        // Check if there's an existing Sortable instance and destroy it
+        if (prioritiesContainer.sortable) {
+            prioritiesContainer.sortable.destroy();
+        }
+        
+        // Create a new Sortable instance
+        const sortableInstance = new Sortable(prioritiesContainer, {
             animation: 150,
             ghostClass: 'sortable-ghost',
             onEnd: function(evt) {
@@ -511,7 +230,471 @@ $(document).ready(function() {
                 });
             }
         });
+        
+        // Store the Sortable instance on the element itself
+        prioritiesContainer.sortable = sortableInstance;
     }
+}
+
+// Update this function to account for member-specific lists
+function setupDragAndDrop(itemType, memberId) {
+    const containerId = memberId ? `${itemType}-list-${memberId}` : `${itemType}-list`;
+    const container = document.getElementById(containerId);
+    
+    if (!container) {
+        console.log(`Container not found for ${containerId}`);
+        return;
+    }
+    
+    console.log(`Setting up drag and drop for ${containerId}`);
+    
+    // Check if there's an existing Sortable instance and destroy it
+    if (container.sortable) {
+        container.sortable.destroy();
+    }
+    
+    // Create a new Sortable instance
+    const sortableInstance = new Sortable(container, {
+        animation: 150,
+        onEnd: function (evt) {
+            const itemOrder = Array.from(container.children)
+                .filter(item => item.dataset && item.dataset.itemId)
+                .map(item => item.dataset.itemId);
+            
+            if (itemOrder.length === 0) {
+                console.log(`No valid items found in ${containerId}`);
+                return;
+            }
+            
+            console.log(`New order for ${itemType} items:`, itemOrder);
+            
+            // Show visual feedback that saving is in progress
+            container.classList.add('saving-in-progress');
+            
+            fetch(`/team/reorder_items/${itemType}`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ order: itemOrder })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(`${itemType} items reordered successfully`);
+                container.classList.remove('saving-in-progress');
+                
+                // Add visual feedback of success
+                container.style.backgroundColor = '#d4edda';
+                setTimeout(() => {
+                    container.style.backgroundColor = '';
+                }, 500);
+            })
+            .catch(error => {
+                console.error(`Error reordering ${itemType} items:`, error);
+                container.classList.remove('saving-in-progress');
+                
+                // Add visual feedback of error
+                container.style.backgroundColor = '#f8d7da';
+                setTimeout(() => {
+                    container.style.backgroundColor = '';
+                }, 500);
+            });
+        }
+    });
+    
+    // Store the Sortable instance on the element itself
+    container.sortable = sortableInstance;
+}
+
+function enableInlineEditing(itemType) {
+    console.log(`Setting up inline editing for ${itemType} items`);
+    const editButtons = document.querySelectorAll(`.${itemType}-edit`);
+    
+    if (!editButtons.length) {
+        console.log(`No edit buttons found for ${itemType} items`);
+        return;
+    }
+    
+    console.log(`Found ${editButtons.length} ${itemType} edit buttons`);
+    
+    editButtons.forEach(btn => {
+        // Remove any existing click event listeners
+        btn.removeEventListener('click', btn._clickHandler);
+        
+        // Create a new click handler
+        btn._clickHandler = function() {
+            const itemId = this.dataset.itemId;
+            console.log(`Edit button clicked for ${itemType} with ID: ${itemId}`);
+            
+            const contentField = document.getElementById(`${itemType}-content-${itemId}`);
+            if (!contentField) {
+                console.error(`Content field not found for ${itemType}-content-${itemId}`);
+                return;
+            }
+            
+            // Make sure we're not already editing
+            if (contentField.getAttribute('contenteditable') === 'true') {
+                console.log(`Already editing ${itemType} ${itemId}`);
+                return;
+            }
+            
+            console.log(`Content field found: ${contentField.innerText}`);
+
+            // Make the field editable
+            contentField.contentEditable = 'true';
+            contentField.focus();
+            
+            // Store original content in case we need to revert
+            const originalContent = contentField.innerText;
+            console.log(`Original content: ${originalContent}`);
+            
+            // Select all text to make it easier to replace
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(contentField);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            
+            // Function to save the content
+            const saveContent = function() {
+                const updatedContent = contentField.innerText.trim();
+                console.log(`Updated content: ${updatedContent}`);
+                
+                // Make sure we're not saving empty content
+                if (updatedContent === '') {
+                    contentField.innerText = originalContent;
+                    contentField.contentEditable = 'false';
+                    return;
+                }
+                
+                if (updatedContent === originalContent) {
+                    // No changes, don't make an API call
+                    console.log('No changes detected, not saving');
+                    contentField.contentEditable = 'false';
+                    return;
+                }
+                
+                // Prepare the data to send based on item type
+                let data = {};
+                if (itemType === 'project') {
+                    data = { name: updatedContent };
+                } else if (itemType === 'task') {
+                    data = { content: updatedContent };
+                } else if (itemType === 'development') {
+                    data = { title: updatedContent };
+                }
+                
+                console.log(`Sending update request for ${itemType} ${itemId} with data:`, data);
+                
+                // Add feedback to show we're saving
+                contentField.classList.add('saving');
+                
+                // Send the update to the server
+                fetch(`/team/update_item/${itemType}/${itemId}`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => {
+                    console.log(`Response status: ${response.status}`);
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(`Response data:`, data);
+                    contentField.classList.remove('saving');
+                    
+                    if (data.status === 'success') {
+                        console.log(`${itemType} updated successfully`);
+                        // Add a visual confirmation
+                        contentField.style.backgroundColor = '#d4edda';
+                        setTimeout(() => {
+                            contentField.style.backgroundColor = '';
+                        }, 1000);
+                    } else {
+                        console.error(`Error updating ${itemType}:`, data.message);
+                        // Revert to original content if there was an error
+                        contentField.innerText = originalContent;
+                        contentField.style.backgroundColor = '#f8d7da';
+                        setTimeout(() => {
+                            contentField.style.backgroundColor = '';
+                        }, 1000);
+                    }
+                    // Make the field non-editable again
+                    contentField.contentEditable = 'false';
+                })
+                .catch(error => {
+                    console.error(`Error updating ${itemType}:`, error);
+                    contentField.classList.remove('saving');
+                    
+                    // Revert to original content
+                    contentField.innerText = originalContent;
+                    contentField.contentEditable = 'false';
+                    contentField.style.backgroundColor = '#f8d7da';
+                    setTimeout(() => {
+                        contentField.style.backgroundColor = '';
+                    }, 1000);
+                });
+            };
+            
+            // Add a one-time blur event listener
+            const blurHandler = function() {
+                // Remove the event listener first to prevent multiple calls
+                contentField.removeEventListener('blur', blurHandler);
+                saveContent();
+            };
+            
+            contentField.addEventListener('blur', blurHandler);
+            
+            // Also save on Enter key (without shift)
+            contentField.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    
+                    // Remove focus to trigger blur event
+                    contentField.blur();
+                } else if (e.key === 'Escape') {
+                    // Cancel editing on Escape
+                    e.preventDefault();
+                    contentField.innerText = originalContent;
+                    contentField.contentEditable = 'false';
+                    
+                    // Remove the blur handler to prevent saving
+                    contentField.removeEventListener('blur', blurHandler);
+                }
+            });
+        };
+        
+        // Add the new click event listener
+        btn.addEventListener('click', btn._clickHandler);
+    });
+}
+
+// Handle AJAX form submissions with proper error handling
+function setupAjaxFormSubmission() {
+    $('.ajax-form').each(function() {
+        const form = $(this);
+        
+        form.on('submit', function(e) {
+            e.preventDefault();
+            
+            const submitButton = form.find('[type="submit"]');
+            const originalButtonText = submitButton.html();
+            
+            // Disable the button and show loading
+            submitButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+            
+            // Get the form data
+            const formData = new FormData(this);
+            
+            // Send the AJAX request
+            $.ajax({
+                url: form.attr('action'),
+                type: form.attr('method') || 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    // Handle success - check for redirect or update elements
+                    if (response.redirect) {
+                        window.location.href = response.redirect;
+                    } else if (response.refresh) {
+                        window.location.reload();
+                    } else if (response.html && response.targetId) {
+                        $(response.targetId).html(response.html);
+                    }
+                    
+                    // Show success message if provided
+                    if (response.message) {
+                        showNotification(response.message, 'success');
+                    }
+                    
+                    // Reset form if needed
+                    if (form.data('reset-on-success')) {
+                        form[0].reset();
+                    }
+                    
+                    // Close modal if the form is in a modal
+                    const modal = form.closest('.modal');
+                    if (modal.length) {
+                        modal.modal('hide');
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Form submission error:', xhr);
+                    
+                    let errorMessage = 'An error occurred. Please try again.';
+                    
+                    // Try to extract error message from response
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.message) {
+                            errorMessage = response.message;
+                        }
+                    } catch (e) {
+                        // If parsing failed, use default message
+                    }
+                    
+                    showNotification(errorMessage, 'error');
+                },
+                complete: function() {
+                    // Re-enable the button and restore original text
+                    submitButton.prop('disabled', false).html(originalButtonText);
+                }
+            });
+        });
+    });
+}
+
+// Helper function to show notifications
+function showNotification(message, type = 'success') {
+    const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+    const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+    const textColor = type === 'success' ? '#155724' : '#721c24';
+    
+    const notification = $(`
+        <div class="notification" style="position: fixed; top: 20px; right: 20px; z-index: 9999; padding: 15px 20px; 
+        background-color: ${bgColor}; color: ${textColor}; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+        display: flex; align-items: center; max-width: 300px; animation: slideIn 0.3s ease;">
+            <i class="fas ${iconClass} me-2"></i>
+            <span>${message}</span>
+        </div>
+    `).appendTo('body');
+    
+    // Add CSS animation
+    $('<style>')
+        .text('@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }')
+        .appendTo('head');
+    
+    // Remove notification after 5 seconds
+    setTimeout(() => {
+        notification.css('animation', 'slideOut 0.3s ease forwards');
+        $('<style>')
+            .text('@keyframes slideOut { from { transform: translateX(0); } to { transform: translateX(100%); opacity: 0; } }')
+            .appendTo('head');
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 5000);
+}
+
+// Document ready handler for various functionalities
+$(document).ready(function() {
+    // Initialize color picker if on settings page
+    setupColorPicker();
+    
+    // Handle embedded link clicks to open in new tab/window
+    $('.external-link').on('click', function(e) {
+        e.preventDefault();
+        const url = $(this).attr('href');
+        window.open(url, '_blank');
+    });
+    
+    // Toggle member details on all_members page
+    $('.member-select').on('click', function(){
+        // Hide all detail sections
+        $('.member-content').hide();
+
+        // Grab the ID of the clicked member
+        const memberId = $(this).data('member-id');
+        console.log("Clicked member ID:", memberId);
+
+        // Show the container for that member
+        $('#member-content-' + memberId).slideDown();
+        
+        // Set up drag & drop for the currently viewed member
+        setupDragAndDrop('project', memberId);
+        setupDragAndDrop('task', memberId);
+        setupDragAndDrop('development', memberId);
+        
+        // Enable inline editing for the currently viewed member items
+        enableInlineEditing('project');
+        enableInlineEditing('task');
+        enableInlineEditing('development');
+    });
+
+    // AJAX form submission for adding new tasks
+    $('#addTaskFormContainer form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                // Refresh the todo list without full page reload
+                refreshTodoList();
+                
+                // Clear the form
+                $('#newTaskInput').val('');
+                
+                // Hide the form after submission
+                $('#addTaskFormContainer').removeClass('show-form');
+            },
+            error: function(error) {
+                console.error('Error adding task:', error);
+                alert('Failed to add the task. Please try again.');
+            }
+        });
+    });
+
+    // Handle Edit Todo Modal submission via AJAX
+    $('.edit-todo-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const modalId = $(this).closest('.modal').attr('id');
+        
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                // Close the modal
+                $(`#${modalId}`).modal('hide');
+                
+                // Update the todo item in the list without full page reload
+                refreshTodoList();
+            },
+            error: function(error) {
+                console.error('Error updating task:', error);
+                alert('Failed to update the task. Please try again.');
+            }
+        });
+    });
+    
+    // Initialize todo and priorities sortable
+    initTodoSortable();
+    initPrioritiesSortable();
+    
+    // Enable inline editing for various elements
+    enableInlineEditing('project');
+    enableInlineEditing('task');
+    enableInlineEditing('development');
+    
+    // Setup AJAX form submissions
+    setupAjaxFormSubmission();
+    
+    // Initialize tooltips
+    $('[data-bs-toggle="tooltip"]').tooltip();
     
     // When a modal is hidden (closed), immediately update the todo content
     $('.modal').on('hidden.bs.modal', function() {
@@ -519,6 +702,7 @@ $(document).ready(function() {
             // After editing a task and closing the modal, update the list
             $.get('/get_todos', function(data) {
                 $('#dashboard-todo-list').html(data);
+                initTodoSortable(); // Re-initialize sortable
             });
         }
     });

@@ -277,30 +277,7 @@
 
 {% block extra_js %}
 <script>
-    // This is needed to correctly show the selected member's details
-    document.addEventListener('DOMContentLoaded', function() {
-        // Toggle member details on all_members page
-        $('.member-select').on('click', function(){
-            // Hide all detail sections
-            $('.member-content').hide();
-
-            // Grab the ID of the clicked member
-            const memberId = $(this).data('member-id');
-            console.log("Clicked member ID:", memberId);
-
-            // Show the container for that member
-            $('#member-content-' + memberId).slideDown();
-            
-            // Set up drag & drop for the currently viewed member
-            setupDragAndDrop('project', memberId);
-            setupDragAndDrop('task', memberId);
-            setupDragAndDrop('development', memberId);
-            
-            // Enable inline editing for the currently viewed member
-            enableInlineEditing('project');
-            enableInlineEditing('task');
-            enableInlineEditing('development');
-        });
-    });
+    // Let team.js and main.js handle the functionality
+    // Remove any inline JavaScript here that might conflict with those files
 </script>
 {% endblock %}
