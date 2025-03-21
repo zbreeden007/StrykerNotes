@@ -1,9 +1,8 @@
 {% for todo in todos %}
 <li class="list-group-item" id="todo-{{ todo.id }}">
     <div class="d-flex justify-content-between align-items-center">
-        <!-- Left side: handle icon + task text -->
+        <!-- Left side: task text only (removed handle icon) -->
         <div>
-            <i class="fas fa-grip-vertical handle me-2 text-muted"></i>
             {{ todo.content }}
         </div>
         <!-- Right side: Priority label, Edit and Delete icons -->

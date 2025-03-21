@@ -292,14 +292,32 @@ def reorder_todos():
     todo_ids = data.get('todoIds', [])
     
     try:
+        # Log incoming data for debugging
+        print(f"Reordering todos with IDs: {todo_ids}")
+        
+        # Validate we have todo_ids to work with
+        if not todo_ids:
+            return jsonify({'status': 'error', 'message': 'No todos to reorder'}), 400
+        
         # Update the order of todos in the database
         for i, todo_id in enumerate(todo_ids):
-            todo = Todo.query.get_or_404(int(todo_id))
-            todo.order = i
+            try:
+                todo_id = int(todo_id)
+                todo = Todo.query.get_or_404(todo_id)
+                todo.order = i
+                print(f"Set todo {todo_id} order to {i}")
+            except Exception as inner_e:
+                print(f"Error processing todo ID {todo_id}: {str(inner_e)}")
+                # Continue processing other todos
+                continue
         
+        # Explicitly commit the session
         db.session.commit()
+        print("Successfully committed reordering")
         return jsonify({'status': 'success'})
     except Exception as e:
+        db.session.rollback()
+        print(f"Error reordering todos: {str(e)}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 # Team Priority routes

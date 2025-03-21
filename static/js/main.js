@@ -162,11 +162,18 @@ function initTodoSortable() {
         // Create a new Sortable instance
         const sortableInstance = new Sortable(todoList, {
             animation: 150,
-            handle: '.handle',
+            // Remove the handle selector to make the entire item draggable
+            // handle: '.handle',
             ghostClass: 'sortable-ghost',
+            // Add a different dragging class for visual feedback
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
             onEnd: function(evt) {
                 const todoIds = Array.from(todoList.children)
                     .map(item => item.id.replace('todo-', ''));
+                
+                // Show visual feedback that saving is in progress
+                todoList.classList.add('saving-in-progress');
                 
                 // Send the new order to the server
                 fetch('/todo/reorder', {
@@ -178,12 +185,32 @@ function initTodoSortable() {
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.status !== 'success') {
+                    todoList.classList.remove('saving-in-progress');
+                    
+                    if (data.status === 'success') {
+                        // Add visual feedback of success
+                        todoList.style.backgroundColor = '#d4edda';
+                        setTimeout(() => {
+                            todoList.style.backgroundColor = '';
+                        }, 500);
+                    } else {
                         console.error('Error reordering todos:', data.message);
+                        // Add visual feedback of error
+                        todoList.style.backgroundColor = '#f8d7da';
+                        setTimeout(() => {
+                            todoList.style.backgroundColor = '';
+                        }, 500);
                     }
                 })
                 .catch(error => {
                     console.error('Error reordering todos:', error);
+                    todoList.classList.remove('saving-in-progress');
+                    
+                    // Add visual feedback of error
+                    todoList.style.backgroundColor = '#f8d7da';
+                    setTimeout(() => {
+                        todoList.style.backgroundColor = '';
+                    }, 500);
                 });
             }
         });

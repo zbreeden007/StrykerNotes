@@ -420,3 +420,53 @@ li:hover .handle {
     border-radius: 4px;
     border: 1px solid #dee2e6;
 }
+
+/* Improve the todo item styling for drag and drop */
+#dashboard-todo-list .list-group-item {
+    cursor: grab;
+    transition: all 0.2s ease;
+    background-color: #fff;
+    border-left: 3px solid transparent;
+}
+
+#dashboard-todo-list .list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Add styles for the priorities */
+#dashboard-todo-list .list-group-item.priority-high {
+    border-left-color: #dc3545;
+}
+
+#dashboard-todo-list .list-group-item.priority-medium {
+    border-left-color: #ffc107;
+}
+
+#dashboard-todo-list .list-group-item.priority-low {
+    border-left-color: #BF8A36;
+}
+
+/* Styles for the various sortable states */
+.sortable-ghost {
+    opacity: 0.4;
+    background-color: #e9ecef !important;
+    border: 1px dashed #6c757d !important;
+}
+
+.sortable-chosen {
+    background-color: #e6f7ff !important;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.25);
+    z-index: 10;
+}
+
+.sortable-drag {
+    opacity: 0.95;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+}
+
+/* Visual feedback for saving state */
+.saving-in-progress {
+    opacity: 0.7;
+    pointer-events: none;
+}

@@ -132,9 +132,8 @@
                         {% for todo in todos %}
                         <li class="list-group-item" id="todo-{{ todo.id }}">
                             <div class="d-flex justify-content-between align-items-center">
-                                <!-- Left side: handle icon + task text -->
+                                <!-- Left side: task text only (removed the handle icon) -->
                                 <div>
-                                    <i class="fas fa-grip-vertical handle me-2 text-muted"></i>
                                     {{ todo.content }}
                                 </div>
                                 <!-- Right side: Priority label, Edit and Delete icons -->
@@ -172,7 +171,7 @@
                                         <h5 class="modal-title">Edit Task</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
-                                    <form action="{{ url_for('main.edit_todo', todo_id=todo.id) }}" method="post">
+                                    <form action="{{ url_for('main.edit_todo', todo_id=todo.id) }}" method="post" class="edit-todo-form">
                                         <div class="modal-body">
                                             <div class="mb-3">
                                                 <label class="form-label">Task</label>
