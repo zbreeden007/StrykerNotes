@@ -470,3 +470,52 @@ li:hover .handle {
     opacity: 0.7;
     pointer-events: none;
 }
+
+/* Add this to your style.css file */
+
+/* Improve transitions for member sections */
+.member-content {
+    transition: opacity 0.3s ease;
+}
+
+.member-content.fade-in {
+    opacity: 1;
+}
+
+.member-content.fade-out {
+    opacity: 0;
+}
+
+/* Make list items in team member sections match the todo list style */
+.project-list .list-group-item,
+.task-list .list-group-item,
+.development-list .list-group-item {
+    cursor: grab;
+    transition: all 0.2s ease;
+    background-color: #fff;
+    border-left: 3px solid transparent;
+}
+
+.project-list .list-group-item:hover,
+.task-list .list-group-item:hover,
+.development-list .list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Make team member cards more interactive */
+.team-member-card {
+    transition: all 0.3s ease;
+}
+
+.team-member-card.selected {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transform: translateY(-5px);
+}
+
+/* Add a small delay to ensure content is visible */
+@media (prefers-reduced-motion: no-preference) {
+    .member-content {
+        animation-duration: 0.3s;
+        animation-fill-mode: both;
+    }
+}

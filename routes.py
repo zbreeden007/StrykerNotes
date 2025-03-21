@@ -686,7 +686,7 @@ def edit_member(member_id):
             member.updated_at = datetime.utcnow()
             db.session.commit()
             flash('Team member updated successfully!', 'success')
-            return redirect(url_for('team.all_members'))
+            return redirect(url_for('team.all_members', _anchor=member_id))
         except Exception as e:
             db.session.rollback()
             print(f"Error updating team member: {e}")
@@ -702,28 +702,7 @@ def delete_member(member_id):
     flash('Team member deleted successfully!', 'success')
     return redirect(url_for('team.all_members'))
 
-@team.route('/fetch_items/<string:item_type>/<int:member_id>', methods=['GET'])
-def fetch_items(item_type, member_id):
-    """Fetch updated HTML for a member's items (projects, tasks, or developments)"""
-    member = TeamMember.query.get_or_404(member_id)
-    
-    if item_type == 'project':
-        items = member.projects
-        # Create a template snippet to render just the list items
-        html = render_template('_project_items.html', projects=items, member=member)
-    elif item_type == 'task':
-        items = member.tasks
-        html = render_template('_task_items.html', tasks=items, member=member)
-    elif item_type == 'development':
-        items = member.developments
-        html = render_template('_development_items.html', developments=items, member=member)
-    else:
-        return jsonify({'status': 'error', 'message': 'Invalid item type'}), 400
-    
-    # Return the rendered HTML
-    return html
-
-# Member Task Routes
+# Member Task Routes - UPDATED
 @team.route('/member/<int:member_id>/add_task', methods=['POST'])
 def add_member_task(member_id):
     member = TeamMember.query.get_or_404(member_id)
@@ -747,7 +726,18 @@ def add_member_task(member_id):
         db.session.commit()
         flash('Task added successfully!', 'success')
     
-    return redirect(url_for('team.all_members'))
+    # Redirect back to all_members with the member ID in the URL hash
+    return redirect(url_for('team.all_members', _anchor=member_id))
+
+@team.route('/task/<int:task_id>/delete', methods=['POST'])
+def delete_member_task(task_id):
+    task = MemberTask.query.get_or_404(task_id)
+    member_id = task.member_id  # Save the member ID before deletion
+    db.session.delete(task)
+    db.session.commit()
+    flash('Task deleted successfully!', 'success')
+    # Redirect back to all_members with the member ID in the URL hash
+    return redirect(url_for('team.all_members', _anchor=member_id))
 
 @team.route('/task/<int:task_id>/toggle', methods=['POST'])
 def toggle_member_task(task_id):
@@ -756,15 +746,7 @@ def toggle_member_task(task_id):
     db.session.commit()
     return jsonify({'status': 'success', 'completed': task.completed})
 
-@team.route('/task/<int:task_id>/delete', methods=['POST'])
-def delete_member_task(task_id):
-    task = MemberTask.query.get_or_404(task_id)
-    db.session.delete(task)
-    db.session.commit()
-    flash('Task deleted successfully!', 'success')
-    return redirect(url_for('team.all_members'))
-
-# Member Project Routes
+# Member Project Routes - UPDATED
 @team.route('/member/<int:member_id>/add_project', methods=['POST'])
 def add_member_project(member_id):
     member = TeamMember.query.get_or_404(member_id)
@@ -785,43 +767,20 @@ def add_member_project(member_id):
         db.session.commit()
         flash('Project added successfully!', 'success')
     
-    return redirect(url_for('team.all_members'))
+    # Redirect back to all_members with the member ID in the URL hash
+    return redirect(url_for('team.all_members', _anchor=member_id))
 
 @team.route('/project/<int:project_id>/delete', methods=['POST'])
 def delete_member_project(project_id):
     project = MemberProject.query.get_or_404(project_id)
+    member_id = project.member_id  # Save the member ID before deletion
     db.session.delete(project)
     db.session.commit()
     flash('Project deleted successfully!', 'success')
-    return redirect(url_for('team.all_members'))
+    # Redirect back to all_members with the member ID in the URL hash
+    return redirect(url_for('team.all_members', _anchor=member_id))
 
-# Member Note Routes
-@team.route('/member/<int:member_id>/add_note', methods=['POST'])
-def add_member_note(member_id):
-    member = TeamMember.query.get_or_404(member_id)
-    form = MemberNoteForm()
-    
-    if form.validate_on_submit():
-        note = MemberNote(
-            title=form.title.data,
-            content=form.content.data,
-            member_id=member.id
-        )
-        db.session.add(note)
-        db.session.commit()
-        flash('Note added successfully!', 'success')
-    
-    return redirect(url_for('team.all_members'))
-
-@team.route('/note/<int:note_id>/delete', methods=['POST'])
-def delete_member_note(note_id):
-    note = MemberNote.query.get_or_404(note_id)
-    db.session.delete(note)
-    db.session.commit()
-    flash('Note deleted successfully!', 'success')
-    return redirect(url_for('team.all_members'))
-
-# Member Development Routes
+# Member Development Routes - UPDATED
 @team.route('/member/<int:member_id>/add_development', methods=['POST'])
 def add_member_development(member_id):
     member = TeamMember.query.get_or_404(member_id)
@@ -842,15 +801,40 @@ def add_member_development(member_id):
         db.session.commit()
         flash('Development added successfully!', 'success')
     
-    return redirect(url_for('team.all_members'))
+    # Redirect back to all_members with the member ID in the URL hash
+    return redirect(url_for('team.all_members', _anchor=member_id))
 
 @team.route('/development/<int:development_id>/delete', methods=['POST'])
 def delete_member_development(development_id):
     development = MemberDevelopment.query.get_or_404(development_id)
+    member_id = development.member_id  # Save the member ID before deletion
     db.session.delete(development)
     db.session.commit()
     flash('Development deleted successfully!', 'success')
-    return redirect(url_for('team.all_members'))
+    # Redirect back to all_members with the member ID in the URL hash
+    return redirect(url_for('team.all_members', _anchor=member_id))
+
+# For fetch items via AJAX if needed in the future
+@team.route('/fetch_items/<string:item_type>/<int:member_id>', methods=['GET'])
+def fetch_items(item_type, member_id):
+    """Fetch updated HTML for a member's items (projects, tasks, or developments)"""
+    member = TeamMember.query.get_or_404(member_id)
+    
+    if item_type == 'project':
+        items = member.projects
+        # Create a template snippet to render just the list items
+        html = render_template('_project_items.html', projects=items, member=member)
+    elif item_type == 'task':
+        items = member.tasks
+        html = render_template('_task_items.html', tasks=items, member=member)
+    elif item_type == 'development':
+        items = member.developments
+        html = render_template('_development_items.html', developments=items, member=member)
+    else:
+        return jsonify({'status': 'error', 'message': 'Invalid item type'}), 400
+    
+    # Return the rendered HTML
+    return html
 
 @team.route('/simple/<int:member_id>', methods=['GET'])
 def simple_view_member(member_id):
@@ -874,7 +858,7 @@ def add_project(member_id):
         db.session.add(project)
         db.session.commit()
         flash('Project added successfully!', 'success')
-    return redirect(url_for('team.all_members'))
+    return redirect(url_for('team.all_members', _anchor=member_id))
 
 @team.route('/member/<int:member_id>/add_task', methods=['POST'])
 def add_task(member_id):
@@ -892,7 +876,7 @@ def add_task(member_id):
         db.session.add(task)
         db.session.commit()
         flash('Task added successfully!', 'success')
-    return redirect(url_for('team.all_members'))
+    return redirect(url_for('team.all_members', _anchor=member_id))
 
 @team.route('/member/<int:member_id>/add_development', methods=['POST'])
 def add_development(member_id):
@@ -911,12 +895,13 @@ def add_development(member_id):
         db.session.add(development)
         db.session.commit()
         flash('Development added successfully!', 'success')
-    return redirect(url_for('team.all_members'))
+    return redirect(url_for('team.all_members', _anchor=member_id))
 
 # Edit Entries - Updated to redirect to all_members
 @team.route('/project/<int:project_id>/edit', methods=['POST'])
 def edit_project(project_id):
     project = MemberProject.query.get_or_404(project_id)
+    member_id = project.member_id  # Save member ID for redirect
     form = ProjectForm(obj=project)
     if form.validate_on_submit():
         project.name = form.name.data
@@ -924,22 +909,24 @@ def edit_project(project_id):
         project.priority = form.priority.data  # Add this line to update priority
         db.session.commit()
         flash('Project updated successfully!', 'success')
-    return redirect(url_for('team.all_members'))
+    return redirect(url_for('team.all_members', _anchor=member_id))
 
 @team.route('/task/<int:task_id>/edit', methods=['POST'])
 def edit_task(task_id):
     task = MemberTask.query.get_or_404(task_id)
+    member_id = task.member_id  # Save member ID for redirect
     form = TaskForm(obj=task)
     if form.validate_on_submit():
         task.content = form.content.data
         task.completed = form.completed.data
         db.session.commit()
         flash('Task updated successfully!', 'success')
-    return redirect(url_for('team.all_members'))
+    return redirect(url_for('team.all_members', _anchor=member_id))
 
 @team.route('/development/<int:development_id>/edit', methods=['POST'])
 def edit_development(development_id):
     development = MemberDevelopment.query.get_or_404(development_id)
+    member_id = development.member_id  # Save member ID for redirect
     form = DevelopmentForm(obj=development)
     if form.validate_on_submit():
         development.title = form.title.data
@@ -947,7 +934,7 @@ def edit_development(development_id):
         development.date = form.date.data
         db.session.commit()
         flash('Development updated successfully!', 'success')
-    return redirect(url_for('team.all_members'))
+    return redirect(url_for('team.all_members', _anchor=member_id))
 
 # Move Items - Updated to redirect to all_members
 @team.route('/move_item/<string:item_type>/<int:item_id>', methods=['POST'])
@@ -983,15 +970,7 @@ def move_item(item_type, item_id):
         db.session.delete(item)
         db.session.commit()
         flash(f'Item successfully moved to {new_type.capitalize()}!', 'success')
-    return redirect(url_for('team.all_members'))
-
-@team.route('/project/<int:project_id>/delete', methods=['POST'])
-def delete_project(project_id):
-    project = MemberProject.query.get_or_404(project_id)
-    db.session.delete(project)
-    db.session.commit()
-    flash('Project deleted successfully!', 'success')
-    return redirect(url_for('team.all_members'))
+    return redirect(url_for('team.all_members', _anchor=member_id))
 
 @team.route('/reorder_items/<string:item_type>', methods=['POST'])
 def reorder_items(item_type):
