@@ -590,6 +590,26 @@ function showNotification(message, type = 'success') {
     }, 5000);
 }
 
+// Function to initialize all sortable lists on page load
+function initAllSortables() {
+    // Initialize todo sortable if on dashboard
+    initTodoSortable();
+    initPrioritiesSortable();
+    
+    // Initialize all member item sortables if on team page
+    $('.member-select').each(function() {
+        const memberId = $(this).data('member-id');
+        if (memberId) {
+            // If this member is selected (visible), set up sortable for their lists
+            if ($(this).closest('.team-member-card').hasClass('selected')) {
+                setupDragAndDrop('project', memberId);
+                setupDragAndDrop('task', memberId);
+                setupDragAndDrop('development', memberId);
+            }
+        }
+    });
+}
+
 // Document ready handler for various functionalities
 $(document).ready(function() {
     // Initialize color picker if on settings page
@@ -611,6 +631,12 @@ $(document).ready(function() {
         const memberId = $(this).data('member-id');
         console.log("Clicked member ID:", memberId);
 
+        // Remove selected class from all team members
+        $('.team-member-card').removeClass('selected');
+        
+        // Add selected class to the clicked member
+        $(this).closest('.team-member-card').addClass('selected');
+
         // Show the container for that member
         $('#member-content-' + memberId).slideDown();
         
@@ -624,6 +650,27 @@ $(document).ready(function() {
         enableInlineEditing('task');
         enableInlineEditing('development');
     });
+
+    // If there's a hash in the URL, try to select that member
+    if (window.location.hash) {
+        const memberId = window.location.hash.substring(1);
+        const memberSelect = $(`.member-select[data-member-id="${memberId}"]`);
+        
+        if (memberSelect.length) {
+            memberSelect.click();
+            
+            // Scroll to the member's content
+            $('html, body').animate({
+                scrollTop: $('#member-content-' + memberId).offset().top - 100
+            }, 500);
+        }
+    } else {
+        // If no hash, and there's only one member, select them automatically
+        const memberSelects = $('.member-select');
+        if (memberSelects.length === 1) {
+            memberSelects.click();
+        }
+    }
 
     // AJAX form submission for adding new tasks
     $('#addTaskFormContainer form').on('submit', function(e) {
@@ -681,9 +728,8 @@ $(document).ready(function() {
         });
     });
     
-    // Initialize todo and priorities sortable
-    initTodoSortable();
-    initPrioritiesSortable();
+    // Initialize all sortable lists on page load
+    initAllSortables();
     
     // Enable inline editing for various elements
     enableInlineEditing('project');
@@ -704,6 +750,28 @@ $(document).ready(function() {
                 $('#dashboard-todo-list').html(data);
                 initTodoSortable(); // Re-initialize sortable
             });
+        } else if ($(this).attr('id') && (
+            $(this).attr('id').includes('Project') || 
+            $(this).attr('id').includes('Task') || 
+            $(this).attr('id').includes('Development')
+        )) {
+            // After adding/editing items from modals, re-initialize sortables
+            // Get member ID from URL hash or from modal ID
+            let memberId = window.location.hash ? window.location.hash.substring(1) : null;
+            
+            if (!memberId) {
+                // Try to extract from modal ID if possible
+                const modalId = $(this).attr('id');
+                if (modalId.includes('Modal')) {
+                    memberId = modalId.replace(/\D/g, '');
+                }
+            }
+            
+            if (memberId) {
+                setupDragAndDrop('project', memberId);
+                setupDragAndDrop('task', memberId);
+                setupDragAndDrop('development', memberId);
+            }
         }
     });
 });

@@ -45,11 +45,15 @@ class TeamMember(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Relationships
-    tasks = db.relationship('MemberTask', backref='member', lazy=True, cascade="all, delete-orphan")
-    projects = db.relationship('MemberProject', backref='member', lazy=True, cascade="all, delete-orphan")
-    member_notes = db.relationship('MemberNote', backref='member', lazy=True, cascade="all, delete-orphan")
-    developments = db.relationship('MemberDevelopment', backref='member', lazy=True, cascade="all, delete-orphan")
+    # Relationships - modify these to include order_by
+    tasks = db.relationship('MemberTask', backref='member', lazy=True, 
+                           cascade="all, delete-orphan", order_by="MemberTask.order")
+    projects = db.relationship('MemberProject', backref='member', lazy=True, 
+                              cascade="all, delete-orphan", order_by="MemberProject.order")
+    member_notes = db.relationship('MemberNote', backref='member', lazy=True, 
+                                  cascade="all, delete-orphan")
+    developments = db.relationship('MemberDevelopment', backref='member', lazy=True, 
+                                  cascade="all, delete-orphan", order_by="MemberDevelopment.order")
     
     def __repr__(self):
         return f'<TeamMember {self.name}>'

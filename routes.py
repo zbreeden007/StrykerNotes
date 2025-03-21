@@ -243,7 +243,7 @@ def get_todos():
         todos = Todo.query.order_by(Todo.priority.desc()).all()
     
     # Render just the todo list items (not the full page)
-    return render_template('partials/todo_list.html', todos=todos)
+    return render_template('todo_list.html', todos=todos)
 
 @main.route('/todo/<int:todo_id>/toggle', methods=['POST'])
 def toggle_todo(todo_id):
@@ -691,9 +691,13 @@ def add_member_task(member_id):
     form = MemberTaskForm()
     
     if form.validate_on_submit():
+        # Get the highest order value for this member's tasks
+        highest_order = db.session.query(db.func.max(MemberTask.order)).filter_by(member_id=member_id).scalar() or -1
+        
         task = MemberTask(
             content=form.content.data,
-            member_id=member.id
+            member_id=member.id,
+            order=highest_order + 1  # Set order to be after all existing tasks for this member
         )
         
         # Handle the due_date if it's in the form
@@ -728,11 +732,15 @@ def add_member_project(member_id):
     form = MemberProjectForm()
     
     if form.validate_on_submit():
+        # Get the highest order value for this member's projects
+        highest_order = db.session.query(db.func.max(MemberProject.order)).filter_by(member_id=member_id).scalar() or -1
+        
         project = MemberProject(
             name=form.name.data,
             description=form.description.data,
             priority=form.priority.data,
-            member_id=member.id
+            member_id=member.id,
+            order=highest_order + 1  # Set order to be after all existing projects for this member
         )
         db.session.add(project)
         db.session.commit()
@@ -781,11 +789,15 @@ def add_member_development(member_id):
     form = MemberDevelopmentForm()
     
     if form.validate_on_submit():
+        # Get the highest order value for this member's developments
+        highest_order = db.session.query(db.func.max(MemberDevelopment.order)).filter_by(member_id=member_id).scalar() or -1
+        
         development = MemberDevelopment(
             title=form.title.data,
             description=form.description.data,
             date=form.date.data if hasattr(form, 'date') else None,
-            member_id=member.id
+            member_id=member.id,
+            order=highest_order + 1  # Set order to be after all existing developments for this member
         )
         db.session.add(development)
         db.session.commit()
@@ -811,10 +823,14 @@ def simple_view_member(member_id):
 def add_project(member_id):
     form = ProjectForm()
     if form.validate_on_submit():
+        # Get the highest order value for this member's projects
+        highest_order = db.session.query(db.func.max(MemberProject.order)).filter_by(member_id=member_id).scalar() or -1
+        
         project = MemberProject(
             name=form.name.data,
             description=form.description.data,
-            member_id=member_id
+            member_id=member_id,
+            order=highest_order + 1  # Set order to be after all existing projects for this member
         )
         db.session.add(project)
         db.session.commit()
@@ -825,10 +841,14 @@ def add_project(member_id):
 def add_task(member_id):
     form = TaskForm()
     if form.validate_on_submit():
+        # Get the highest order value for this member's tasks
+        highest_order = db.session.query(db.func.max(MemberTask.order)).filter_by(member_id=member_id).scalar() or -1
+        
         task = MemberTask(
             content=form.content.data,
             completed=form.completed.data,
-            member_id=member_id
+            member_id=member_id,
+            order=highest_order + 1  # Set order to be after all existing tasks for this member
         )
         db.session.add(task)
         db.session.commit()
@@ -839,11 +859,15 @@ def add_task(member_id):
 def add_development(member_id):
     form = DevelopmentForm()
     if form.validate_on_submit():
+        # Get the highest order value for this member's developments
+        highest_order = db.session.query(db.func.max(MemberDevelopment.order)).filter_by(member_id=member_id).scalar() or -1
+        
         development = MemberDevelopment(
             title=form.title.data,
             description=form.description.data,
             date=form.date.data,
-            member_id=member_id
+            member_id=member_id,
+            order=highest_order + 1  # Set order to be after all existing developments for this member
         )
         db.session.add(development)
         db.session.commit()
@@ -901,13 +925,20 @@ def move_item(item_type, item_id):
             flash('Invalid item type.', 'danger')
             return redirect(url_for('team.all_members'))
 
+        member_id = item.member_id
         new_type = form.item_type.data
+
+        # Get the highest order value for this member's items of the new type
         if new_type == 'project':
-            new_item = MemberProject(name=item.name, description=item.description, member_id=item.member_id)
+            highest_order = db.session.query(db.func.max(MemberProject.order)).filter_by(member_id=member_id).scalar() or -1
+            new_item = MemberProject(name=item.name, description=item.description, member_id=item.member_id, order=highest_order + 1)
         elif new_type == 'task':
-            new_item = MemberTask(content=item.content, completed=False, member_id=item.member_id)
+            highest_order = db.session.query(db.func.max(MemberTask.order)).filter_by(member_id=member_id).scalar() or -1
+            new_item = MemberTask(content=item.content, completed=False, member_id=item.member_id, order=highest_order + 1)
         elif new_type == 'development':
-            new_item = MemberDevelopment(title=item.title, description=item.description, date=item.date, member_id=item.member_id)
+            highest_order = db.session.query(db.func.max(MemberDevelopment.order)).filter_by(member_id=member_id).scalar() or -1
+            new_item = MemberDevelopment(title=item.title, description=item.description, date=item.date if hasattr(item, 'date') else None, 
+                                        member_id=item.member_id, order=highest_order + 1)
 
         db.session.add(new_item)
         db.session.delete(item)
@@ -1117,23 +1148,8 @@ def delete_adhoc(adhoc_id):
 # Settings routes
 @settings.route('/', methods=['GET', 'POST'])
 def preferences():
-    preferences = UserPreference.query.first()
-    form = UserPreferenceForm(obj=preferences)
-    
-    if form.validate_on_submit():
-        if not preferences:
-            preferences = UserPreference()
-            db.session.add(preferences)
-        
-        preferences.theme = form.theme.data
-        preferences.font_family = form.font_family.data
-        preferences.font_size = form.font_size.data
-        preferences.accent_color = form.accent_color.data
-        db.session.commit()
-        flash('Preferences updated successfully!', 'success')
-        return redirect(url_for('main.index'))
-    
-    return render_template('settings/preferences.html', form=form)
+    # Redirect to dashboard instead of showing preferences page
+    return redirect(url_for('main.index'))
 
 # Register all blueprints
 def register_blueprints(app):

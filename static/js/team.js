@@ -17,9 +17,12 @@ $(document).ready(function() {
         
         // Set up drag and drop for this member's lists
         if (typeof setupDragAndDrop === 'function') {
+            console.log("Setting up drag and drop for member:", memberId);
             setupDragAndDrop('project', memberId);
             setupDragAndDrop('task', memberId);
             setupDragAndDrop('development', memberId);
+        } else {
+            console.error("setupDragAndDrop function not available");
         }
         
         // Enable inline editing for this member's items
@@ -27,6 +30,8 @@ $(document).ready(function() {
             enableInlineEditing('project');
             enableInlineEditing('task');
             enableInlineEditing('development');
+        } else {
+            console.error("enableInlineEditing function not available");
         }
     });
     
@@ -50,6 +55,19 @@ $(document).ready(function() {
             memberSelects.click();
         }
     }
+    
+    // Initialize sortable lists for any already visible member content
+    $('.member-content').each(function() {
+        if ($(this).is(':visible')) {
+            const memberId = $(this).attr('id').replace('member-content-', '');
+            if (typeof setupDragAndDrop === 'function') {
+                console.log("Setting up initial drag and drop for visible member:", memberId);
+                setupDragAndDrop('project', memberId);
+                setupDragAndDrop('task', memberId);
+                setupDragAndDrop('development', memberId);
+            }
+        }
+    });
     
     // Make project/task/development forms submit via AJAX
     $('.member-form').on('submit', function(e) {

@@ -12,23 +12,16 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   
-  {% if preferences %}
+  <!-- Default styling (replacing preferences system) -->
   <style>
     :root {
-      --font-family: {{ preferences.font_family }};
-      --font-size: {{ preferences.font_size }};
-      --accent-color: {{ preferences.accent_color }};
-      {% if preferences.theme == 'dark' %}
-        --bg-color: #1e1e1e;
-        --bg-secondary: #2a2a2a;
-        --text-color: #e0e0e0;
-        --border-color: #3a3a3a;
-      {% else %}
-        --bg-color: #ffffff;
-        --bg-secondary: #f8f9fa;
-        --text-color: #333333;
-        --border-color: #ddd;
-      {% endif %}
+      --font-family: Cambria, serif;
+      --font-size: 16px;
+      --accent-color: #BF8A36;
+      --bg-color: #ffffff;
+      --bg-secondary: #f8f9fa;
+      --text-color: #333333;
+      --border-color: #ddd;
     }
     
     body {
@@ -64,7 +57,6 @@
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2851, 51, 51, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
     }
   </style>
-  {% endif %}
   
   {% block extra_head %}{% endblock %}
 </head>
@@ -118,7 +110,6 @@
             <a class="nav-link" href="{{ url_for('adhocs.all_adhocs') }}">Ad-hoc Tracking</a>
           </li>
         </ul>
-        <!-- Settings button removed per new requirements -->
       </div>
     </div>
   </nav>
