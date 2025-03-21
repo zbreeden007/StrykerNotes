@@ -1,4 +1,26 @@
 /* General Styles */
+
+:root {
+  --primary-color: #BF8A36;
+  --secondary-color: #779AB7;
+  --tertiary-color: #94B1AF;
+  --accent-color: #B68FB9;
+  --light-bg: #f9f9fa;
+  --dark-text: #333333;
+  --medium-text: #6c757d;
+  --light-text: #ffffff;
+  --success-color: #28a745;
+  --warning-color: #ffc107;
+  --danger-color: #dc3545;
+}
+
+.dark-mode {
+  --bg-color: #1e1e1e;
+  --bg-secondary: #2d2d2d;
+  --text-color: #f0f0f0;
+  --border-color: #444;
+}
+
 body {
     min-height: 100vh;
     display: flex;
@@ -297,10 +319,10 @@ li:hover .handle {
 /* Sticky Note Styles */
 .sticky-note {
     display: inline-block;
-    width: 140px;
-    height: 140px;
-    padding: 15px;
-    margin: 15px;
+    width: 110px;  /* Reduced from 140px */
+    height: 110px; /* Reduced from 140px */
+    padding: 10px; /* Reduced from 15px */
+    margin: 10px;  /* Reduced from 15px */
     position: relative;
     font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
     box-shadow: 0 3px 6px rgba(0,0,0,0.25);
@@ -316,7 +338,7 @@ li:hover .handle {
     position: absolute;
     top: 0;
     right: 0;
-    border-width: 0 16px 16px 0;
+    border-width: 0 12px 12px 0; /* Slightly smaller fold corner */
     border-style: solid;
     border-color: #f9f9f9 #f9f9f9 rgba(0,0,0,0.1) rgba(0,0,0,0.1);
     box-shadow: -1px 1px 1px rgba(0,0,0,0.1);
@@ -324,8 +346,8 @@ li:hover .handle {
 
 .sticky-note p {
     margin: 0;
-    font-size: 0.95rem;
-    line-height: 1.4;
+    font-size: 0.85rem; /* Slightly smaller font */
+    line-height: 1.3;
 }
 
 /* Make sticky notes respond to hover */
