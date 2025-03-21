@@ -85,11 +85,13 @@
                                     <span id="project-content-{{ project.id }}" contenteditable="false">{{ project.name }}</span>
                                 </div>
                                 <div>
-                                    <button class="btn btn-sm btn-outline-primary project-edit" data-item-id="{{ project.id }}">
+                                    <button class="btn btn-sm me-1 project-edit" data-item-id="{{ project.id }}"
+                                            style="background-color: transparent; border: none; color: #989B9A;">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <form action="{{ url_for('team.delete_member_project', project_id=project.id) }}" method="post" class="d-inline">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <button type="submit" class="btn btn-sm"
+                                                style="background-color: transparent; border: none; color: #989B9A;">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
@@ -122,11 +124,13 @@
                                     <span id="task-content-{{ task.id }}" contenteditable="false">{{ task.content }}</span>
                                 </div>
                                 <div>
-                                    <button type="button" class="btn btn-sm btn-outline-primary task-edit" data-item-id="{{ task.id }}">
+                                    <button type="button" class="btn btn-sm me-1 task-edit" data-item-id="{{ task.id }}"
+                                            style="background-color: transparent; border: none; color: #989B9A;">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <form action="{{ url_for('team.delete_member_task', task_id=task.id) }}" method="post" class="d-inline">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <button type="submit" class="btn btn-sm"
+                                                style="background-color: transparent; border: none; color: #989B9A;">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
@@ -159,11 +163,13 @@
                                     <span id="development-content-{{ dev.id }}" contenteditable="false">{{ dev.title }}</span>
                                 </div>
                                 <div>
-                                    <button class="btn btn-sm btn-outline-primary development-edit" data-item-id="{{ dev.id }}">
+                                    <button class="btn btn-sm me-1 development-edit" data-item-id="{{ dev.id }}"
+                                            style="background-color: transparent; border: none; color: #989B9A;">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <form action="{{ url_for('team.delete_member_development', development_id=dev.id) }}" method="post" class="d-inline">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <button type="submit" class="btn btn-sm"
+                                                style="background-color: transparent; border: none; color: #989B9A;">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
