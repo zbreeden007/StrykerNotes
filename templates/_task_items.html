@@ -1,0 +1,19 @@
+{% for task in tasks %}
+<li class="list-group-item d-flex justify-content-between align-items-center" data-item-id="{{ task.id }}">
+    <div class="d-flex align-items-center">
+        <span id="task-content-{{ task.id }}" contenteditable="false">{{ task.content }}</span>
+    </div>
+    <div>
+        <button type="button" class="btn btn-sm me-1 task-edit" data-item-id="{{ task.id }}"
+                style="background-color: transparent; border: none; color: #989B9A;">
+            <i class="fas fa-edit"></i>
+        </button>
+        <form action="{{ url_for('team.delete_member_task', task_id=task.id) }}" method="post" class="d-inline">
+            <button type="submit" class="btn btn-sm"
+                    style="background-color: transparent; border: none; color: #989B9A;">
+                <i class="fas fa-trash"></i>
+            </button>
+        </form>
+    </div>
+</li>
+{% endfor %}

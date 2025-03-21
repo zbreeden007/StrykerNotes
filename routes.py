@@ -702,6 +702,27 @@ def delete_member(member_id):
     flash('Team member deleted successfully!', 'success')
     return redirect(url_for('team.all_members'))
 
+@team.route('/fetch_items/<string:item_type>/<int:member_id>', methods=['GET'])
+def fetch_items(item_type, member_id):
+    """Fetch updated HTML for a member's items (projects, tasks, or developments)"""
+    member = TeamMember.query.get_or_404(member_id)
+    
+    if item_type == 'project':
+        items = member.projects
+        # Create a template snippet to render just the list items
+        html = render_template('_project_items.html', projects=items, member=member)
+    elif item_type == 'task':
+        items = member.tasks
+        html = render_template('_task_items.html', tasks=items, member=member)
+    elif item_type == 'development':
+        items = member.developments
+        html = render_template('_development_items.html', developments=items, member=member)
+    else:
+        return jsonify({'status': 'error', 'message': 'Invalid item type'}), 400
+    
+    # Return the rendered HTML
+    return html
+
 # Member Task Routes
 @team.route('/member/<int:member_id>/add_task', methods=['POST'])
 def add_member_task(member_id):

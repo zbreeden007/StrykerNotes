@@ -1,0 +1,19 @@
+{% for dev in developments %}
+<li class="list-group-item d-flex justify-content-between align-items-center" data-item-id="{{ dev.id }}">
+    <div>
+        <span id="development-content-{{ dev.id }}" contenteditable="false">{{ dev.title }}</span>
+    </div>
+    <div>
+        <button class="btn btn-sm me-1 development-edit" data-item-id="{{ dev.id }}"
+                style="background-color: transparent; border: none; color: #989B9A;">
+            <i class="fas fa-edit"></i>
+        </button>
+        <form action="{{ url_for('team.delete_member_development', development_id=dev.id) }}" method="post" class="d-inline">
+            <button type="submit" class="btn btn-sm"
+                    style="background-color: transparent; border: none; color: #989B9A;">
+                <i class="fas fa-trash"></i>
+            </button>
+        </form>
+    </div>
+</li>
+{% endfor %}
