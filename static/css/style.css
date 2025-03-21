@@ -84,8 +84,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 #dashboard-todo-list {
-    max-height: 500px;
-    overflow-y: auto;
+    /* Remove max-height and overflow to prevent scrolling */
+    /* max-height: 500px; */
+    /* overflow-y: auto; */
 }
 
 .form-check-label {
@@ -255,8 +256,9 @@ li:hover .handle {
 }
 
 .member-content .card-body {
-    overflow-y: auto;
-    max-height: 400px; /* Set a reasonable max height */
+    /* Remove max-height and overflow to prevent scrolling */
+    /* overflow-y: auto; */
+    /* max-height: 400px; */
 }
 
 /* Section card transitions */
