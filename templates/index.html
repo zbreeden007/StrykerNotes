@@ -21,21 +21,13 @@
   }
   
   /* Email buttons styling */
-  .email-actions {
-    background-color: #f8f9fa;
-    padding: 12px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  }
-  
   .email-btn {
     background-color: #BF8A36;
     color: white;
     border: none;
     padding: 8px 15px;
     transition: all 0.3s ease;
-    margin-right: 10px;
+    margin-left: 10px;
   }
   
   .email-btn:hover {
@@ -52,31 +44,16 @@
 {% endblock %}
 
 {% block content %}
-<!-- Quick Email Actions Section -->
-<div class="email-actions">
-  <div class="d-flex justify-content-center">
-    <a href="mailto:internal-team@stryker.com?subject=Internal%20Reporting%20Issue&body=Hello%20Team%2C%0A%0AI%20would%20like%20to%20report%20an%20internal%20issue%20regarding%20reporting.%0A%0AIssue%20Details%3A%0A-%20%0A-%20%0A-%20%0A%0AThank%20you%2C%0A" class="btn email-btn">
-      <i class="fas fa-envelope"></i> Internal Reporting Issue
-    </a>
-    <a href="mailto:sales-leaders@stryker.com,reporting@stryker.com?subject=External%20Reporting%20Issue&body=Hello%20Sales%20Leaders%2C%0A%0AI%20would%20like%20to%20report%20an%20external%20issue%20regarding%20reporting.%0A%0AIssue%20Details%3A%0A-%20%0A-%20%0A-%20%0A%0AThank%20you%2C%0A" class="btn email-btn">
-      <i class="fas fa-envelope-open-text"></i> External Reporting Issue
-    </a>
-  </div>
-</div>
-
+<!-- Dashboard Header with Email Buttons -->
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="mb-0" style="color: #FFFFFF;">Dashboard</h1>
     <div class="d-flex align-items-center">
-        <div class="me-4">
-            <a href="{{ url_for('adhocs.all_adhocs') }}" style="text-decoration: none; color: white;">
-                <span style="font-weight: normal; color: white; font-size: 1.2rem;">Ad Hocs Completed: {{ adhoc_count }}</span>
-            </a>
-        </div>
-        <div>
-            <a href="{{ url_for('adhocs.all_adhocs') }}" style="text-decoration: none; color: white;">
-                <span style="font-weight: normal; color: white; font-size: 1.2rem;">Hours Spent: {{ total_adhoc_hours }}</span>
-            </a>
-        </div>
+        <a href="mailto:internal-team@stryker.com?subject=Internal%20Reporting%20Issue&body=Hello%20Team%2C%0A%0AI%20would%20like%20to%20report%20an%20internal%20issue%20regarding%20reporting.%0A%0AIssue%20Details%3A%0A-%20%0A-%20%0A-%20%0A%0AThank%20you%2C%0A" class="btn email-btn">
+            <i class="fas fa-envelope"></i> Internal Reporting Issue
+        </a>
+        <a href="mailto:sales-leaders@stryker.com,reporting@stryker.com?subject=External%20Reporting%20Issue&body=Hello%20Sales%20Leaders%2C%0A%0AI%20would%20like%20to%20report%20an%20external%20issue%20regarding%20reporting.%0A%0AIssue%20Details%3A%0A-%20%0A-%20%0A-%20%0A%0AThank%20you%2C%0A" class="btn email-btn">
+            <i class="fas fa-envelope-open-text"></i> External Reporting Issue
+        </a>
     </div>
 </div>
 
