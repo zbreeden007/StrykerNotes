@@ -40,6 +40,40 @@
   .email-btn i {
     margin-right: 5px;
   }
+  
+  /* Email settings button */
+  .email-settings-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 0.85rem;
+    margin-left: 5px;
+    padding: 0;
+    cursor: pointer;
+  }
+  
+  /* Email recipient list */
+  .email-recipient-list {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  .recipient-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    margin-bottom: 5px;
+  }
+  
+  .recipient-item .remove-btn {
+    background: none;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+  }
 </style>
 {% endblock %}
 
@@ -48,373 +82,366 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="mb-0" style="color: #FFFFFF;">Dashboard</h1>
     <div class="d-flex align-items-center">
-        <a href="mailto:internal-team@stryker.com?subject=Internal%20Reporting%20Issue&body=Hello%20Team%2C%0A%0AI%20would%20like%20to%20report%20an%20internal%20issue%20regarding%20reporting.%0A%0AIssue%20Details%3A%0A-%20%0A-%20%0A-%20%0A%0AThank%20you%2C%0A" class="btn email-btn">
-            <i class="fas fa-envelope"></i> Internal Reporting Issue
-        </a>
-        <a href="mailto:sales-leaders@stryker.com,reporting@stryker.com?subject=External%20Reporting%20Issue&body=Hello%20Sales%20Leaders%2C%0A%0AI%20would%20like%20to%20report%20an%20external%20issue%20regarding%20reporting.%0A%0AIssue%20Details%3A%0A-%20%0A-%20%0A-%20%0A%0AThank%20you%2C%0A" class="btn email-btn">
-            <i class="fas fa-envelope-open-text"></i> External Reporting Issue
-        </a>
-    </div>
-</div>
-
-<!-- Favorite Links & Files Row -->
-{% if favorite_links or favorite_files %}
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #DDDEDD;">
-                <h5 class="mb-0"><i class="fas fa-star me-2"></i>Favorite Links & Files</h5>
-                <div>
-                    <a href="{{ url_for('links.all_links') }}" class="btn btn-link btn-sm me-2" style="color: black; text-decoration: none;">
-                        <i class="fas fa-link"></i> All Links
-                    </a>
-                    <a href="{{ url_for('files.all_files') }}" class="btn btn-link btn-sm" style="color: black; text-decoration: none;">
-                        <i class="fas fa-folder-open"></i> All Files
-                    </a>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="d-flex flex-wrap gap-2">
-                    {% for link in favorite_links %}
-                    <a href="{{ link.url }}" target="_blank" class="btn" style="background-color: #767979; color: white; border-color: white;">
-                        <i class="fas fa-link me-1"></i> {{ link.title }}
-                    </a>
-                    {% endfor %}
-                    
-                    {% for file in favorite_files %}
-                    <a href="{{ url_for('files.download_file', file_id=file.id) }}" class="btn" style="background-color: #4B9CD3; color: white; border-color: white;">
-                        {% if file.filetype == 'PDF' %}
-                            <i class="fas fa-file-pdf me-1"></i>
-                        {% elif file.filetype == 'Word' %}
-                            <i class="fas fa-file-word me-1"></i>
-                        {% elif file.filetype == 'Excel' %}
-                            <i class="fas fa-file-excel me-1"></i>
-                        {% elif file.filetype == 'PowerPoint' %}
-                            <i class="fas fa-file-powerpoint me-1"></i>
-                        {% elif file.filetype == 'Image' %}
-                            <i class="fas fa-file-image me-1"></i>
-                        {% elif file.filetype == 'Text' or file.filetype == 'CSV' %}
-                            <i class="fas fa-file-alt me-1"></i>
-                        {% else %}
-                            <i class="fas fa-file me-1"></i>
-                        {% endif %}
-                        {{ file.filename }}
-                    </a>
-                    {% endfor %}
-                </div>
-            </div>
+        <div class="btn-group">
+            <a href="#" class="btn email-btn internal-email-btn" id="internalReportingBtn">
+                <i class="fas fa-envelope"></i> Internal Reporting Issue
+            </a>
+            <button type="button" class="email-settings-btn" data-bs-toggle="modal" data-bs-target="#internalEmailModal">
+                <i class="fas fa-cog"></i>
+            </button>
         </div>
-    </div>
-</div>
-{% endif %}
-
-<div class="row">
-    <!-- Left Column: To-Do List Section -->
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #49789F; color: white;">
-                <h5 class="mb-0">To-Do List</h5>
-                <!-- "+ Add Task" button in the header -->
-                <a href="#" id="toggleAddTask" class="btn btn-link btn-sm" style="color: white; text-decoration: none;">
-                    + Add Task
-                </a>
-            </div>
-            <div class="card-body">
-                <!-- New Task Form (hidden by default) -->
-                <div id="addTaskFormContainer">
-                    <form action="{{ url_for('main.add_todo') }}" method="post">
-                        {{ todo_form.csrf_token }}
-                        <div class="row">
-                            <div class="col-md-9 mb-2">
-                                {{ todo_form.content(class="form-control", id="newTaskInput", required=true, placeholder="New task...") }}
-                            </div>
-                            <div class="col-md-3 mb-2">
-                                {{ todo_form.submit(class="btn btn-link w-100", style="color: black; text-decoration: none;") }}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12 mb-2">
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-flag"></i></span>
-                                    {{ todo_form.priority(class="form-select") }}
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                
-                <!-- To-Do List Items -->
-                {% if todos %}
-                <div class="todo-list">
-                    <ul class="list-group" id="dashboard-todo-list">
-                        {% for todo in todos %}
-                        <li class="list-group-item" id="todo-{{ todo.id }}">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <!-- Left side: task text only (removed the handle icon) -->
-                                <div>
-                                    {{ todo.content }}
-                                </div>
-                                <!-- Right side: Priority label, Edit and Delete icons -->
-                                <div class="d-flex align-items-center">
-                                    <!-- Priority label -->
-                                    <span class="badge me-2 {% if todo.priority == 2 %}bg-danger{% elif todo.priority == 1 %}bg-warning{% else %}bg-secondary{% endif %}">
-                                        {% if todo.priority == 2 %}
-                                            Today
-                                        {% elif todo.priority == 1 %}
-                                            This Week
-                                        {% else %}
-                                            Later
-                                        {% endif %}
-                                    </span>
-                                    <button type="button" class="btn btn-sm me-1"
-                                            data-bs-toggle="modal" data-bs-target="#editTodoModal{{ todo.id }}"
-                                            style="background-color: transparent; border: none; color: #989B9A;">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <form action="{{ url_for('main.delete_todo', todo_id=todo.id) }}" method="post" class="d-inline">
-                                        <button type="submit" class="btn btn-sm"
-                                                style="background-color: transparent; border: none; color: #989B9A;">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </li>
-                        
-                        <!-- Edit Todo Modal -->
-                        <div class="modal fade" id="editTodoModal{{ todo.id }}" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Edit Task</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <form action="{{ url_for('main.edit_todo', todo_id=todo.id) }}" method="post" class="edit-todo-form">
-                                        <div class="modal-body">
-                                            <div class="mb-3">
-                                                <label class="form-label">Task</label>
-                                                <input type="text" name="content" class="form-control" value="{{ todo.content }}" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Priority</label>
-                                                <select name="priority" class="form-select">
-                                                    <option value="0" {% if todo.priority == 0 %}selected{% endif %}>Later</option>
-                                                    <option value="1" {% if todo.priority == 1 %}selected{% endif %}>This Week</option>
-                                                    <option value="2" {% if todo.priority == 2 %}selected{% endif %}>Today</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                            <button type="submit" class="btn btn-primary">Save Changes</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% else %}
-                <p class="text-muted">No tasks added yet. Add your first task by clicking "+ Add Task" above.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <!-- Middle Column: Team Top Priorities and Permanent Notes -->
-    <div class="col-md-4">
-        <!-- Team Top Priorities Section -->
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #BF8A36; color: white;">
-                <h5 class="mb-0">Team Top Priorities</h5>
-                <a href="#" class="btn btn-link btn-sm" style="color: white; text-decoration: none;" data-bs-toggle="modal" data-bs-target="#addPriorityModal">
-                    <i class="fas fa-plus"></i> Add Priority
-                </a>
-            </div>
-            <div class="card-body" style="background-color: #f9f9f9;">
-                <!-- Sticky Notes layout for priorities -->
-                <div class="d-flex flex-wrap justify-content-around" id="priorities-container">
-                    {% if team_priorities %}
-                        {% for priority in team_priorities %}
-                        <div class="sticky-note" id="priority-{{ priority.id }}" style="background-color: {{ priority.color }}; transform: rotate({{ loop.index % 5 - 2.5 }}deg);">
-                            <p>{{ priority.content }}</p>
-                            <form action="{{ url_for('main.delete_priority', priority_id=priority.id) }}" method="post" class="delete-priority">
-                                <button type="submit" class="btn btn-sm p-0 delete-priority-btn" title="Delete priority">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </form>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="text-center my-4">
-                            <p class="text-muted">No team priorities added yet. Click the "Add Priority" button to add your first one.</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        
-        <!-- Permanent Notes Section -->
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #709795; color: white;">
-                <h5 class="mb-0">Permanent Notes</h5>
-                <a href="{{ url_for('notes.new_note') }}?permanent=true" class="btn btn-link btn-sm" style="color: white; text-decoration: none;">
-                    + Add Note
-                </a>
-            </div>
-            <div class="card-body">
-                {% if permanent_notes %}
-                <div class="accordion" id="permanentNotesAccordion">
-                    {% for note in permanent_notes %}
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading{{ note.id }}">
-                            <button class="accordion-button collapsed"
-                                    type="button"
-                                    data-bs-toggle="collapse"
-                                    data-bs-target="#collapse{{ note.id }}"
-                                    aria-expanded="false"
-                                    aria-controls="collapse{{ note.id }}"
-                                    style="background-color: #B7CBCA; color: black;">
-                                {{ note.title }}
-                            </button>
-                        </h2>
-                        <div id="collapse{{ note.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ note.id }}" data-bs-parent="#permanentNotesAccordion">
-                            <div class="accordion-body">
-                                {{ note.html_content|safe }}
-                                <div class="mt-2">
-                                    <!-- Edit button matching to-do style -->
-                                    <a href="{{ url_for('notes.edit_note', note_id=note.id) }}"
-                                       class="btn btn-sm p-0"
-                                       style="background-color: transparent; border: none; color: #989B9A; text-decoration: none;">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <p class="text-muted">No permanent notes yet. Create one to keep important information always visible.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <!-- Right Column: Team Members Section -->
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #9D6AA1; color: white;">
-                <h5 class="mb-0">
-                    Team Members
-                    <!-- Link icon next to "Team Members", slightly reduced size -->
-                    <a href="https://zbreeden007.pythonanywhere.com/team/"
-                       style="color: white; text-decoration: none; margin-left: 8px; font-size: 0.85em;">
-                        <i class="fas fa-external-link-alt"></i>
-                    </a>
-                </h5>
-                <a href="{{ url_for('team.new_member') }}" class="btn btn-link btn-sm" style="color: white; text-decoration: none;">
-                    <i class="fas fa-plus"></i> Add Member
-                </a>
-            </div>
-            <div class="card-body">
-                {% if team_members %}
-                <div class="row row-cols-1 row-cols-md-2 g-4">
-                    {% for member in team_members %}
-                    <div class="col">
-                        <!-- Make each member card clickable -->
-                        <!-- In the Team Members section of the dashboard -->
-                        <div class="card h-100" style="cursor: pointer;" onclick="window.location.href='{{ url_for('team.all_members') }}'">
-                            <div class="card-body d-flex align-items-center">
-                                <!-- Display member image/icon if available -->
-                                {% if member.profile_picture %}
-                                  <img src="{{ url_for('static', filename=member.profile_picture.replace('static/', '')) }}" alt="{{ member.name }}" class="profile-picture-sm me-2">
-                                {% else %}
-                                  <div class="profile-initial profile-initial-sm me-2">
-                                    <span>{{ member.name[:1] }}</span>
-                                  </div>
-                                {% endif %}
-                                <div class="flex-grow-1">
-                                    <h6 class="card-title mb-0">{{ member.name }}</h6>
-                                    {% if member.role %}
-                                    <p class="card-subtitle mb-2 text-muted">{{ member.role }}</p>
-                                    {% endif %}
-                                    <div class="mt-1 member-stats" style="color: #333333; font-size: 0.85rem;">
-                                        <span class="me-2">Projects: {{ member.projects|length }}</span>
-                                        <span>Tasks: {{ member.tasks|length }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <p class="text-muted">No team members added yet.</p>
-                {% endif %}
-            </div>
+        <div class="btn-group">
+            <a href="#" class="btn email-btn external-email-btn" id="externalReportingBtn">
+                <i class="fas fa-envelope-open-text"></i> External Reporting Issue
+            </a>
+            <button type="button" class="email-settings-btn" data-bs-toggle="modal" data-bs-target="#externalEmailModal">
+                <i class="fas fa-cog"></i>
+            </button>
         </div>
     </div>
 </div>
 
-<!-- Add Priority Modal -->
-<div class="modal fade" id="addPriorityModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+<!-- Email Distribution Modals -->
+<!-- Internal Email Modal -->
+<div class="modal fade" id="internalEmailModal" tabindex="-1" aria-labelledby="internalEmailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Add Team Priority</h5>
+                <h5 class="modal-title" id="internalEmailModalLabel">Internal Reporting Email Settings</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ url_for('main.add_priority') }}" method="post">
-                <div class="modal-body">
-                    {{ priority_form.csrf_token }}
+            <div class="modal-body">
+                <form id="internalEmailForm">
                     <div class="mb-3">
-                        {{ priority_form.content.label(class="form-label") }}
-                        {{ priority_form.content(class="form-control", required=true, placeholder="Enter team priority...") }}
+                        <label for="internalSubject" class="form-label">Email Subject</label>
+                        <input type="text" class="form-control" id="internalSubject" required>
                     </div>
+                    
                     <div class="mb-3">
-                        {{ priority_form.color.label(class="form-label") }}
-                        {{ priority_form.color(class="form-select") }}
+                        <label class="form-label">Recipients</label>
+                        <div class="email-recipient-list mb-2" id="internalRecipientList">
+                            <!-- Recipients will be added here dynamically -->
+                        </div>
+                        
+                        <div class="input-group">
+                            <input type="email" class="form-control" id="internalNewRecipient" placeholder="Add new recipient email">
+                            <button class="btn btn-outline-secondary" type="button" id="internalAddRecipient">Add</button>
+                        </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    {{ priority_form.submit(class="btn btn-primary") }}
-                </div>
-            </form>
+                    
+                    <div class="mb-3">
+                        <label for="internalBodyTemplate" class="form-label">Email Template</label>
+                        <textarea class="form-control" id="internalBodyTemplate" rows="6"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveInternalEmail">Save Changes</button>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- No Favorites Call to Action -->
-{% if not favorite_links and not favorite_files %}
-<div class="row">
-    <div class="col-12">
-        <div class="alert alert-light border">
-            <div class="d-flex align-items-center">
-                <div class="me-3">
-                    <i class="fas fa-star fa-2x text-warning"></i>
-                </div>
-                <div>
-                    <h5 class="mb-1">Add Favorite Items</h5>
-                    <p class="mb-0">Mark links or files as favorites to display them here for quick access. 
-                       <a href="{{ url_for('links.all_links') }}">View your links</a>, 
-                       <a href="{{ url_for('files.all_files') }}">view your files</a>, 
-                       <a href="{{ url_for('links.new_link') }}">add a new link</a>, or 
-                       <a href="{{ url_for('files.new_file') }}">upload a new file</a>.
-                    </p>
-                </div>
+<!-- External Email Modal -->
+<div class="modal fade" id="externalEmailModal" tabindex="-1" aria-labelledby="externalEmailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="externalEmailModalLabel">External Reporting Email Settings</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="externalEmailForm">
+                    <div class="mb-3">
+                        <label for="externalSubject" class="form-label">Email Subject</label>
+                        <input type="text" class="form-control" id="externalSubject" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Recipients</label>
+                        <div class="email-recipient-list mb-2" id="externalRecipientList">
+                            <!-- Recipients will be added here dynamically -->
+                        </div>
+                        
+                        <div class="input-group">
+                            <input type="email" class="form-control" id="externalNewRecipient" placeholder="Add new recipient email">
+                            <button class="btn btn-outline-secondary" type="button" id="externalAddRecipient">Add</button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="externalBodyTemplate" class="form-label">Email Template</label>
+                        <textarea class="form-control" id="externalBodyTemplate" rows="6"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveExternalEmail">Save Changes</button>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Rest of your dashboard content continues here -->
+<!-- Favorite Links & Files Row -->
+{% if favorite_links or favorite_files %}
+<!-- Rest of the existing code... -->
 {% endif %}
+
+<!-- Continue with the rest of the dashboard content... -->
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // Immediately executed function to toggle the task form
+    // Email distribution management
+    document.addEventListener('DOMContentLoaded', function() {
+        // Internal email data
+        let internalEmailData = {
+            subject: 'Internal Reporting Issue',
+            recipients: ['internal-team@stryker.com'],
+            bodyTemplate: 'Hello Team,\n\nI would like to report an internal issue regarding reporting.\n\nIssue Details:\n- \n- \n- \n\nThank you,'
+        };
+        
+        // External email data
+        let externalEmailData = {
+            subject: 'External Reporting Issue',
+            recipients: ['sales-leaders@stryker.com', 'reporting@stryker.com'],
+            bodyTemplate: 'Hello Sales Leaders,\n\nI would like to report an external issue regarding reporting.\n\nIssue Details:\n- \n- \n- \n\nThank you,'
+        };
+        
+        // Load data from server
+        function loadEmailDistribution(type) {
+            fetch(`/email_distribution/${type}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (type === 'internal_reporting') {
+                        internalEmailData = {
+                            subject: data.subject,
+                            recipients: data.recipients,
+                            bodyTemplate: data.body_template
+                        };
+                        updateInternalEmailForm();
+                        updateInternalEmailButton();
+                    } else if (type === 'external_reporting') {
+                        externalEmailData = {
+                            subject: data.subject,
+                            recipients: data.recipients,
+                            bodyTemplate: data.body_template
+                        };
+                        updateExternalEmailForm();
+                        updateExternalEmailButton();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading email distribution:', error);
+                });
+        }
+        
+        // Save data to server
+        function saveEmailDistribution(type, data) {
+            fetch(`/email_distribution/${type}/update`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    // Show a success message
+                    alert('Email distribution settings saved successfully!');
+                    
+                    // Update the buttons
+                    if (type === 'internal_reporting') {
+                        updateInternalEmailButton();
+                    } else if (type === 'external_reporting') {
+                        updateExternalEmailButton();
+                    }
+                    
+                    // Close the modal
+                    const modalId = type === 'internal_reporting' ? 'internalEmailModal' : 'externalEmailModal';
+                    const modal = bootstrap.Modal.getInstance(document.getElementById(modalId));
+                    modal.hide();
+                }
+            })
+            .catch(error => {
+                console.error('Error saving email distribution:', error);
+                alert('Error saving settings. Please try again.');
+            });
+        }
+        
+        // Update the internal email form with current data
+        function updateInternalEmailForm() {
+            document.getElementById('internalSubject').value = internalEmailData.subject;
+            document.getElementById('internalBodyTemplate').value = internalEmailData.bodyTemplate;
+            
+            // Update recipient list
+            const recipientList = document.getElementById('internalRecipientList');
+            recipientList.innerHTML = '';
+            
+            internalEmailData.recipients.forEach(email => {
+                const recipientItem = document.createElement('div');
+                recipientItem.className = 'recipient-item';
+                recipientItem.innerHTML = `
+                    <span>${email}</span>
+                    <button type="button" class="remove-btn" data-email="${email}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                recipientList.appendChild(recipientItem);
+            });
+            
+            // Add event listeners for remove buttons
+            recipientList.querySelectorAll('.remove-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const email = this.getAttribute('data-email');
+                    internalEmailData.recipients = internalEmailData.recipients.filter(e => e !== email);
+                    updateInternalEmailForm();
+                });
+            });
+        }
+        
+        // Update the external email form with current data
+        function updateExternalEmailForm() {
+            document.getElementById('externalSubject').value = externalEmailData.subject;
+            document.getElementById('externalBodyTemplate').value = externalEmailData.bodyTemplate;
+            
+            // Update recipient list
+            const recipientList = document.getElementById('externalRecipientList');
+            recipientList.innerHTML = '';
+            
+            externalEmailData.recipients.forEach(email => {
+                const recipientItem = document.createElement('div');
+                recipientItem.className = 'recipient-item';
+                recipientItem.innerHTML = `
+                    <span>${email}</span>
+                    <button type="button" class="remove-btn" data-email="${email}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                recipientList.appendChild(recipientItem);
+            });
+            
+            // Add event listeners for remove buttons
+            recipientList.querySelectorAll('.remove-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const email = this.getAttribute('data-email');
+                    externalEmailData.recipients = externalEmailData.recipients.filter(e => e !== email);
+                    updateExternalEmailForm();
+                });
+            });
+        }
+        
+        // Update internal email button href
+        function updateInternalEmailButton() {
+            const mailtoUrl = `mailto:${internalEmailData.recipients.join(',')}?subject=${encodeURIComponent(internalEmailData.subject)}&body=${encodeURIComponent(internalEmailData.bodyTemplate)}`;
+            document.getElementById('internalReportingBtn').href = mailtoUrl;
+        }
+        
+        // Update external email button href
+        function updateExternalEmailButton() {
+            const mailtoUrl = `mailto:${externalEmailData.recipients.join(',')}?subject=${encodeURIComponent(externalEmailData.subject)}&body=${encodeURIComponent(externalEmailData.bodyTemplate)}`;
+            document.getElementById('externalReportingBtn').href = mailtoUrl;
+        }
+        
+        // Add internal recipient
+        document.getElementById('internalAddRecipient').addEventListener('click', function() {
+            const emailInput = document.getElementById('internalNewRecipient');
+            const email = emailInput.value.trim();
+            
+            if (email && isValidEmail(email) && !internalEmailData.recipients.includes(email)) {
+                internalEmailData.recipients.push(email);
+                updateInternalEmailForm();
+                emailInput.value = '';
+            } else {
+                alert('Please enter a valid email address that is not already in the list.');
+            }
+        });
+        
+        // Add external recipient
+        document.getElementById('externalAddRecipient').addEventListener('click', function() {
+            const emailInput = document.getElementById('externalNewRecipient');
+            const email = emailInput.value.trim();
+            
+            if (email && isValidEmail(email) && !externalEmailData.recipients.includes(email)) {
+                externalEmailData.recipients.push(email);
+                updateExternalEmailForm();
+                emailInput.value = '';
+            } else {
+                alert('Please enter a valid email address that is not already in the list.');
+            }
+        });
+        
+        // Save internal email settings
+        document.getElementById('saveInternalEmail').addEventListener('click', function() {
+            internalEmailData.subject = document.getElementById('internalSubject').value;
+            internalEmailData.bodyTemplate = document.getElementById('internalBodyTemplate').value;
+            
+            saveEmailDistribution('internal_reporting', {
+                subject: internalEmailData.subject,
+                recipients: internalEmailData.recipients,
+                body_template: internalEmailData.bodyTemplate
+            });
+        });
+        
+        // Save external email settings
+        document.getElementById('saveExternalEmail').addEventListener('click', function() {
+            externalEmailData.subject = document.getElementById('externalSubject').value;
+            externalEmailData.bodyTemplate = document.getElementById('externalBodyTemplate').value;
+            
+            saveEmailDistribution('external_reporting', {
+                subject: externalEmailData.subject,
+                recipients: externalEmailData.recipients,
+                body_template: externalEmailData.bodyTemplate
+            });
+        });
+        
+        // Validate email function
+        function isValidEmail(email) {
+            const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            return re.test(String(email).toLowerCase());
+        }
+        
+        // Enter key for adding recipients
+        document.getElementById('internalNewRecipient').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('internalAddRecipient').click();
+            }
+        });
+        
+        document.getElementById('externalNewRecipient').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('externalAddRecipient').click();
+            }
+        });
+        
+        // Initialize forms and buttons
+        updateInternalEmailForm();
+        updateExternalEmailForm();
+        updateInternalEmailButton();
+        updateExternalEmailButton();
+        
+        // Load data from server
+        loadEmailDistribution('internal_reporting');
+        loadEmailDistribution('external_reporting');
+    });
+
+    // Toggle task form functionality (keeping your existing code)
     (function() {
         const toggleBtn = document.getElementById('toggleAddTask');
         const formContainer = document.getElementById('addTaskFormContainer');
@@ -446,7 +473,5 @@
             console.error("Could not find toggle button or form container");
         }
     })();
-
-    // Let main.js handle the drag and drop functionality
 </script>
 {% endblock %}

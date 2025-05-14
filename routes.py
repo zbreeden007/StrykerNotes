@@ -3,7 +3,7 @@ from datetime import datetime
 import os
 import markdown
 from werkzeug.utils import secure_filename
-from models import db, Note, Todo, TodoList, TeamMember, MemberTask, Link, UserPreference, MemberProject, MemberNote, MemberDevelopment, TeamPriority, File, AdHoc
+from models import db, Note, Todo, TodoList, TeamMember, MemberTask, Link, UserPreference, MemberProject, MemberNote, MemberDevelopment, TeamPriority, File, AdHoc, EmailDistribution
 from forms import NoteForm, TodoForm, TeamMemberForm, MemberTaskForm, LinkForm, UserPreferenceForm, MemberProjectForm, MemberNoteForm, MemberDevelopmentForm, FileForm
 from forms import ProjectForm, TaskForm, DevelopmentForm, TeamPriorityForm, AdHocForm  # Add AdHocForm here
 from PIL import Image
@@ -68,6 +68,69 @@ def inject_preferences():
             'accent_color': '#BF8A36'
         }
         return dict(preferences=DefaultPreferences(**default_preferences))
+
+
+# Email Distribution Routes
+@main.route('/email_distribution/<string:name>', methods=['GET'])
+def get_email_distribution(name):
+    """Get email distribution details as JSON"""
+    distribution = EmailDistribution.query.filter_by(name=name).first()
+    if not distribution:
+        # Create default distributions if they don't exist
+        if name == 'internal_reporting':
+            distribution = EmailDistribution(
+                name='internal_reporting',
+                subject='Internal Reporting Issue',
+                recipients='internal-team@stryker.com',
+                body_template='Hello Team,\n\nI would like to report an internal issue regarding reporting.\n\nIssue Details:\n- \n- \n- \n\nThank you,'
+            )
+            db.session.add(distribution)
+            db.session.commit()
+        elif name == 'external_reporting':
+            distribution = EmailDistribution(
+                name='external_reporting',
+                subject='External Reporting Issue',
+                recipients='sales-leaders@stryker.com,reporting@stryker.com',
+                body_template='Hello Sales Leaders,\n\nI would like to report an external issue regarding reporting.\n\nIssue Details:\n- \n- \n- \n\nThank you,'
+            )
+            db.session.add(distribution)
+            db.session.commit()
+        else:
+            return jsonify({'status': 'error', 'message': 'Distribution not found'}), 404
+    
+    # Split recipients into a list
+    recipients_list = [r.strip() for r in distribution.recipients.split(',') if r.strip()]
+    
+    return jsonify({
+        'id': distribution.id,
+        'name': distribution.name,
+        'subject': distribution.subject,
+        'recipients': recipients_list,
+        'body_template': distribution.body_template
+    })
+
+@main.route('/email_distribution/<string:name>/update', methods=['POST'])
+def update_email_distribution(name):
+    """Update an email distribution"""
+    distribution = EmailDistribution.query.filter_by(name=name).first()
+    if not distribution:
+        return jsonify({'status': 'error', 'message': 'Distribution not found'}), 404
+    
+    data = request.json
+    if 'subject' in data:
+        distribution.subject = data['subject']
+    
+    if 'recipients' in data:
+        # Join the list into a comma-separated string
+        distribution.recipients = ','.join(data['recipients'])
+    
+    if 'body_template' in data:
+        distribution.body_template = data['body_template']
+    
+    distribution.updated_at = datetime.utcnow()
+    db.session.commit()
+    
+    return jsonify({'status': 'success'})
 
 
 # Function to save profile pictures
