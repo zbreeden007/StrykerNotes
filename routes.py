@@ -563,6 +563,14 @@ def save_note_ajax():
         'updated_at': note.updated_at.strftime('%Y-%m-%d %H:%M:%S')
     })
 
+@notes.route('/render_markdown', methods=['POST'])
+def render_markdown():
+    """AJAX endpoint to render markdown to HTML"""
+    data = request.json
+    content = data.get('content', '')
+    html_content = convert_markdown_to_html(content)
+    return jsonify({'html_content': html_content})
+
 # Files routes
 @files.route('/')
 def all_files():
